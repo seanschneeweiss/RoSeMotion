@@ -1,3 +1,6 @@
+import math3d
+
+
 class BVH(object):
 	
 
@@ -6,6 +9,8 @@ class BVH(object):
 		self.root = []
 		self.channel_values = []
 		self.channel_dict = {}
+
+		self.display_frame = 2000
 
 
 	def load_from_file(self, bvh_file_path):
@@ -20,25 +25,77 @@ class BVH(object):
 		# 	print root
 		self.parse_motion()
 		# print self.channel_dict
-		print len(self.channel_values[self.channel_dict['RightArm']['Xrotation']])
+		# print len(self.channel_values[self.channel_dict['RightArm']['Xrotation']])
+
+		self.calculate_joint_position()
 
 		bvh_file.close()
 
 
 	def calculate_joint_position(self):
-		transformation_stack = []
-		for root in self.root:
-			# position is offset
-			# ...
+		for i in range(self.frame_count):
+			transformation_stack = []
+			for root in self.root:			
+				# root position
+				bone_length = root.offset
+				if 'Xposition' in self.channel_dict[root.name]:
+					pos = [self.channel_values[self.channel_dict[root.name]['Xposition']][i], self.channel_values[self.channel_dict[root.name]['Yposition']][i], self.channel_values[self.channel_dict[root.name]['Zposition']][i]]
+				if 'Xrotation' in self.channel_dict[root.name]:
+					rot = [self.channel_values[self.channel_dict[root.name]['Xrotation']][i], self.channel_values[self.channel_dict[root.name]['Yrotation']][i], self.channel_values[self.channel_dict[root.name]['Zrotation']][i]]
+				# print 'frame', i, 'offset', bone_length, 'position', pos
+				# calculate transformation
+				q_x = math3d.quaternion((1, 0, 0), rot[0])
+				q_y = math3d.quaternion((0, 1, 0), rot[1])
+				q_z = math3d.quaternion((0, 0, 1), rot[2])
+				q_rot = math3d.multiply_quat(q_x, math3d.multiply_quat(q_y, q_z))
+				mat_rot = math3d.matrix_from_quat(q_rot)
+				mat_trans = math3d.matrix_from_trans((bone_length[0] + pos[0], bone_length[1] + pos[1], bone_length[2] + pos[2]))
+				trans_matrix = math3d.multiply_matrix(mat_trans, mat_rot)
+				pos_calc = [trans_matrix[3], trans_matrix[7], trans_matrix[11]]
+				if i == self.display_frame:
+					print 'frame', i, 'joint', root.name, 'channel pos', pos, 'calc pos', pos_calc
 
-			# calculate transformation
-			# ...
+				# push transformation onto stack
+				transformation_stack.append(trans_matrix)
 
-			# push transformation onto stack
-			# ...
+				# iterate through children joints
+				for joint in root.children:
+					self.transform_joint(joint, i, transformation_stack, pos_calc)
 
+				# pop transformation off stack
+				transformation_stack.pop()
+
+
+	def transform_joint(self, joint, frame, transformation_stack, parent_pos):
+		if isinstance(joint, EndSite):
+			return
+		elif isinstance(joint, Joint):
+			bone_length = joint.offset
+			if 'Xposition' in self.channel_dict[joint.name]:
+				pos = [self.channel_values[self.channel_dict[joint.name]['Xposition']][frame], self.channel_values[self.channel_dict[joint.name]['Yposition']][frame], self.channel_values[self.channel_dict[joint.name]['Zposition']][frame]]
+			if 'Xrotation' in self.channel_dict[joint.name]:
+				rot = [self.channel_values[self.channel_dict[joint.name]['Xrotation']][frame], self.channel_values[self.channel_dict[joint.name]['Yrotation']][frame], self.channel_values[self.channel_dict[joint.name]['Zrotation']][frame]]
+			q_x = math3d.quaternion((1, 0, 0), rot[0])
+			q_y = math3d.quaternion((0, 1, 0), rot[1])
+			q_z = math3d.quaternion((0, 0, 1), rot[2])
+			q_rot = math3d.multiply_quat(q_x, math3d.multiply_quat(q_y, q_z))
+			mat_rot = math3d.matrix_from_quat(q_rot)
+			mat_trans = math3d.matrix_from_trans((bone_length[0], bone_length[1], bone_length[2]))
+			trans_matrix = math3d.multiply_matrix(mat_trans, mat_rot)
+			transformation_stack.append(trans_matrix)
+			# apply transformations
+			mat = math3d.identity_matrix()
+			for transformation in reversed(transformation_stack):
+				mat = math3d.multiply_matrix(transformation, mat)
+			pos_calc = [mat[3], mat[7], mat[11]]
+			if frame == self.display_frame:
+				print 'frame', frame, 'joint', joint.name, 'channel pos', pos, 'calc pos', pos_calc, 'calc pos 2', pos_calc2
 			# iterate through children joints
-			# ...
+			for child in joint.children:
+				self.transform_joint(child, frame, transformation_stack, pos_calc)
+			transformation_stack.pop()
+		else:
+			return
 
 
 	def tokenize(self, source):

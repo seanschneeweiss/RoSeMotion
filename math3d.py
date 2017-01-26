@@ -45,15 +45,23 @@ def matrix_from_quat(q):
 
 
 # Constructs a translation matrix
-def matrixFromTrans(trans):
+def matrix_from_trans(trans):
 	return (1, 0, 0, trans[0],
 			0, 1, 0, trans[1],
 			0, 0, 1, trans[2],
 			0, 0, 0, 1)
 
 
+# Returns an identity matrix
+def identity_matrix():
+	return (1, 0, 0, 0,
+			0, 1, 0, 0,
+			0, 0, 1, 0,
+			0, 0, 0, 1)
+
+
 # Multiplies 2 Mat4 : 'm1' * 'm2'			
-def multiplyMatrix(m1, m2):
+def multiply_matrix(m1, m2):
 	res = []
 	for i in range(0, 4):
 		for j in range(0, 4):
@@ -62,7 +70,7 @@ def multiplyMatrix(m1, m2):
 
 
 # Multiplies matrix 'm' by vector 'v'
-def multiplyMatByVec(m, v):
+def multiply_mat_by_vec(m, v):
 	w = 1.0
 	if len(v) == 4:
 		w = v[3]
@@ -82,7 +90,7 @@ def transpose(m):
 
 # Calculates inverse of matrix m
 # Reimplement of gluInvertMatrix
-def invertMatrix(m):
+def invert_matrix(m):
 	inv = []
 	inv.append(m[5] * m[10] * m[15] - m[5] * m[11] * m[14] - m[9] * m[6] * m[15] + m[9] * m[7] * m[14] + m[13] * m[6] * m[11] - m[13] * m[7] * m[10])
 	inv.append(-m[1] * m[10] * m[15] + m[1] * m[11] * m[14] + m[9] * m[2] * m[15] - m[9] * m[3] * m[14] - m[13] * m[2] * m[11] + m[13] * m[3] * m[10])
@@ -128,7 +136,7 @@ def cross(v1, v2):
 
 	
 # Normalizes vector 'v'
-def normalizeVec(v):
+def normalize_vec(v):
 	l2 = length2(v)
 	if l2 == 0:
 		return (0, 0, 0)
