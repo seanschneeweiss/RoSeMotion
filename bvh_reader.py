@@ -25,6 +25,22 @@ class BVH(object):
 		bvh_file.close()
 
 
+	def calculate_joint_position(self):
+		transformation_stack = []
+		for root in self.root:
+			# position is offset
+			# ...
+
+			# calculate transformation
+			# ...
+
+			# push transformation onto stack
+			# ...
+
+			# iterate through children joints
+			# ...
+
+
 	def tokenize(self, source):
 		import re
 		# split source string with either white spaces, line separators, or tabulations
