@@ -4,6 +4,8 @@ class BVH(object):
 	def __init__(self):
 		super(BVH, self).__init__()
 		self.root = []
+		self.channel_values = []
+		self.channel_dict = {}
 
 
 	def load_from_file(self, bvh_file_path):
@@ -17,6 +19,8 @@ class BVH(object):
 		# for root in self.root:
 		# 	print root
 		self.parse_motion()
+		# print self.channel_dict
+		print len(self.channel_values[self.channel_dict['RightArm']['Xrotation']])
 
 		bvh_file.close()
 
@@ -46,21 +50,34 @@ class BVH(object):
 			return
 		self.token_index += 1
 		if self.tokens[self.token_index] != 'Frames:':
+			# print 'keyword Frames: not found'
 			return
 		self.token_index += 1
 		try:
 			self.frame_count = int(self.tokens[self.token_index])
 		except ValueError:
+			# print 'frame count invalid'
 			return
 		self.token_index += 1
-		if self.tokens[self.token_index] != 'Frame Time:':
+		# Frame Time: is treated as two tokens
+		if self.tokens[self.token_index] != 'Frame' or self.tokens[self.token_index + 1] != 'Time:':
+			# print 'keyword Frame Time: not found'
 			return
-		self.token_index += 1
+		self.token_index += 2
 		try:
 			self.frame_time = float(self.tokens[self.token_index])
 		except ValueError:
+			# print 'frame time invalid'
 			return
 		self.token_index += 1
+		for i in range(self.frame_count):
+			for j in range(len(self.channel_values)):
+				try:
+					self.channel_values[j].append(float(self.tokens[self.token_index]))
+					self.token_index += 1
+				except ValueError:
+					# print 'frame data invalid', self.tokens[self.token_index]
+					return
 		
 
 	# before reading a joint, the token index will be pointing to the keyword ROOT,
@@ -114,8 +131,23 @@ class BVH(object):
 			self.token_index += 1
 			# print 'current token', self.tokens[self.token_index]
 			joint_channels = []
+			self.channel_dict[joint_name] = {}
 			for i in range(joint_channel_count):
 				joint_channels.append(self.tokens[self.token_index])
+				# channel data is stored in two data structures, a two-dimensional table which stores the channel values of each frame
+				# and a dictionary which stores the links between the joints and the indices in the value table
+				# in order to reference a channel value of a specifique joint at a specifique frame, one can do:
+				#
+				# self.channel_values[self.channel_dict[joint_name][channel_name]][frame]
+				#
+				# ==== NEED TO FIX LATER ====
+				#
+				# channel data structure is created when the channel part of a joint is parsed, it could happen that there is invalid
+				# format in the rest of the joint definition
+				# since a joint with invalid definition will be ignored, the created channel data structure also becomes invalid
+				# to fix this later, we could perform a rollback when joint reading is failed
+				self.channel_dict[joint_name][self.tokens[self.token_index]] = len(self.channel_values)
+				self.channel_values.append([])
 				self.token_index += 1
 				# print 'current token', self.tokens[self.token_index]
 			joint_children = []
