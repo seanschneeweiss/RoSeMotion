@@ -17,12 +17,17 @@ class BVH(object):
 		bvh_str = bvh_file.read()
 
 		self.tokens = self.tokenize(bvh_str)
+		if len(self.tokens) == 0:
+			return False
 		self.token_index = 0
 
-		self.parse_hierarchy()
-		self.parse_motion()
+		if not self.parse_hierarchy():
+			return False
+		if not self.parse_motion():
+			return False
 
 		bvh_file.close()
+		return True
 
 
 	def tokenize(self, source):
@@ -36,7 +41,7 @@ class BVH(object):
 	def parse_hierarchy(self):
 		if self.tokens[self.token_index] != 'HIERARCHY':
 			print 'keyword HIERARCHY not found'
-			return
+			return False
 		self.token_index += 1
 		self.joint_count = 0
 		# parse all roots to support multiple hierarchy
@@ -44,32 +49,33 @@ class BVH(object):
 			joint = self.read_joint()
 			if joint:
 				self.root.append(joint)
+		return True
 
 
 	def parse_motion(self):
 		if self.tokens[self.token_index] != 'MOTION':
-			return
+			return False
 		self.token_index += 1
 		if self.tokens[self.token_index] != 'Frames:':
 			print 'keyword Frames: not found'
-			return
+			return False
 		self.token_index += 1
 		try:
 			self.frame_count = int(self.tokens[self.token_index])
 		except ValueError:
 			print 'frame count invalid'
-			return
+			return False
 		self.token_index += 1
 		# Frame Time: is treated as two tokens
 		if self.tokens[self.token_index] != 'Frame' or self.tokens[self.token_index + 1] != 'Time:':
 			print 'keyword Frame Time: not found'
-			return
+			return False
 		self.token_index += 2
 		try:
 			self.frame_time = float(self.tokens[self.token_index])
 		except ValueError:
 			print 'frame time invalid'
-			return
+			return False
 		self.token_index += 1
 		for i in range(self.frame_count):
 			for j in range(len(self.channel_values)):
@@ -78,7 +84,8 @@ class BVH(object):
 					self.token_index += 1
 				except ValueError:
 					print 'frame data invalid', self.tokens[self.token_index]
-					return
+					return False
+		return True
 		
 
 	# before reading a joint, the token index will be pointing to the keyword ROOT,

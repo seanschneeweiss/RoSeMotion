@@ -11,7 +11,7 @@ class Convertor(object):
 		super(Convertor, self).__init__()
 
 
-	def convert(self, bvh):
+	def convert(self, bvh, output_file):
 		acq = btk.btkAcquisition()
 		acq.Init(0, bvh.frame_count)
 		acq.SetPointFrequency(1 / bvh.frame_time)
@@ -30,7 +30,7 @@ class Convertor(object):
 			
 		writer = btk.btkAcquisitionFileWriter()
 		writer.SetInput(acq)
-		writer.SetFilename('output.c3d')
+		writer.SetFilename(output_file)
 		writer.Update()
 
 
