@@ -31,9 +31,12 @@ class BVH(object):
 
 
 	def tokenize(self, source):
-		import re
+		import re, os
 		# split source string with either white spaces, line separators, or tabulations
-		tokens = re.split(' |\n|\t', source)
+		if (os.name == "posix"):
+			tokens = re.split(' |\n|\r\n|\t', source) #linux
+		else:
+			tokens = re.split(' |\n|\t', source) # windows
 		# filter the token list, remove all empty strings
 		return filter(None, tokens)
 
