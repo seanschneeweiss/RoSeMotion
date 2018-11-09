@@ -1,0 +1,160 @@
+from pymo.data import MocapData
+import numpy as np
+import re
+from leapmotion_setup import root_name, skeleton, framerate
+
+import os, sys, inspect
+src_dir = os.path.dirname(inspect.getfile(inspect.currentframe()))
+# Windows and Linux
+arch_dir = '../../lib/x64' if sys.maxsize > 2**32 else '../../lib/x86'
+
+sys.path.insert(0, os.path.abspath(os.path.join(src_dir, arch_dir)))
+import Leap
+
+class Leap2BVH():
+    '''
+    A class to parse a BVH file.
+
+    Extracts the skeleton and channel values
+    '''
+
+    def __init__(self, filename=None):
+        self.reset()
+        self.do()
+
+    def reset(self):
+        self._skeleton = {}
+        self.bone_context = []
+        self._motion_channels = []
+        self._motions = []
+        self.current_token = 0
+        self.framerate = 0.0
+        self.root_name = ''
+
+        self.data = MocapData()
+
+    def parse(self):
+        #self.do()
+
+        self.data.skeleton = self._skeleton
+        self.data.channel_names = self._motion_channels
+        self.data.values = self._to_DataFrame()
+        self.data.root_name = self.root_name
+        self.data.framerate = self.framerate
+
+        return self.data
+
+    def do(self):
+        self._skeleton = skeleton
+        #self._motion_channels = motion_channels
+        self.root_name = root_name#TODO:root_name
+        self.framerate = framerate #TODO: framerate
+
+        #frame_count = 188#TODO:frame_count
+        #frame_time = 0.0
+        #self._motions = [()] * frame_count
+
+        for key, value in self._skeleton.items():
+            value['offsets'] = [0, 0, 0]
+            for channel in value['channels']:
+                self._motion_channels.append((key, channel))
+
+        # for ii in range(frame_count):
+        #     channel_values = []
+        #     for key, value in self._skeleton.items():
+        #         for channel in value['channels']:
+        #             channel_values.append((key, channel, float(1)))
+        #     self._motions[ii] = (frame_time, channel_values)
+        #     frame_time = frame_time + framerate
+
+    def add_frame(self, frame_id, hand, fingers):
+        channel_values = []
+        for key, value in self._skeleton.items():
+            for channel in value['channels']:
+                if key == 'Leap_Root':
+                    x_pos, y_pos, z_pos, z_rot, y_rot, x_rot = self._get_root_values()
+                elif key == 'RightHand':
+                    x_pos, y_pos, z_pos, z_rot, y_rot, x_rot = self._get_wrist_values(hand)
+                else:
+                    z_rot, y_rot, x_rot = self._get_finger_values(key, hand)
+
+                if channel == 'Xposition':
+                    channel_values.append((key, channel, x_pos))
+                if channel == 'Yposition':
+                    channel_values.append((key, channel, y_pos))
+                if channel == 'Zposition':
+                    channel_values.append((key, channel, z_pos))
+                if channel == 'Zrotation':
+                    channel_values.append((key, channel, z_rot))
+                if channel == 'Yrotation':
+                    channel_values.append((key, channel, y_rot))
+                if channel == 'Xrotation':
+                    channel_values.append((key, channel, x_rot))
+        self._motions.append((frame_id, channel_values))
+
+    def _get_root_values(self):
+        return 0, 0, 0, 0, 0, 0
+
+    def _get_wrist_values(self, hand):
+        return hand.wrist_position.x,\
+               hand.wrist_position.y,\
+               hand.wrist_position.z,\
+               hand.wrist_position.angle_to(Leap.Vector.z_axis),\
+               hand.wrist_position.angle_to(Leap.Vector.y_axis),\
+               hand.wrist_position.angle_to(Leap.Vector.x_axis)
+
+    def _get_finger_values(self, key, hand):
+        key_split = re.split('(\d)', key)
+        key = key_split[0]
+        if key_split[-1] == '_End':
+            bone_number = 5
+        else:
+            bone_number = int(key_split[1])
+
+        if key == 'RightHandThumb':
+            return self._get_joint_angles(hand, Leap.Finger.TYPE_THUMB, bone_number)
+        if key == 'RightHandIndex':
+            return self._get_joint_angles(hand, Leap.Finger.TYPE_INDEX, bone_number)
+        if key == 'RightHandMiddle':
+            return self._get_joint_angles(hand, Leap.Finger.TYPE_MIDDLE, bone_number)
+        if key == 'RightHandRing':
+            return self._get_joint_angles(hand, Leap.Finger.TYPE_RING, bone_number)
+        if key == 'RightHandPinky':
+            return self._get_joint_angles(hand, Leap.Finger.TYPE_PINKY, bone_number)
+        else:
+            raise Exception('Key ({}) did not match'.format(key))
+
+    def _get_joint_angles(self, hand, finger_type, bone_number):
+        fingerlist = hand.fingers.finger_type(finger_type)
+        if bone_number == 4:
+            return self._get_rotation(fingerlist[0].bone(Leap.Bone.TYPE_DISTAL))
+        if bone_number == 3:
+            return self._get_rotation(fingerlist[0].bone(Leap.Bone.TYPE_INTERMEDIATE))
+        if bone_number == 2:
+            return self._get_rotation(fingerlist[0].bone(Leap.Bone.TYPE_PROXIMAL))
+        if bone_number == 1:
+            return self._get_rotation(fingerlist[0].bone(Leap.Bone.TYPE_METACARPAL))
+        else:
+            raise Exception('bone number ({}) did not match'.format(bone_number))
+
+    def _get_rotation(self, bone):
+        return bone.angle_to(Leap.Vector.z_axis), bone.angle_to(Leap.Vector.y_axis), bone.angle_to(Leap.Vector.x_axis)
+
+    def _to_DataFrame(self):
+        '''Returns all of the channels parsed from the file as a pandas DataFrame'''
+
+        import pandas as pd
+        time_index = pd.to_timedelta([f[0] for f in self._motions], unit='s')
+        frames = [f[1] for f in self._motions]
+        channels = np.asarray([[channel[2] for channel in frame] for frame in frames])
+        column_names = ['%s_%s'%(c[0], c[1]) for c in self._motion_channels]
+
+        return pd.DataFrame(data=channels, index=time_index, columns=column_names)
+
+    # def offsets(self):
+    #     offsets = [0.0] * 3
+    #     for i in range(3):
+    #         offsets[i] = float(0)
+    #     for f in self._motions:
+    #
+    #     return offsets
