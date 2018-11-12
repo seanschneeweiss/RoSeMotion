@@ -67,16 +67,24 @@ class Leap2BVH():
         #     self._motions[ii] = (frame_time, channel_values)
         #     frame_time = frame_time + framerate
 
-    def add_frame(self, frame_id, hand, fingers):
+    def add_frame(self, frame_id, hand):
         channel_values = []
         for key, value in self._skeleton.items():
+            if frame_id == 0:
+                if key == 'Leap_Root':
+                    x_offset = y_offset = z_offset = 0
+                elif key == 'RightHand':
+                    x_offset, y_offset, z_offset, _, _, _ = self._get_wrist_values(hand)
+                else:
+                    x_offset, y_offset, z_offset = self._get_finger_offsets(key, hand)
+                value['offsets'] = [x_offset, y_offset, z_offset]
             for channel in value['channels']:
                 if key == 'Leap_Root':
                     x_pos, y_pos, z_pos, z_rot, y_rot, x_rot = self._get_root_values()
                 elif key == 'RightHand':
                     x_pos, y_pos, z_pos, z_rot, y_rot, x_rot = self._get_wrist_values(hand)
                 else:
-                    z_rot, y_rot, x_rot = self._get_finger_values(key, hand)
+                    z_rot, y_rot, x_rot = self._get_finger_rotations(key, hand)
 
                 if channel == 'Xposition':
                     channel_values.append((key, channel, x_pos))
@@ -103,42 +111,64 @@ class Leap2BVH():
                hand.wrist_position.angle_to(Leap.Vector.y_axis),\
                hand.wrist_position.angle_to(Leap.Vector.x_axis)
 
-    def _get_finger_values(self, key, hand):
+    def _get_finger_rotations(self, key, hand):
+        key, bone_number = self._split_key(key)
+        fingerlist = hand.fingers.finger_type(self._get_finger_type(key))
+        bone = fingerlist[0].bone(self._get_bone_type(bone_number))
+        return \
+            bone.prev_joint.angle_to(Leap.Vector.z_axis) * Leap.RAD_TO_DEG, \
+            bone.prev_joint.angle_to(Leap.Vector.y_axis) * Leap.RAD_TO_DEG, \
+            bone.prev_joint.angle_to(Leap.Vector.x_axis) * Leap.RAD_TO_DEG
+
+    def _get_finger_offsets(self, key, hand):
+        key, bone_number = self._split_key(key)
+        fingerlist = hand.fingers.finger_type(self._get_finger_type(key))
+        bone = fingerlist[0].bone(self._get_bone_type(bone_number))
+        if bone_number == 1:
+            x_pos, y_pos, z_pos, _, _, _ = self._get_wrist_values(hand)
+            return \
+                bone.prev_joint.x - x_pos, \
+                bone.prev_joint.y - y_pos, \
+                bone.prev_joint.z - z_pos
+        else:
+            return \
+                bone.next_joint.x - bone.prev_joint.x, \
+                bone.next_joint.y - bone.prev_joint.y, \
+                bone.next_joint.z - bone.prev_joint.z
+
+    def _split_key(self, key):
         key_split = re.split('(\d)', key)
         key = key_split[0]
         if key_split[-1] == '_End':
-            bone_number = 5
+            return key, 5
         else:
-            bone_number = int(key_split[1])
+            return key, int(key_split[1])
 
+    def _get_finger_type(self, key):
         if key == 'RightHandThumb':
-            return self._get_joint_angles(hand, Leap.Finger.TYPE_THUMB, bone_number)
+            return Leap.Finger.TYPE_THUMB
         if key == 'RightHandIndex':
-            return self._get_joint_angles(hand, Leap.Finger.TYPE_INDEX, bone_number)
+            return Leap.Finger.TYPE_INDEX
         if key == 'RightHandMiddle':
-            return self._get_joint_angles(hand, Leap.Finger.TYPE_MIDDLE, bone_number)
+            return Leap.Finger.TYPE_MIDDLE
         if key == 'RightHandRing':
-            return self._get_joint_angles(hand, Leap.Finger.TYPE_RING, bone_number)
+            return Leap.Finger.TYPE_RING
         if key == 'RightHandPinky':
-            return self._get_joint_angles(hand, Leap.Finger.TYPE_PINKY, bone_number)
+            return Leap.Finger.TYPE_PINKY
         else:
             raise Exception('Key ({}) did not match'.format(key))
 
-    def _get_joint_angles(self, hand, finger_type, bone_number):
-        fingerlist = hand.fingers.finger_type(finger_type)
-        if bone_number == 4:
-            return self._get_rotation(fingerlist[0].bone(Leap.Bone.TYPE_DISTAL))
+    def _get_bone_type(self, bone_number):
+        if bone_number in (4, 5):
+            return Leap.Bone.TYPE_DISTAL
         if bone_number == 3:
-            return self._get_rotation(fingerlist[0].bone(Leap.Bone.TYPE_INTERMEDIATE))
+            return Leap.Bone.TYPE_INTERMEDIATE
         if bone_number == 2:
-            return self._get_rotation(fingerlist[0].bone(Leap.Bone.TYPE_PROXIMAL))
+            return Leap.Bone.TYPE_PROXIMAL
         if bone_number == 1:
-            return self._get_rotation(fingerlist[0].bone(Leap.Bone.TYPE_METACARPAL))
+            return Leap.Bone.TYPE_METACARPAL
         else:
             raise Exception('bone number ({}) did not match'.format(bone_number))
-
-    def _get_rotation(self, bone):
-        return bone.angle_to(Leap.Vector.z_axis), bone.angle_to(Leap.Vector.y_axis), bone.angle_to(Leap.Vector.x_axis)
 
     def _to_DataFrame(self):
         '''Returns all of the channels parsed from the file as a pandas DataFrame'''

@@ -55,7 +55,7 @@ class BVHListener(Leap.Listener):
             # Check if the hand has any fingers
             fingers = hand.fingers
             if not fingers.is_empty:
-                self.leap2bvh.add_frame(self.actual_frame, hand, fingers)
+                self.leap2bvh.add_frame(self.actual_frame, hand)
                 self.actual_frame = self.actual_frame + 1
 
 
