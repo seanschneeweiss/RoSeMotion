@@ -72,7 +72,7 @@ class Leap2BVH():
         for key, value in self._skeleton.items():
             if frame_id == 0:
                 if key == 'Leap_Root':
-                    x_offset = y_offset = z_offset = 0
+                    x_offset, y_offset, z_offset, _, _, _ = self._get_root_values()
                 elif key == 'RightHand':
                     x_offset, y_offset, z_offset, _, _, _ = self._get_wrist_values(hand)
                 else:
@@ -86,6 +86,9 @@ class Leap2BVH():
                 else:
                     z_rot, y_rot, x_rot = self._get_finger_rotations(key, hand)
 
+                x_rot = y_rot = z_rot = 0.0
+                if key == 'RightHandIndex1':
+                    y_rot = 0.0
                 if channel == 'Xposition':
                     channel_values.append((key, channel, x_pos))
                 if channel == 'Yposition':
@@ -107,30 +110,48 @@ class Leap2BVH():
         return hand.wrist_position.x,\
                hand.wrist_position.y,\
                hand.wrist_position.z,\
-               hand.wrist_position.angle_to(Leap.Vector.z_axis),\
-               hand.wrist_position.angle_to(Leap.Vector.y_axis),\
-               hand.wrist_position.angle_to(Leap.Vector.x_axis)
+               hand.wrist_position.roll,\
+               hand.wrist_position.yaw,\
+               hand.wrist_position.pitch
 
     def _get_finger_rotations(self, key, hand):
         key, bone_number = self._split_key(key)
         fingerlist = hand.fingers.finger_type(self._get_finger_type(key))
         bone = fingerlist[0].bone(self._get_bone_type(bone_number))
+        # bone_vec = bone.next_joint - bone.prev_joint
         return \
-            bone.prev_joint.angle_to(Leap.Vector.z_axis) * Leap.RAD_TO_DEG, \
-            bone.prev_joint.angle_to(Leap.Vector.y_axis) * Leap.RAD_TO_DEG, \
-            bone.prev_joint.angle_to(Leap.Vector.x_axis) * Leap.RAD_TO_DEG
+            bone.prev_joint.roll, \
+            bone.prev_joint.yaw, \
+            bone.prev_joint.pitch
+            # bone_vec.pitch * Leap.RAD_TO_DEG, \
+            # bone_vec.yaw * Leap.RAD_TO_DEG, \
+            # bone_vec.roll * Leap.RAD_TO_DEG
+            # bone_vec.angle_to(Leap.Vector.z_axis) * Leap.RAD_TO_DEG, \
+            # bone_vec.angle_to(Leap.Vector.y_axis) * Leap.RAD_TO_DEG, \
+            # bone_vec.angle_to(Leap.Vector.x_axis) * Leap.RAD_TO_DEG
+            # Leap.Vector.z_axis.angle_to(bone_vec) * Leap.RAD_TO_DEG, \
+            # Leap.Vector.y_axis.angle_to(bone_vec) * Leap.RAD_TO_DEG, \
+            # Leap.Vector.x_axis.angle_to(bone_vec) * Leap.RAD_TO_DEG
+
 
     def _get_finger_offsets(self, key, hand):
         key, bone_number = self._split_key(key)
         fingerlist = hand.fingers.finger_type(self._get_finger_type(key))
-        bone = fingerlist[0].bone(self._get_bone_type(bone_number))
-        if bone_number == 1:
+        if bone_number == 1 or ('Thumb' in key and bone_number == 2):
+            bone = fingerlist[0].bone(self._get_bone_type(bone_number))
             x_pos, y_pos, z_pos, _, _, _ = self._get_wrist_values(hand)
+
+            # print("1: key: {}, bone_number: {}, bone: {}, prev_joint: {}".format(key, bone_number, bone, bone.prev_joint))
+
             return \
                 bone.prev_joint.x - x_pos, \
                 bone.prev_joint.y - y_pos, \
                 bone.prev_joint.z - z_pos
         else:
+            bone = fingerlist[0].bone(self._get_bone_type(bone_number - 1))
+
+            # print("2: key: {}, bone_number: {}, bone: {}, prev_joint: {}, next_joint: {}".format(key, bone_number, bone, bone.prev_joint, bone.next_joint))
+
             return \
                 bone.next_joint.x - bone.prev_joint.x, \
                 bone.next_joint.y - bone.prev_joint.y, \
@@ -159,7 +180,7 @@ class Leap2BVH():
             raise Exception('Key ({}) did not match'.format(key))
 
     def _get_bone_type(self, bone_number):
-        if bone_number in (4, 5):
+        if bone_number == 4:
             return Leap.Bone.TYPE_DISTAL
         if bone_number == 3:
             return Leap.Bone.TYPE_INTERMEDIATE
