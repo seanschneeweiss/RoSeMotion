@@ -1,15 +1,20 @@
-from pymo.data import MocapData
-import numpy as np
+import inspect
+import os
 import re
-from leapmotion_setup import root_name, skeleton, framerate
+import sys
 
-import os, sys, inspect
+import numpy as np
+
+from leapmotion_setup import root_name, skeleton, framerate
+from pymo.data import MocapData
+
 src_dir = os.path.dirname(inspect.getfile(inspect.currentframe()))
 # Windows and Linux
-arch_dir = '../../lib/x64' if sys.maxsize > 2**32 else '../../lib/x86'
+arch_dir = '../../lib/x64' if sys.maxsize > 2 ** 32 else '../../lib/x86'
 
 sys.path.insert(0, os.path.abspath(os.path.join(src_dir, arch_dir)))
 import Leap
+
 
 class Leap2BVH():
     '''
@@ -44,13 +49,13 @@ class Leap2BVH():
 
     def do(self):
         self._skeleton = skeleton
-        #self._motion_channels = motion_channels
+        # self._motion_channels = motion_channels
         self.root_name = root_name
-        self.framerate = framerate #TODO: framerate
+        self.framerate = framerate  # TODO: framerate
 
-        #frame_count = 188#TODO:frame_count
-        #frame_time = 0.0
-        #self._motions = [()] * frame_count
+        # frame_count = 188#TODO:frame_count
+        # frame_time = 0.0
+        # self._motions = [()] * frame_count
 
         for key, value in self._skeleton.items():
             value['offsets'] = [0, 0, 0]
@@ -184,6 +189,6 @@ class Leap2BVH():
         time_index = pd.to_timedelta([f[0] for f in self._motions], unit='s')
         frames = [f[1] for f in self._motions]
         channels = np.asarray([[channel[2] for channel in frame] for frame in frames])
-        column_names = ['%s_%s'%(c[0], c[1]) for c in self._motion_channels]
+        column_names = ['%s_%s' % (c[0], c[1]) for c in self._motion_channels]
 
         return pd.DataFrame(data=channels, index=time_index, columns=column_names)

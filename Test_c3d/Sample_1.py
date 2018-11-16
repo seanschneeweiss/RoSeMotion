@@ -6,7 +6,10 @@
 # between Leap Motion and you, your company or other organization.             #
 ################################################################################
 
-import os, sys, inspect, thread, time
+import inspect
+import os
+import sys
+
 src_dir = os.path.dirname(inspect.getfile(inspect.currentframe()))
 # Windows and Linux
 arch_dir = '../lib/x64' if sys.maxsize > 2**32 else '../lib/x86'
