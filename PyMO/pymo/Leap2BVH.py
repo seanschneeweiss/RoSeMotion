@@ -1,15 +1,20 @@
-from pymo.data import MocapData
-import numpy as np
+import inspect
+import os
 import re
-from leapmotion_setup import root_name, skeleton, framerate
+import sys
 
-import os, sys, inspect
+import numpy as np
+
+from leapmotion_setup import root_name, skeleton, framerate
+from pymo.data import MocapData
+
 src_dir = os.path.dirname(inspect.getfile(inspect.currentframe()))
 # Windows and Linux
-arch_dir = '../../lib/x64' if sys.maxsize > 2**32 else '../../lib/x86'
+arch_dir = '../../lib/x64' if sys.maxsize > 2 ** 32 else '../../lib/x86'
 
 sys.path.insert(0, os.path.abspath(os.path.join(src_dir, arch_dir)))
 import Leap
+
 
 class Leap2BVH():
     '''
@@ -34,8 +39,6 @@ class Leap2BVH():
         self.data = MocapData()
 
     def parse(self):
-        #self.do()
-
         self.data.skeleton = self._skeleton
         self.data.channel_names = self._motion_channels
         self.data.values = self._to_DataFrame()
@@ -46,13 +49,13 @@ class Leap2BVH():
 
     def do(self):
         self._skeleton = skeleton
-        #self._motion_channels = motion_channels
-        self.root_name = root_name#TODO:root_name
-        self.framerate = framerate #TODO: framerate
+        # self._motion_channels = motion_channels
+        self.root_name = root_name
+        self.framerate = framerate  # TODO: framerate
 
-        #frame_count = 188#TODO:frame_count
-        #frame_time = 0.0
-        #self._motions = [()] * frame_count
+        # frame_count = 188#TODO:frame_count
+        # frame_time = 0.0
+        # self._motions = [()] * frame_count
 
         for key, value in self._skeleton.items():
             value['offsets'] = [0, 0, 0]
@@ -80,78 +83,66 @@ class Leap2BVH():
                 value['offsets'] = [x_offset, y_offset, z_offset]
             for channel in value['channels']:
                 if key == 'Leap_Root':
-                    x_pos, y_pos, z_pos, z_rot, y_rot, x_rot = self._get_root_values()
+                    x_pos, y_pos, z_pos, x_rot, y_rot, z_rot = self._get_root_values()
                 elif key == 'RightHand':
-                    x_pos, y_pos, z_pos, z_rot, y_rot, x_rot = self._get_wrist_values(hand)
+                    x_pos, y_pos, z_pos, x_rot, y_rot, z_rot = self._get_wrist_values(hand)
                 else:
-                    z_rot, y_rot, x_rot = self._get_finger_rotations(key, hand)
+                    x_pos, y_pos, z_pos, x_rot, y_rot, z_rot = self._get_finger_values(key, hand)
 
-                x_rot = y_rot = z_rot = 0.0
-                if key == 'RightHandIndex1':
-                    y_rot = 0.0
                 if channel == 'Xposition':
                     channel_values.append((key, channel, x_pos))
                 if channel == 'Yposition':
                     channel_values.append((key, channel, y_pos))
                 if channel == 'Zposition':
                     channel_values.append((key, channel, z_pos))
-                if channel == 'Zrotation':
-                    channel_values.append((key, channel, z_rot))
-                if channel == 'Yrotation':
-                    channel_values.append((key, channel, y_rot))
                 if channel == 'Xrotation':
                     channel_values.append((key, channel, x_rot))
+                if channel == 'Yrotation':
+                    channel_values.append((key, channel, y_rot))
+                if channel == 'Zrotation':
+                    channel_values.append((key, channel, z_rot))
+
         self._motions.append((frame_id, channel_values))
 
     def _get_root_values(self):
         return 0, 0, 0, 0, 0, 0
 
     def _get_wrist_values(self, hand):
-        return hand.wrist_position.x,\
-               hand.wrist_position.y,\
-               hand.wrist_position.z,\
-               hand.wrist_position.roll,\
-               hand.wrist_position.yaw,\
-               hand.wrist_position.pitch
+        return hand.wrist_position.x, \
+               hand.wrist_position.y, \
+               hand.wrist_position.z, \
+               0.0, \
+               0.0, \
+               0.0
 
-    def _get_finger_rotations(self, key, hand):
+    def _get_finger_values(self, key, hand):
+        x_pos, y_pos, z_pos = self._get_finger_offsets(key, hand)
+
         key, bone_number = self._split_key(key)
+
         fingerlist = hand.fingers.finger_type(self._get_finger_type(key))
         bone = fingerlist[0].bone(self._get_bone_type(bone_number))
-        # bone_vec = bone.next_joint - bone.prev_joint
-        return \
-            bone.prev_joint.roll, \
-            bone.prev_joint.yaw, \
-            bone.prev_joint.pitch
-            # bone_vec.pitch * Leap.RAD_TO_DEG, \
-            # bone_vec.yaw * Leap.RAD_TO_DEG, \
-            # bone_vec.roll * Leap.RAD_TO_DEG
-            # bone_vec.angle_to(Leap.Vector.z_axis) * Leap.RAD_TO_DEG, \
-            # bone_vec.angle_to(Leap.Vector.y_axis) * Leap.RAD_TO_DEG, \
-            # bone_vec.angle_to(Leap.Vector.x_axis) * Leap.RAD_TO_DEG
-            # Leap.Vector.z_axis.angle_to(bone_vec) * Leap.RAD_TO_DEG, \
-            # Leap.Vector.y_axis.angle_to(bone_vec) * Leap.RAD_TO_DEG, \
-            # Leap.Vector.x_axis.angle_to(bone_vec) * Leap.RAD_TO_DEG
 
+        return x_pos, y_pos, z_pos, 0.0, 0.0, 0.0
 
     def _get_finger_offsets(self, key, hand):
         key, bone_number = self._split_key(key)
+
         fingerlist = hand.fingers.finger_type(self._get_finger_type(key))
+
         if bone_number == 1 or ('Thumb' in key and bone_number == 2):
             bone = fingerlist[0].bone(self._get_bone_type(bone_number))
             x_pos, y_pos, z_pos, _, _, _ = self._get_wrist_values(hand)
-
-            # print("1: key: {}, bone_number: {}, bone: {}, prev_joint: {}".format(key, bone_number, bone, bone.prev_joint))
-
+            # print("1: key: {}, bone_number: {}, bone: {}, prev_joint: {}"
+            #       .format(key, bone_number, bone, bone.prev_joint))
             return \
                 bone.prev_joint.x - x_pos, \
                 bone.prev_joint.y - y_pos, \
                 bone.prev_joint.z - z_pos
         else:
             bone = fingerlist[0].bone(self._get_bone_type(bone_number - 1))
-
-            # print("2: key: {}, bone_number: {}, bone: {}, prev_joint: {}, next_joint: {}".format(key, bone_number, bone, bone.prev_joint, bone.next_joint))
-
+            # print("2: key: {}, bone_number: {}, bone: {}, prev_joint: {}, next_joint: {}"
+            #       .format(key, bone_number, bone, bone.prev_joint, bone.next_joint))
             return \
                 bone.next_joint.x - bone.prev_joint.x, \
                 bone.next_joint.y - bone.prev_joint.y, \
@@ -198,14 +189,6 @@ class Leap2BVH():
         time_index = pd.to_timedelta([f[0] for f in self._motions], unit='s')
         frames = [f[1] for f in self._motions]
         channels = np.asarray([[channel[2] for channel in frame] for frame in frames])
-        column_names = ['%s_%s'%(c[0], c[1]) for c in self._motion_channels]
+        column_names = ['%s_%s' % (c[0], c[1]) for c in self._motion_channels]
 
         return pd.DataFrame(data=channels, index=time_index, columns=column_names)
-
-    # def offsets(self):
-    #     offsets = [0.0] * 3
-    #     for i in range(3):
-    #         offsets[i] = float(0)
-    #     for f in self._motions:
-    #
-    #     return offsets

@@ -6,7 +6,10 @@
 # between Leap Motion and you, your company or other organization.             #
 ################################################################################
 
-import os, sys, inspect, thread, time
+import inspect
+import os
+import sys
+
 src_dir = os.path.dirname(inspect.getfile(inspect.currentframe()))
 # Windows and Linux
 arch_dir = '../lib/x64' if sys.maxsize > 2**32 else '../lib/x86'
@@ -81,11 +84,12 @@ class SampleListener(Leap.Listener):
                 # Get bones
                 for b in range(0, 4):
                     bone = finger.bone(b)
-                    print("      Bone: %s, start: %s, end: %s, direction: %s" % (
+                    print("      Bone: %s, start: %s, end: %s, direction: %s, length: %s" % (
                         self.bone_names[bone.type],
                         bone.prev_joint,
                         bone.next_joint,
-                        bone.direction))
+                        bone.direction,
+                        bone.length))
 
         if not frame.hands.is_empty:
             print("")
