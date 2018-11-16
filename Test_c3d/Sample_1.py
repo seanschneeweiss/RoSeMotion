@@ -81,11 +81,12 @@ class SampleListener(Leap.Listener):
                 # Get bones
                 for b in range(0, 4):
                     bone = finger.bone(b)
-                    print("      Bone: %s, start: %s, end: %s, direction: %s" % (
+                    print("      Bone: %s, start: %s, end: %s, direction: %s, length: %s" % (
                         self.bone_names[bone.type],
                         bone.prev_joint,
                         bone.next_joint,
-                        bone.direction))
+                        bone.direction,
+                        bone.length))
 
         if not frame.hands.is_empty:
             print("")
