@@ -87,7 +87,7 @@ class Leap2BVH():
                 elif key == 'RightHand':
                     x_pos, y_pos, z_pos, x_rot, y_rot, z_rot = self._get_wrist_values(hand)
                 else:
-                    x_pos, y_pos, z_pos, x_rot, y_rot, z_rot = self._get_finger_values(key, hand)
+                    x_pos, y_pos, z_pos, x_rot, y_rot, z_rot = self._get_finger_offsets(key, hand)
 
                 if channel == 'Xposition':
                     channel_values.append((key, channel, x_pos))
@@ -114,16 +114,6 @@ class Leap2BVH():
                0.0, \
                0.0, \
                0.0
-
-    def _get_finger_values(self, key, hand):
-        x_pos, y_pos, z_pos = self._get_finger_offsets(key, hand)
-
-        key, bone_number = self._split_key(key)
-
-        fingerlist = hand.fingers.finger_type(self._get_finger_type(key))
-        bone = fingerlist[0].bone(self._get_bone_type(bone_number))
-
-        return x_pos, y_pos, z_pos, 0.0, 0.0, 0.0
 
     def _get_finger_offsets(self, key, hand):
         key, bone_number = self._split_key(key)
