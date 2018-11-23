@@ -1,14 +1,13 @@
 import btk
-import math3d
 
 from bvh_reader import Joint, EndSite
 
 
-class Convertor(object):
+class Converter(object):
 
 
     def __init__(self):
-        super(Convertor, self).__init__()
+        super(Converter, self).__init__()
 
 
     def convert(self, bvh, output_file):
@@ -19,8 +18,8 @@ class Convertor(object):
         self.points_dict = {}
         marker_count = 0
         for key in bvh.channel_dict.keys():
-            point = btk.btkPoint('Marker_' + key, bvh.frame_count)
-            point.SetLabel('Marker_' + key)
+            point = btk.btkPoint(key, bvh.frame_count)
+            point.SetLabel(key)
             self.points_dict[key] = point
             marker_count += 1
 
@@ -48,22 +47,27 @@ class Convertor(object):
 
 
     def transform_joint(self, bvh, joint, frame, parent_offset):
-        if 'Xposition' in bvh.channel_dict[joint.name]:
-            pos = [bvh.channel_values[bvh.channel_dict[joint.name]['Xposition']][frame],
-                   bvh.channel_values[bvh.channel_dict[joint.name]['Yposition']][frame],
-                   bvh.channel_values[bvh.channel_dict[joint.name]['Zposition']][frame]]
+        if isinstance(joint, EndSite):
+            return
+        elif isinstance(joint, Joint):
+            if 'Xposition' in bvh.channel_dict[joint.name]:
+                pos = [bvh.channel_values[bvh.channel_dict[joint.name]['Xposition']][frame],
+                       bvh.channel_values[bvh.channel_dict[joint.name]['Yposition']][frame],
+                       bvh.channel_values[bvh.channel_dict[joint.name]['Zposition']][frame]]
 
-        self.points_dict[joint.name].SetValue(frame, 0, parent_offset[0] + pos[0])
-        self.points_dict[joint.name].SetValue(frame, 1, parent_offset[1] + pos[1])
-        self.points_dict[joint.name].SetValue(frame, 2, parent_offset[2] + pos[2])
+            self.points_dict[joint.name].SetValue(frame, 0, parent_offset[0] + pos[0])
+            self.points_dict[joint.name].SetValue(frame, 1, parent_offset[1] + pos[1])
+            self.points_dict[joint.name].SetValue(frame, 2, parent_offset[2] + pos[2])
 
-        bone_length = joint.offset
+            bone_length = joint.offset
 
-        offset = [0, 0, 0]
-        offset[0] = parent_offset[0] + bone_length[0]
-        offset[1] = parent_offset[1] + bone_length[1]
-        offset[2] = parent_offset[2] + bone_length[2]
+            offset = [0, 0, 0]
+            offset[0] = parent_offset[0] + bone_length[0]
+            offset[1] = parent_offset[1] + bone_length[1]
+            offset[2] = parent_offset[2] + bone_length[2]
 
-        # iterate through children joints
-        for child in joint.children:
-            self.transform_joint(bvh, child, frame, offset)
+            # iterate through children joints
+            for child in joint.children:
+                self.transform_joint(bvh, child, frame, offset)
+        else:
+            return

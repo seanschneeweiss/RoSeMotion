@@ -1,5 +1,5 @@
 import bvh_reader
-import c3d_convertor
+import c3d_converter
 
 import sys, os
 
@@ -47,7 +47,7 @@ def gen(input_file, output_folder):
 	output_name = os.path.splitext(os.path.basename(input_file))[0]
 	output_file = os.path.join(output_folder, output_name + '.c3d')
 
-	conv = c3d_convertor.Convertor()
+	conv = c3d_converter.Converter()
 	conv.convert(bvh, output_file)
 
 	print '"' + output_file + '" generated'

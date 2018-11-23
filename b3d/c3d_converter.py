@@ -4,11 +4,11 @@ import math3d
 from bvh_reader import Joint, EndSite
 
 
-class Convertor(object):
+class Converter(object):
 
 
     def __init__(self):
-        super(Convertor, self).__init__()
+        super(Converter, self).__init__()
 
 
     def convert(self, bvh, output_file):

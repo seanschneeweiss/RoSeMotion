@@ -17,8 +17,7 @@ import Leap
 from pymo.Leap2BVH import Leap2BVH
 from pymo.writers import BVHWriter
 from b3d import bvh_reader
-from b3d import c3d_convertor
-from b3d import c3d_convertor_mod
+from b3d import c3d_converter_mod
 
 class BVHListener(Leap.Listener):
     # finger_names = ['Thumb', 'Index', 'Middle', 'Ring', 'Pinky']
@@ -44,14 +43,15 @@ class BVHListener(Leap.Listener):
         f = open("test_output.bvh", 'w')
         writer.write(self.leap2bvh.parse(), f)
         f.close()
+        print('test_output.bvh generated')
 
         bvh = bvh_reader.BVH()
         if not bvh.load_from_file('../Test_c3d/test_output.bvh'):
             raise Exception('error: can not read bvh')
 
-        conv = c3d_convertor_mod.Convertor()
+        conv = c3d_converter_mod.Converter()
         conv.convert(bvh, 'test_output.c3d')
-        print('c3d generated')
+        print('test_output.c3d generated from test_output.bvh')
 
 
     def on_frame(self, controller):

@@ -74,14 +74,19 @@ class Leap2BVH():
         channel_values = []
         for key, value in self._skeleton.items():
             if frame_id == 0:
+                # offsets
                 if key == 'Leap_Root':
                     x_offset, y_offset, z_offset, _, _, _ = self._get_root_values()
                 elif key == 'RightHand':
                     x_offset, y_offset, z_offset, _, _, _ = self._get_wrist_values(hand)
+                elif 'End' in key:
+                    # Workaround for getting motion data also from finger tip by adding a not used end
+                    x_offset = y_offset = z_offset = 0.0
                 else:
-                    x_offset, y_offset, z_offset = self._get_finger_offsets(key, hand)
+                    x_offset, y_offset, z_offset, _, _, _ = self._get_finger_offsets(key, hand)
                 value['offsets'] = [x_offset, y_offset, z_offset]
             for channel in value['channels']:
+                # motion data
                 if key == 'Leap_Root':
                     x_pos, y_pos, z_pos, x_rot, y_rot, z_rot = self._get_root_values()
                 elif key == 'RightHand':
@@ -128,7 +133,10 @@ class Leap2BVH():
             return \
                 bone.prev_joint.x - x_pos, \
                 bone.prev_joint.y - y_pos, \
-                bone.prev_joint.z - z_pos
+                bone.prev_joint.z - z_pos, \
+                0.0, \
+                0.0, \
+                0.0
         else:
             bone = fingerlist[0].bone(self._get_bone_type(bone_number - 1))
             # print("2: key: {}, bone_number: {}, bone: {}, prev_joint: {}, next_joint: {}"
@@ -136,7 +144,10 @@ class Leap2BVH():
             return \
                 bone.next_joint.x - bone.prev_joint.x, \
                 bone.next_joint.y - bone.prev_joint.y, \
-                bone.next_joint.z - bone.prev_joint.z
+                bone.next_joint.z - bone.prev_joint.z, \
+                0.0, \
+                0.0, \
+                0.0
 
     def _split_key(self, key):
         key_split = re.split('(\d)', key)
