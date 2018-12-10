@@ -9,7 +9,7 @@ import Leap
 
 x = Leap.Vector(1, 0, 0)
 y = Leap.Vector(0, 1, 0)
-z = Leap.Vector(0, 0, 1)
+z = Leap.Vector(0, 1, 1)
 
 
 matrix = Leap.Matrix(x, y, z)
@@ -17,58 +17,65 @@ point = Leap.Vector(1, 1, 1)
 transformed = matrix.transform_direction(point)
 
 # print(matrix.set_rotation(Leap.Vector.z_axis, .34))
-
-
-
 # print(matrix)
 # print(transformed)
 
 import numpy as np
 import math
 
-eul1 = Leap.Vector()
-eul2 = Leap.Vector()
+eul1 = np.zeros(3)
+eul2 = np.zeros(3)
 
-rotmat = Leap.Matrix()
+#rotmat = Leap.Matrix()
+rotmat = matrix
 rotmat = rotmat.to_array_3x3()
 rotmat = np.array(rotmat)
-rotmat = rotmat.reshape(3,3)
+rotmat = rotmat.reshape(3, 3)
+print(rotmat)
 
-# i, j, k
-# from https://github.com/dfelinto/blender/blob/master/source/blender/blenlib/intern/math_rotation.c
-# order = [0, 1, 2] # XYZ
-# order = [0, 2, 1] # XZY
-# order = [1, 0, 2] # YXZ
-# order = [1, 2, 0] # YZX
-order = [2, 0, 1]  # ZXY
-# order = [2, 1, 0] # ZYX
+##############
+#  i, j, k, n
+#  n = parity of axis permutation (even=False, odd=True)
+#  from https://github.com/dfelinto/blender/blob/master/source/blender/blenlib/intern/math_rotation.c
+##############
 
-i = order[0]
-j = order[1]
-k = order[2]
+# order = [0, 1, 2, False] # XYZ
+# order = [0, 2, 1, True] # XZY
+# order = [1, 0, 2, True] # YXZ
+# order = [1, 2, 0, False] # YZX
+order = [2, 0, 1, False]  # ZXY
+# order = [2, 1, 0, True] # ZYX
 
-cy = np.hypot(rotmat[0, 0], rotmat[0, 1])
-# xyz order
+i = int(order[0])
+j = int(order[1])
+k = int(order[2])
+parity = order[3]
+
+cy = np.hypot(rotmat[i, i], rotmat[i, j])
+
 if cy > 16 * Leap.EPSILON:
-    eul1.x = math.atan2(rotmat[j, k], rotmat[k, k])
-    eul1.y = math.atan2(-rotmat[i, k], cy)
-    eul1.z = math.atan2(rotmat[i, j], rotmat[i, i])
+    eul1[i] = math.atan2(rotmat[j, k], rotmat[k, k])
+    eul1[j] = math.atan2(-rotmat[i, k], cy)
+    eul1[k] = math.atan2(rotmat[i, j], rotmat[i, i])
 
-    eul2.x = math.atan2(-rotmat[j, k], -rotmat[k, k])
-    eul2.y = math.atan2(-rotmat[i, k], -cy)
-    eul2.z = math.atan2(-rotmat[i, j], -rotmat[i, i])
+    eul2[i] = math.atan2(-rotmat[j, k], -rotmat[k, k])
+    eul2[j] = math.atan2(-rotmat[i, k], -cy)
+    eul2[k] = math.atan2(-rotmat[i, j], -rotmat[i, i])
 
 else:
-    eul1.x = math.atan2(-rotmat[k, j], rotmat[j, j])
-    eul1.y = math.atan2(-rotmat[i, k], cy)
-    eul1.z = 0.0
+    eul1[i] = math.atan2(-rotmat[k, j], rotmat[j, j])
+    eul1[j] = math.atan2(-rotmat[i, k], cy)
+    eul1[k] = 0.0
 
     eul2 = eul1
 
-# TODO: check for parity  https://github.com/dfelinto/blender/blob/eb6fe5fa94b86a0a20742e06bf1e68b4cbaf6693/source/blender/blenlib/intern/math_rotation.c#L1607
+#  parity of axis permutation (even=False, odd=True)
+if parity:
+    eul1 = np.negative(eul1)
+    eul2 = np.negative(eul2)
 
 # return best, which is just the one with lowest values in it
-if eul1.magnitude > eul2.magnitude:
+if np.sum(np.absolute(eul1)) > np.sum(np.absolute(eul2)):
     print(eul2)
 else:
     print(eul1)
