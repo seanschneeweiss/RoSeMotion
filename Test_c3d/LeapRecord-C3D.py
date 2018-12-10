@@ -14,10 +14,10 @@ arch_dir = '../lib/x64' if sys.maxsize > 2**32 else '../lib/x86'
 sys.path.insert(0, os.path.abspath(os.path.join(src_dir, arch_dir)))
 
 import Leap
-from pymo.Leap2BVH import Leap2BVH
+from pymo.Leap2BVH_pos import Leap2BVH
 from pymo.writers import BVHWriter
 from b3d import bvh_reader
-from b3d import c3d_converter_mod
+from b3d import c3d_converter
 
 class BVHListener(Leap.Listener):
     # finger_names = ['Thumb', 'Index', 'Middle', 'Ring', 'Pinky']
@@ -49,7 +49,7 @@ class BVHListener(Leap.Listener):
         if not bvh.load_from_file('../Test_c3d/test_output.bvh'):
             raise Exception('error: can not read bvh')
 
-        conv = c3d_converter_mod.Converter()
+        conv = c3d_converter.Converter()
         conv.convert(bvh, 'test_output.c3d')
         print('test_output.c3d generated from test_output.bvh')
 

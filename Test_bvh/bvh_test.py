@@ -17,7 +17,7 @@ from pymo.parsers import BVHParser
 from pymo.preprocessing import *
 from pymo.viz_tools import *
 from pymo.writers import BVHWriter
-from pymo.Leap2BVH import Leap2BVH
+from pymo.Leap2BVH_pos import Leap2BVH
 
 
 #parser = BVHParser()
