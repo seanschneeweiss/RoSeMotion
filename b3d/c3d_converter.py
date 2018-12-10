@@ -19,8 +19,8 @@ class Converter(object):
         self.points_dict = {}
         marker_count = 0
         for key in bvh.channel_dict.keys():
-            point = btk.btkPoint('Marker_' + key, bvh.frame_count)
-            point.SetLabel('Marker_' + key)
+            point = btk.btkPoint(key, bvh.frame_count)
+            point.SetLabel(key)
             self.points_dict[key] = point
             marker_count += 1
 
@@ -75,7 +75,9 @@ class Converter(object):
         elif isinstance(joint, Joint):
             bone_length = joint.offset
             if 'Xrotation' in bvh.channel_dict[joint.name]:
-                rot = [bvh.channel_values[bvh.channel_dict[joint.name]['Xrotation']][frame], bvh.channel_values[bvh.channel_dict[joint.name]['Yrotation']][frame], bvh.channel_values[bvh.channel_dict[joint.name]['Zrotation']][frame]]
+                rot = [bvh.channel_values[bvh.channel_dict[joint.name]['Xrotation']][frame],
+                       bvh.channel_values[bvh.channel_dict[joint.name]['Yrotation']][frame],
+                       bvh.channel_values[bvh.channel_dict[joint.name]['Zrotation']][frame]]
             if 'Xposition' in bvh.channel_dict[joint.name]:
                 pos = [bvh.channel_values[bvh.channel_dict[joint.name]['Xposition']][frame],
                        bvh.channel_values[bvh.channel_dict[joint.name]['Yposition']][frame],
@@ -98,8 +100,8 @@ class Converter(object):
             pos_calc = [mat[3], mat[7], mat[11]]
 
             self.points_dict[joint.name].SetValue(frame, 0, pos_calc[0])
-            self.points_dict[joint.name].SetValue(frame, 1, pos_calc[1])
-            self.points_dict[joint.name].SetValue(frame, 2, pos_calc[2])
+            self.points_dict[joint.name].SetValue(frame, 1, -pos_calc[2])
+            self.points_dict[joint.name].SetValue(frame, 2, pos_calc[1])
 
             # iterate through children joints
             for child in joint.children:
