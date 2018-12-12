@@ -4,7 +4,8 @@ import re
 import sys
 
 import numpy as np
-import math
+# import math
+from pymo.RotationUtil import vec2eul
 
 from leapmotion_setup_rot import root_name, skeleton, framerate
 from pymo.data import MocapData
@@ -91,7 +92,7 @@ class Leap2BVH:
                 #                                                     hand.basis.x_basis.angle_to(Leap.Vector.x_axis) * Leap.RAD_TO_DEG))
 
             for channel in value['channels']:
-                # motion data
+                # motion data with rotations
                 if key == 'Leap_Root':
                     x_pos, y_pos, z_pos, x_rot, y_rot, z_rot = self._get_root_values()
                 elif key == 'RightHand':
@@ -118,58 +119,97 @@ class Leap2BVH:
         return 0, 0, 0, 0, 0, 0
 
     def _get_wrist_values(self, hand):
-        return hand.wrist_position.x, \
-               hand.wrist_position.y, \
-               hand.wrist_position.z, \
-               0.0, \
-               0.0, \
-               0.0
+        fingerlist = hand.fingers.finger_type(self._get_finger_type('RightHandMiddle'))
+        bone = fingerlist[0].bone(self._get_bone_type(1))
+
+        x_wrist = hand.wrist_position.x
+        y_wrist = hand.wrist_position.y
+        z_wrist = hand.wrist_position.z
+
+        vec_prev = np.array([x_wrist, y_wrist, z_wrist])
+        vec_next = np.array([bone.prev_joint.x - x_wrist,
+                             bone.prev_joint.y - y_wrist,
+                             bone.prev_joint.z - z_wrist])
+        eul_x, eul_y, eul_z = vec2eul(vec_prev, vec_next)
+
+        return \
+            x_wrist, \
+            y_wrist, \
+            z_wrist, \
+            eul_x * Leap.RAD_TO_DEG, \
+            eul_y * Leap.RAD_TO_DEG, \
+            eul_z * Leap.RAD_TO_DEG
 
     def _get_finger_offsets(self, key, hand):
         key, bone_number = self._split_key(key)
 
         fingerlist = hand.fingers.finger_type(self._get_finger_type(key))
 
+        # vector between wrist and metacarpal proximal (carpals)
         if bone_number == 1 or ('Thumb' in key and bone_number == 2):
             bone = fingerlist[0].bone(self._get_bone_type(bone_number))
-            x_pos, y_pos, z_pos, _, _, _ = self._get_wrist_values(hand)
+            x_wrist, y_wrist, z_wrist, _, _, _ = self._get_wrist_values(hand)
             # print("1: key: {}, bone_number: {}, bone: {}, prev_joint: {}"
             #       .format(key, bone_number, bone, bone.prev_joint))
-            return \
-                bone.prev_joint.x - x_pos, \
-                bone.prev_joint.y - y_pos, \
-                bone.prev_joint.z - z_pos, \
-                0.0, \
-                0.0, \
-                0.0
-        else:
-            bone = fingerlist[0].bone(self._get_bone_type(bone_number - 1))
-            # print("2: key: {}, bone_number: {}, bone: {}, prev_joint: {}, next_joint: {}"
-            #       .format(key, bone_number, bone, bone.prev_joint, bone.next_joint))
+            print("p1_rot = [{}; {}; {}];".format(x_wrist, y_wrist, z_wrist))
+            print("p2_rot = [{}; {}; {}];".format(bone.prev_joint.x, bone.prev_joint.y, bone.prev_joint.z))
+            print("p3_rot = [{}; {}; {}];".format(bone.next_joint.x, bone.next_joint.y, bone.next_joint.z))
 
+            vec_prev = np.array([bone.prev_joint.x - x_wrist,
+                                 bone.prev_joint.y - y_wrist,
+                                 bone.prev_joint.z - z_wrist])
+            print('bone.next_joint.x = {}, bone.prev_joint.x = {}, x_wrist = {}, vec_prev = {}'.format(bone.next_joint.x, bone.prev_joint.x, x_wrist, vec_prev[0]))
+            print('bone.next_joint.y = {}, bone.prev_joint.y = {}, y_wrist = {}, vec_prev = {}'.format(bone.next_joint.y, bone.prev_joint.y, y_wrist, vec_prev[1]))
+            print('bone.next_joint.z = {}, bone.prev_joint.z = {}, z_wrist = {}, vec_prev = {}'.format(bone.next_joint.z, bone.prev_joint.z, z_wrist, vec_prev[2]))
 
-            #  no rotation for finger tip
-            if not bone_number == 5:
-                bone_next = fingerlist[0].bone(self._get_bone_type(bone_number))
+            # vec_next = np.array([bone.direction.x, bone.direction.y, bone.direction.z])
+            vec_next = np.array([bone.next_joint.x - bone.prev_joint.x,
+                                 bone.next_joint.y - bone.prev_joint.y,
+                                 bone.next_joint.z - bone.prev_joint.z])
 
-                transmat = Leap.Matrix(bone.basis.x_basis, bone.basis.y_basis, bone.basis.z_basis)#, bone.prev_joint)
-                euler_angles = self.mat2eul(transmat)
-
-                return \
-                    bone.next_joint.x - bone.prev_joint.x, \
-                    bone.next_joint.y - bone.prev_joint.y, \
-                    bone.next_joint.z - bone.prev_joint.z, \
-                    euler_angles.x * Leap.RAD_TO_DEG, \
-                    euler_angles.y * Leap.RAD_TO_DEG, \
-                    euler_angles.z * Leap.RAD_TO_DEG
+            eul_x, eul_y, eul_z = vec2eul(vec_prev, vec_next)
+            print("euler = [{}; {}; {}];".format(eul_x, eul_y, eul_z))
 
             return \
-                bone.next_joint.x - bone.prev_joint.x, \
-                bone.next_joint.y - bone.prev_joint.y, \
-                bone.next_joint.z - bone.prev_joint.z, \
-                0.0, \
-                0.0, \
-                0.0
+                bone.prev_joint.x - x_wrist, \
+                bone.prev_joint.y - y_wrist, \
+                bone.prev_joint.z - z_wrist, \
+                eul_x * Leap.RAD_TO_DEG, \
+                eul_y * Leap.RAD_TO_DEG, \
+                eul_z * Leap.RAD_TO_DEG
+
+        # vector for bones metacarpal, proximal, intermediate, distal
+        bone_prev = fingerlist[0].bone(self._get_bone_type(bone_number - 1))
+
+        #  no rotation for finger tip
+        if not bone_number == 5:
+            bone_next = fingerlist[0].bone(self._get_bone_type(bone_number))
+
+            vec_prev = np.array([bone_prev.next_joint.x - bone_prev.prev_joint.x,
+                                 bone_prev.next_joint.y - bone_prev.prev_joint.y,
+                                 bone_prev.next_joint.z - bone_prev.prev_joint.z])
+
+            vec_next = np.array([bone_next.next_joint.x - bone_next.prev_joint.x,
+                                 bone_next.next_joint.y - bone_next.prev_joint.y,
+                                 bone_next.next_joint.z - bone_next.prev_joint.z])
+
+            eul_x, eul_y, eul_z = vec2eul(vec_prev, vec_next)
+
+            return \
+                bone_prev.next_joint.x - bone_prev.prev_joint.x, \
+                bone_prev.next_joint.y - bone_prev.prev_joint.y, \
+                bone_prev.next_joint.z - bone_prev.prev_joint.z, \
+                eul_x * Leap.RAD_TO_DEG, \
+                eul_y * Leap.RAD_TO_DEG, \
+                eul_z * Leap.RAD_TO_DEG
+
+        return \
+            bone_prev.next_joint.x - bone_prev.prev_joint.x, \
+            bone_prev.next_joint.y - bone_prev.prev_joint.y, \
+            bone_prev.next_joint.z - bone_prev.prev_joint.z, \
+            0.0, \
+            0.0, \
+            0.0
 
     def _split_key(self, key):
         key_split = re.split('(\d)', key)
@@ -205,37 +245,37 @@ class Leap2BVH:
         else:
             raise Exception('bone number ({}) did not match'.format(bone_number))
 
-    def mat2eul(self, rotmat):
-        rotmat = np.array(rotmat.to_array_3x3()).reshape(3, 3)
-
-        # normalize?
-        eul1 = Leap.Vector()
-        eul2 = Leap.Vector()
-
-        cy = np.hypot(rotmat[0, 0], rotmat[0, 1])
-
-        # xyz order
-        if cy > 16 * Leap.EPSILON:
-            eul1.x = math.atan2(rotmat[1, 2], rotmat[2, 2])
-            eul1.y = math.atan2(-rotmat[0, 2], cy)
-            eul1.z = math.atan2(rotmat[0, 1], rotmat[0, 0])
-
-            eul2.x = math.atan2(-rotmat[1, 2], -rotmat[2, 2])
-            eul2.y = math.atan2(-rotmat[0, 2], -cy)
-            eul2.z = math.atan2(-rotmat[0, 1], -rotmat[0, 0])
-
-        else:
-            eul1.x = math.atan2(-rotmat[2, 1], rotmat[1, 1])
-            eul1.y = math.atan2(-rotmat[0, 2], cy)
-            eul1.z = 0.0
-
-            eul2 = eul1
-
-        # return best, which is just the one with lowest values in it
-        if eul1.magnitude > eul2.magnitude:
-            return eul2
-        else:
-            return eul1
+    # def mat2eul(self, rotmat):
+    #     rotmat = np.array(rotmat.to_array_3x3()).reshape(3, 3)
+    #
+    #     # normalize?
+    #     eul1 = Leap.Vector()
+    #     eul2 = Leap.Vector()
+    #
+    #     cy = np.hypot(rotmat[0, 0], rotmat[0, 1])
+    #
+    #     # xyz order
+    #     if cy > 16 * Leap.EPSILON:
+    #         eul1.x = math.atan2(rotmat[1, 2], rotmat[2, 2])
+    #         eul1.y = math.atan2(-rotmat[0, 2], cy)
+    #         eul1.z = math.atan2(rotmat[0, 1], rotmat[0, 0])
+    #
+    #         eul2.x = math.atan2(-rotmat[1, 2], -rotmat[2, 2])
+    #         eul2.y = math.atan2(-rotmat[0, 2], -cy)
+    #         eul2.z = math.atan2(-rotmat[0, 1], -rotmat[0, 0])
+    #
+    #     else:
+    #         eul1.x = math.atan2(-rotmat[2, 1], rotmat[1, 1])
+    #         eul1.y = math.atan2(-rotmat[0, 2], cy)
+    #         eul1.z = 0.0
+    #
+    #         eul2 = eul1
+    #
+    #     # return best, which is just the one with lowest values in it
+    #     if eul1.magnitude > eul2.magnitude:
+    #         return eul2
+    #     else:
+    #         return eul1
 
     def _to_DataFrame(self):
         '''Returns all of the channels parsed from the file as a pandas DataFrame'''

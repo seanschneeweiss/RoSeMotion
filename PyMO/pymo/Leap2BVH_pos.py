@@ -127,13 +127,16 @@ class Leap2BVH:
 
         if bone_number == 1 or ('Thumb' in key and bone_number == 2):
             bone = fingerlist[0].bone(self._get_bone_type(bone_number))
-            x_pos, y_pos, z_pos, _, _, _ = self._get_wrist_values(hand)
+            x_wrist, y_wrist, z_wrist, _, _, _ = self._get_wrist_values(hand)
             # print("1: key: {}, bone_number: {}, bone: {}, prev_joint: {}"
             #       .format(key, bone_number, bone, bone.prev_joint))
+            print("p1_pos = [{}; {}; {}];".format(x_wrist, y_wrist, z_wrist))
+            print("p2_pos = [{}; {}; {}];".format(bone.prev_joint.x, bone.prev_joint.y, bone.prev_joint.z))
+            print("p3_pos = [{}; {}; {}];".format(bone.next_joint.x, bone.next_joint.y, bone.next_joint.z))
             return \
-                bone.prev_joint.x - x_pos, \
-                bone.prev_joint.y - y_pos, \
-                bone.prev_joint.z - z_pos, \
+                bone.prev_joint.x - x_wrist, \
+                bone.prev_joint.y - y_wrist, \
+                bone.prev_joint.z - z_wrist, \
                 0.0, \
                 0.0, \
                 0.0

@@ -88,9 +88,9 @@ class Converter(object):
             q_z = math3d.quaternion((0, 0, 1), rot[2])
             q_rot = math3d.multiply_quat(q_x, math3d.multiply_quat(q_y, q_z))
             mat_rot = math3d.matrix_from_quat(q_rot)
-            mat_trans = math3d.matrix_from_trans(
-                (bone_length[0] + pos[0], bone_length[1] + pos[1], bone_length[2] + pos[2]))
-            # mat_trans = math3d.matrix_from_trans((bone_length[0], bone_length[1], bone_length[2]))
+            # mat_trans = math3d.matrix_from_trans(
+            #     (bone_length[0] + pos[0], bone_length[1] + pos[1], bone_length[2] + pos[2]))
+            mat_trans = math3d.matrix_from_trans((bone_length[0], bone_length[1], bone_length[2]))
             trans_matrix = math3d.multiply_matrix(mat_trans, mat_rot)
             transformation_stack.append(trans_matrix)
             # apply transformations

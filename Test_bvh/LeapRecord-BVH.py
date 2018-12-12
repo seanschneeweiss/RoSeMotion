@@ -49,14 +49,16 @@ class BVHListener(Leap.Listener):
         if not frame.hands.is_empty:
             # Get the first hand
             hand = frame.hands[0]
-            #for hand in frame.hands:
-            #    if hand.is_right():
 
-            # Check if the hand has any fingers
-            fingers = hand.fingers
-            if not fingers.is_empty:
-                self.leap2bvh.add_frame(self.actual_frame, hand)
-                self.actual_frame = self.actual_frame + 1
+            if hand.is_left:
+                print("Please use right hand")
+
+            if hand.is_right and hand.is_valid:
+                # Check if the hand has any fingers
+                fingers = hand.fingers
+                if not fingers.is_empty:
+                    self.leap2bvh.add_frame(self.actual_frame, hand)
+                    self.actual_frame = self.actual_frame + 1
 
 
         #print "Frame id: %d, timestamp: %d, hands: %d, fingers: %d, tools: %d" % (
