@@ -174,9 +174,9 @@ class Leap2BVH:
                 bone.prev_joint.x - x_wrist, \
                 bone.prev_joint.y - y_wrist, \
                 bone.prev_joint.z - z_wrist, \
-                eul_x * Leap.RAD_TO_DEG, \
-                eul_y * Leap.RAD_TO_DEG, \
-                eul_z * Leap.RAD_TO_DEG
+                0* eul_x * Leap.RAD_TO_DEG, \
+                0* eul_y * Leap.RAD_TO_DEG, \
+                0* eul_z * Leap.RAD_TO_DEG
 
         # vector for bones metacarpal, proximal, intermediate, distal
         bone_prev = fingerlist[0].bone(self._get_bone_type(bone_number - 1))

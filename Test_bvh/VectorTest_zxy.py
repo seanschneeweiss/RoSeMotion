@@ -7,9 +7,30 @@ sys.path.insert(0, os.path.abspath(os.path.join(src_dir, arch_dir)))
 
 import Leap
 
+x = Leap.Vector(1, 0, 0)
+y = Leap.Vector(0, 1, 0)
+z = Leap.Vector(0, 1, 1)
+
+
+matrix = Leap.Matrix(x, y, z)
+point = Leap.Vector(1, 1, 1)
+transformed = matrix.transform_direction(point)
+
+# print(matrix.set_rotation(Leap.Vector.z_axis, .34))
+# print(matrix)
+# print(transformed)
+
 import numpy as np
 import math
 
+
+
+#rotmat = Leap.Matrix()
+# rotmat = matrix
+# rotmat = rotmat.to_array_3x3()
+# rotmat = np.array(rotmat)
+# rotmat = rotmat.reshape(3, 3)
+# print(rotmat)
 
 def rot2eul(rotmat):
     ##############
@@ -126,8 +147,26 @@ def vec2quat(v1, v2):
     return np.divide(q, np.linalg.norm(q))
 
 
-def vec2eul(v1, v2):
-    quaternions = vec2quat(v1, v2)
-    rotmat = quat_to_mat(quaternions)
-    euler = rot2eul(rotmat)
-    return euler[0], euler[1], euler[2]
+#vec1 = np.array([0.4, 0.5, 0.8])
+#vec2 = np.array([0.6, 0.7, 0.7])
+
+p1_rot = np.array([0.0, 0.0, 0.0])
+p2_rot = np.array([0.1, 0.8, 0.2])
+p3_rot = np.array([2.0, 1.7, 1.5])
+p4_rot = np.array([1.5, 1.7, 2.0])
+vec1 = p2_rot - p1_rot
+vec2 = p3_rot - p2_rot
+vec3 = p4_rot - p3_rot
+
+quaternions_12 = vec2quat(vec1, vec2)
+quaternions_23 = vec2quat(vec2, vec3)
+print(quaternions_12)
+print(quaternions_23)
+rotm_12 = quat_to_mat(quaternions_12)
+rotm_23 = quat_to_mat(quaternions_23)
+print(rotm_12)
+print(rotm_23)
+euler_12 = rot2eul(rotm_12)
+euler_23 = rot2eul(rotm_23)
+print(euler_12)
+print(euler_23)
