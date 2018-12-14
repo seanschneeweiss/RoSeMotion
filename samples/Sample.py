@@ -51,7 +51,10 @@ class SampleListener(Leap.Listener):
             print(matrix.to_array_4x4())
 
             # bone_vec.angle_to(prev_bone.basis.x_basis)
-            # if hand.is_valid and fingerlist[0].is_valid:
+            if hand.is_valid and fingerlist[0].is_valid:
+                print("x = [{}; {}; {}];".format(hand.basis.x_basis.x, hand.basis.x_basis.y, hand.basis.x_basis.z))
+                print("y = [{}; {}; {}];".format(hand.basis.y_basis.x, hand.basis.y_basis.y, hand.basis.y_basis.z))
+                print("z = [{}; {}; {}];".format(hand.basis.z_basis.x, hand.basis.z_basis.y, hand.basis.z_basis.z))
                 # print("x = {}, y = {}, z
             #  = {}".format(
                 #     hand.basis.x_basis.angle_to(hand.arm.basis.x_basis) * Leap.RAD_TO_DEG,
