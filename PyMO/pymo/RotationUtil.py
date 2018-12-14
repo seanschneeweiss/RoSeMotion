@@ -11,7 +11,7 @@ import numpy as np
 import math
 
 
-def rot2eul(rotmat):
+def _rot2eul(rotmat):
     ##############
     #  i, j, k, n
     #  n = parity of axis permutation (even=False, odd=True)
@@ -129,5 +129,9 @@ def vec2quat(v1, v2):
 def vec2eul(v1, v2):
     quaternions = vec2quat(v1, v2)
     rotmat = quat_to_mat(quaternions)
-    euler = rot2eul(rotmat)
+    euler = _rot2eul(rotmat)
+    return euler[0], euler[1], euler[2]
+
+def rot2eul(rotmat):
+    euler = _rot2eul(rotmat)
     return euler[0], euler[1], euler[2]

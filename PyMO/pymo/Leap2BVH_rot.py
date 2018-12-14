@@ -5,7 +5,7 @@ import sys
 
 import numpy as np
 # import math
-from pymo.RotationUtil import vec2eul
+from pymo.RotationUtil import vec2eul, rot2eul
 
 from leapmotion_setup_rot import root_name, skeleton, framerate
 from pymo.data import MocapData
@@ -126,11 +126,17 @@ class Leap2BVH:
         y_wrist = hand.wrist_position.y
         z_wrist = hand.wrist_position.z
 
-        vec_prev = np.array([x_wrist, y_wrist, z_wrist])
-        vec_next = np.array([bone.prev_joint.x - x_wrist,
-                             bone.prev_joint.y - y_wrist,
-                             bone.prev_joint.z - z_wrist])
-        eul_x, eul_y, eul_z = vec2eul(vec_prev, vec_next)
+        basis = hand.basis
+        rotmat = np.array([[basis.x_basis.x, basis.y_basis.x, basis.z_basis.x],
+                           [basis.x_basis.y, basis.y_basis.y, basis.z_basis.y],
+                           [basis.x_basis.z, basis.y_basis.z, basis.z_basis.z]])
+        eul_x, eul_y, eul_z = rot2eul(rotmat)
+
+        # vec_prev = np.array([x_wrist, y_wrist, z_wrist])
+        # vec_next = np.array([bone.prev_joint.x - x_wrist,
+        #                      bone.prev_joint.y - y_wrist,
+        #                      bone.prev_joint.z - z_wrist])
+        # eul_x, eul_y, eul_z = vec2eul(vec_prev, vec_next)
 
         return \
             x_wrist, \
