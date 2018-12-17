@@ -20,16 +20,12 @@ import Leap
 
 class Leap2BVH:
     """
-    A class to parse a BVH file.
+    A class to convert LeapMotion frames to PyMO data structure (MocapData) to be parsed to a BVH file
 
-    Extracts the skeleton and channel values
+    Calculates translations (offsets) and rotation data for the joints
     """
 
     def __init__(self, filename=None):
-        self.reset()
-        self.do()
-
-    def reset(self):
         self._skeleton = {}
         self.bone_context = []
         self._motion_channels = []
@@ -37,8 +33,9 @@ class Leap2BVH:
         self.current_token = 0
         self.framerate = 0.0
         self.root_name = ''
-
         self.data = MocapData()
+
+        self.do()
 
     def parse(self):
         self.data.skeleton = self._skeleton
@@ -115,28 +112,23 @@ class Leap2BVH:
 
         self._motions.append((frame_id, channel_values))
 
-    def _get_root_values(self):
+    @staticmethod
+    def _get_root_values():
         return 0, 0, 0, 0, 0, 0
 
     def _get_wrist_values(self, hand):
         fingerlist = hand.fingers.finger_type(self._get_finger_type('RightHandMiddle'))
-        bone = fingerlist[0].bone(self._get_bone_type(1))
 
         x_wrist = hand.wrist_position.x
         y_wrist = hand.wrist_position.y
         z_wrist = hand.wrist_position.z
 
+        # rotation matrix from basis vectors
         basis = hand.basis
         rotmat = np.array([[basis.x_basis.x, basis.y_basis.x, basis.z_basis.x],
                            [basis.x_basis.y, basis.y_basis.y, basis.z_basis.y],
                            [basis.x_basis.z, basis.y_basis.z, basis.z_basis.z]])
         eul_x, eul_y, eul_z = rot2eul(rotmat)
-
-        # vec_prev = np.array([x_wrist, y_wrist, z_wrist])
-        # vec_next = np.array([bone.prev_joint.x - x_wrist,
-        #                      bone.prev_joint.y - y_wrist,
-        #                      bone.prev_joint.z - z_wrist])
-        # eul_x, eul_y, eul_z = vec2eul(vec_prev, vec_next)
 
         return \
             x_wrist, \
@@ -157,24 +149,23 @@ class Leap2BVH:
             x_wrist, y_wrist, z_wrist, _, _, _ = self._get_wrist_values(hand)
             # print("1: key: {}, bone_number: {}, bone: {}, prev_joint: {}"
             #       .format(key, bone_number, bone, bone.prev_joint))
-            print("p1_rot = [{}; {}; {}];".format(x_wrist, y_wrist, z_wrist))
-            print("p2_rot = [{}; {}; {}];".format(bone.prev_joint.x, bone.prev_joint.y, bone.prev_joint.z))
-            print("p3_rot = [{}; {}; {}];".format(bone.next_joint.x, bone.next_joint.y, bone.next_joint.z))
+            # print("p1_rot = [{}; {}; {}];".format(x_wrist, y_wrist, z_wrist))
+            # print("p2_rot = [{}; {}; {}];".format(bone.prev_joint.x, bone.prev_joint.y, bone.prev_joint.z))
+            # print("p3_rot = [{}; {}; {}];".format(bone.next_joint.x, bone.next_joint.y, bone.next_joint.z))
 
             vec_prev = np.array([bone.prev_joint.x - x_wrist,
                                  bone.prev_joint.y - y_wrist,
                                  bone.prev_joint.z - z_wrist])
-            print('bone.next_joint.x = {}, bone.prev_joint.x = {}, x_wrist = {}, vec_prev = {}'.format(bone.next_joint.x, bone.prev_joint.x, x_wrist, vec_prev[0]))
-            print('bone.next_joint.y = {}, bone.prev_joint.y = {}, y_wrist = {}, vec_prev = {}'.format(bone.next_joint.y, bone.prev_joint.y, y_wrist, vec_prev[1]))
-            print('bone.next_joint.z = {}, bone.prev_joint.z = {}, z_wrist = {}, vec_prev = {}'.format(bone.next_joint.z, bone.prev_joint.z, z_wrist, vec_prev[2]))
+            # print('bone.next_joint.x = {}, bone.prev_joint.x = {}, x_wrist = {}, vec_prev = {}'.format(bone.next_joint.x, bone.prev_joint.x, x_wrist, vec_prev[0]))
+            # print('bone.next_joint.y = {}, bone.prev_joint.y = {}, y_wrist = {}, vec_prev = {}'.format(bone.next_joint.y, bone.prev_joint.y, y_wrist, vec_prev[1]))
+            # print('bone.next_joint.z = {}, bone.prev_joint.z = {}, z_wrist = {}, vec_prev = {}'.format(bone.next_joint.z, bone.prev_joint.z, z_wrist, vec_prev[2]))
 
-            # vec_next = np.array([bone.direction.x, bone.direction.y, bone.direction.z])
             vec_next = np.array([bone.next_joint.x - bone.prev_joint.x,
                                  bone.next_joint.y - bone.prev_joint.y,
                                  bone.next_joint.z - bone.prev_joint.z])
 
             eul_x, eul_y, eul_z = vec2eul(vec_prev, vec_next)
-            print("euler = [{}; {}; {}];".format(eul_x, eul_y, eul_z))
+            # print("euler = [{}; {}; {}];".format(eul_x, eul_y, eul_z))
 
             return \
                 bone.prev_joint.x - x_wrist, \
@@ -217,7 +208,8 @@ class Leap2BVH:
             0.0, \
             0.0
 
-    def _split_key(self, key):
+    @staticmethod
+    def _split_key(key):
         key_split = re.split('(\d)', key)
         key = key_split[0]
         if key_split[-1] == '_End':
@@ -225,7 +217,8 @@ class Leap2BVH:
         else:
             return key, int(key_split[1])
 
-    def _get_finger_type(self, key):
+    @staticmethod
+    def _get_finger_type(key):
         if key == 'RightHandThumb':
             return Leap.Finger.TYPE_THUMB
         if key == 'RightHandIndex':
@@ -239,7 +232,8 @@ class Leap2BVH:
         else:
             raise Exception('Key ({}) did not match'.format(key))
 
-    def _get_bone_type(self, bone_number):
+    @staticmethod
+    def _get_bone_type(bone_number):
         if bone_number == 4:
             return Leap.Bone.TYPE_DISTAL
         if bone_number == 3:
@@ -251,40 +245,8 @@ class Leap2BVH:
         else:
             raise Exception('bone number ({}) did not match'.format(bone_number))
 
-    # def mat2eul(self, rotmat):
-    #     rotmat = np.array(rotmat.to_array_3x3()).reshape(3, 3)
-    #
-    #     # normalize?
-    #     eul1 = Leap.Vector()
-    #     eul2 = Leap.Vector()
-    #
-    #     cy = np.hypot(rotmat[0, 0], rotmat[0, 1])
-    #
-    #     # xyz order
-    #     if cy > 16 * Leap.EPSILON:
-    #         eul1.x = math.atan2(rotmat[1, 2], rotmat[2, 2])
-    #         eul1.y = math.atan2(-rotmat[0, 2], cy)
-    #         eul1.z = math.atan2(rotmat[0, 1], rotmat[0, 0])
-    #
-    #         eul2.x = math.atan2(-rotmat[1, 2], -rotmat[2, 2])
-    #         eul2.y = math.atan2(-rotmat[0, 2], -cy)
-    #         eul2.z = math.atan2(-rotmat[0, 1], -rotmat[0, 0])
-    #
-    #     else:
-    #         eul1.x = math.atan2(-rotmat[2, 1], rotmat[1, 1])
-    #         eul1.y = math.atan2(-rotmat[0, 2], cy)
-    #         eul1.z = 0.0
-    #
-    #         eul2 = eul1
-    #
-    #     # return best, which is just the one with lowest values in it
-    #     if eul1.magnitude > eul2.magnitude:
-    #         return eul2
-    #     else:
-    #         return eul1
-
     def _to_DataFrame(self):
-        '''Returns all of the channels parsed from the file as a pandas DataFrame'''
+        """Returns all of the channels parsed from the file as a pandas DataFrame"""
 
         import pandas as pd
         time_index = pd.to_timedelta([f[0] for f in self._motions], unit='s')
