@@ -62,7 +62,7 @@ def _rot2eul(rotmat):
     return np.negative(eul1)
 
 
-def quat_to_mat(quat):
+def quat2mat(quat):
     q0 = math.sqrt(2) * quat[0]
     q1 = math.sqrt(2) * quat[1]
     q2 = math.sqrt(2) * quat[2]
@@ -126,12 +126,93 @@ def vec2quat(v1, v2):
     return np.divide(q, np.linalg.norm(q))
 
 
+def rot2quat(rotmat):
+    q = np.zeros(4)
+
+    tr = 0.25 * (1 + np.trace(rotmat))
+    if tr > Leap.EPSILON:
+        s = np.sqrt(tr)
+        q[0] = s
+        s = 1.0 / (4.0 * s)
+        q[1] = (rotmat[1, 2] - rotmat[2, 1]) * s
+        q[2] = (rotmat[2, 0] - rotmat[0, 2]) * s
+        q[3] = (rotmat[0, 1] - rotmat[1, 0]) * s
+        return normalize_quat(q)
+
+    if rotmat[0, 0] > rotmat[1, 1] and rotmat[0, 0] > rotmat[2, 2]:
+        s = 2.0 * np.sqrt(1.0 + rotmat[0, 0] - rotmat[1, 1] - rotmat[2, 2])
+        q[1] = 0.25 * s
+        s = 1.0 / s
+        q[0] = (rotmat[1, 2] - rotmat[2, 1]) * s
+        q[2] = (rotmat[1, 0] - rotmat[0, 1]) * s
+        q[3] = (rotmat[2, 0] - rotmat[0, 2]) * s
+        return normalize_quat(q)
+
+    if rotmat[1, 1] > rotmat[2, 2]:
+        s = 2.0 * np.sqrt(1.0 + rotmat[1, 1] - rotmat[0, 0] - rotmat[2, 2])
+        q[2] = 0.25 * s
+        s = 1.0 / s
+        q[0] = (rotmat[2, 0] - rotmat[0, 2]) * s
+        q[1] = (rotmat[1, 0] - rotmat[0, 1]) * s
+        q[3] = (rotmat[2, 1] - rotmat[1, 2]) * s
+        return normalize_quat(q)
+
+    s = 2.0 * np.sqrt(1.0 + rotmat[2, 2] - rotmat[0, 0] - rotmat[1, 1])
+    q[3] = 0.25 * s
+    s = 1.0 / s
+    q[0] = (rotmat[0, 1] - rotmat[1, 0]) * s
+    q[1] = (rotmat[2, 0] - rotmat[0, 2]) * s
+    q[2] = (rotmat[2, 1] - rotmat[1, 2]) * s
+    return normalize_quat(q)
+
+
+def normalize_quat(q):
+    scal = np.sqrt(np.dot(q, q))
+    if scal != 0.0:
+        return np.kron(q, 1.0 / scal)
+
+    q[1] = 1.0
+    q[0] = q[2] = q[3] = 0.0
+    return q
+
+
+def conjugate_quat(q):
+    q[1] = -q[1]
+    q[2] = -q[2]
+    q[3] = -q[4]
+    return q
+
+
+def multiply_quat(q1, q2):
+    q = np.zeros(4)
+    t0 = q1[0] * q2[0] - q1[1] * q2[1] - q1[2] * q2[2] - q1[3] * q2[3]
+    t1 = q1[0] * q2[1] + q1[1] * q2[0] + q1[2] * q2[3] - q1[3] * q2[2]
+    t2 = q1[0] * q2[2] + q1[2] * q2[0] + q1[3] * q2[1] - q1[1] * q2[3]
+    q[3] = q1[0] * q2[3] + q1[3] * q2[0] + q1[1] * q2[2] - q1[2] * q2[1]
+    q[0] = t0
+    q[1] = t1
+    q[2] = t2
+    return q
+
+
 def vec2eul(v1, v2):
     quaternions = vec2quat(v1, v2)
-    rotmat = quat_to_mat(quaternions)
+    rotmat = quat2mat(quaternions)
     euler = _rot2eul(rotmat)
     return euler[0], euler[1], euler[2]
+
 
 def rot2eul(rotmat):
     euler = _rot2eul(rotmat)
     return euler[0], euler[1], euler[2]
+
+
+def quat_diff(q_prev, q_next):
+    q_prev = conjugate_quat(q_prev)
+    q_prev = np.kron(q_prev, 1.0 / np.dot(q_prev, q_prev))
+    return multiply_quat(q_prev, q_next)
+
+
+def quat_between_rot(rotmat_prev, rotmat_next):
+    # TODO: normalize rotation matrix
+    return quat_diff(rot2quat(rotmat_prev), rot2quat(rotmat_next))
