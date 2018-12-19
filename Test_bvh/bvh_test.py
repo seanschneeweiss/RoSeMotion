@@ -20,16 +20,17 @@ from pymo.writers import BVHWriter
 from pymo.Leap2BVH_pos import Leap2BVH
 
 
-#parser = BVHParser()
+parser = BVHParser()
 
-#parsed_data = parser.parse('brekel01.bvh')
+parsed_data = parser.parse('test_output.bvh')
 # print(parsed_data:)
 #print_skel(parsed_data)
 #parsed_data.values.head(10)
+print("Test")
 
-leap = Leap2BVH()
-leapdata = leap.parse()
+# leap = Leap2BVH()
+# leapdata = leap.parse()
 
-writer = BVHWriter()
-f = open("test_output.bvh", 'w')
-writer.write(leapdata, f)
+# writer = BVHWriter()
+# f = open("test_output.bvh", 'w')
+# writer.write(leapdata, f)
