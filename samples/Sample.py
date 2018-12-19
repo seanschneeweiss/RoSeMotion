@@ -52,9 +52,20 @@ class SampleListener(Leap.Listener):
 
             # bone_vec.angle_to(prev_bone.basis.x_basis)
             if hand.is_valid and fingerlist[0].is_valid:
-                print("x = [{}; {}; {}];".format(hand.basis.x_basis.x, hand.basis.x_basis.y, hand.basis.x_basis.z))
-                print("y = [{}; {}; {}];".format(hand.basis.y_basis.x, hand.basis.y_basis.y, hand.basis.y_basis.z))
-                print("z = [{}; {}; {}];".format(hand.basis.z_basis.x, hand.basis.z_basis.y, hand.basis.z_basis.z))
+                basis_prev = bone_prev.basis
+                basis_next = bone_next.basis
+            #     print("x = [{}; {}; {}];".format(hand.basis.x_basis.x, hand.basis.x_basis.y, hand.basis.x_basis.z))
+            #     print("y = [{}; {}; {}];".format(hand.basis.y_basis.x, hand.basis.y_basis.y, hand.basis.y_basis.z))
+            #     print("z = [{}; {}; {}];".format(hand.basis.z_basis.x, hand.basis.z_basis.y, hand.basis.z_basis.z))
+                print("x_prev = [{}; {}; {}];".format(basis_prev.x_basis.x, basis_prev.x_basis.y, basis_prev.x_basis.z))
+                print("y_prev = [{}; {}; {}];".format(basis_prev.y_basis.x, basis_prev.y_basis.y, basis_prev.y_basis.z))
+                print("z_prev = [{}; {}; {}];".format(basis_prev.z_basis.x, basis_prev.z_basis.y, basis_prev.z_basis.z))
+                
+                print("x_next = [{}; {}; {}];".format(basis_next.x_basis.x, basis_next.x_basis.y, basis_next.x_basis.z))
+                print("y_next = [{}; {}; {}];".format(basis_next.y_basis.x, basis_next.y_basis.y, basis_next.y_basis.z))
+                print("z_next = [{}; {}; {}];".format(basis_next.z_basis.x, basis_next.z_basis.y, basis_next.z_basis.z))
+            
+            
                 # print("x = {}, y = {}, z
             #  = {}".format(
                 #     hand.basis.x_basis.angle_to(hand.arm.basis.x_basis) * Leap.RAD_TO_DEG,
