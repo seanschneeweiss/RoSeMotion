@@ -14,7 +14,7 @@ arch_dir = '../lib/x64' if sys.maxsize > 2**32 else '../lib/x86'
 sys.path.insert(0, os.path.abspath(os.path.join(src_dir, arch_dir)))
 
 import Leap
-from pymo.Leap2BVH_pos import Leap2BVH
+from pymo.Leap2BVH_rot import Leap2BVH
 from pymo.writers import BVHWriter
 from b3d import bvh_reader
 from b3d import c3d_converter

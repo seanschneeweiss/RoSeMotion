@@ -41,7 +41,9 @@ class Converter(object):
                 # root position
                 bone_length = root.offset
                 if 'Xrotation' in bvh.channel_dict[root.name]:
-                    rot = [bvh.channel_values[bvh.channel_dict[root.name]['Xrotation']][i], bvh.channel_values[bvh.channel_dict[root.name]['Yrotation']][i], bvh.channel_values[bvh.channel_dict[root.name]['Zrotation']][i]]
+                    rot = [bvh.channel_values[bvh.channel_dict[root.name]['Xrotation']][i],
+                           bvh.channel_values[bvh.channel_dict[root.name]['Yrotation']][i],
+                           bvh.channel_values[bvh.channel_dict[root.name]['Zrotation']][i]]
 
                 # calculate transformation
                 q_x = math3d.quaternion((1, 0, 0), rot[0])
@@ -78,18 +80,11 @@ class Converter(object):
                 rot = [bvh.channel_values[bvh.channel_dict[joint.name]['Xrotation']][frame],
                        bvh.channel_values[bvh.channel_dict[joint.name]['Yrotation']][frame],
                        bvh.channel_values[bvh.channel_dict[joint.name]['Zrotation']][frame]]
-            if 'Xposition' in bvh.channel_dict[joint.name]:
-                pos = [bvh.channel_values[bvh.channel_dict[joint.name]['Xposition']][frame],
-                       bvh.channel_values[bvh.channel_dict[joint.name]['Yposition']][frame],
-                       bvh.channel_values[bvh.channel_dict[joint.name]['Zposition']][frame]]
-
             q_x = math3d.quaternion((1, 0, 0), rot[0])
             q_y = math3d.quaternion((0, 1, 0), rot[1])
             q_z = math3d.quaternion((0, 0, 1), rot[2])
             q_rot = math3d.multiply_quat(q_x, math3d.multiply_quat(q_y, q_z))
             mat_rot = math3d.matrix_from_quat(q_rot)
-            # mat_trans = math3d.matrix_from_trans(
-            #     (bone_length[0] + pos[0], bone_length[1] + pos[1], bone_length[2] + pos[2]))
             mat_trans = math3d.matrix_from_trans((bone_length[0], bone_length[1], bone_length[2]))
             trans_matrix = math3d.multiply_matrix(mat_trans, mat_rot)
             transformation_stack.append(trans_matrix)
@@ -99,9 +94,9 @@ class Converter(object):
                 mat = math3d.multiply_matrix(transformation, mat)
             pos_calc = [mat[3], mat[7], mat[11]]
 
-            self.points_dict[joint.name].SetValue(frame, 0, pos_calc[0])
-            self.points_dict[joint.name].SetValue(frame, 1, -pos_calc[2])
-            self.points_dict[joint.name].SetValue(frame, 2, pos_calc[1])
+            self.points_dict[joint.name].SetValue(frame, 0, pos_calc[0] * 10)
+            self.points_dict[joint.name].SetValue(frame, 1, -pos_calc[2] * 10)
+            self.points_dict[joint.name].SetValue(frame, 2, pos_calc[1] * 10)
 
             # iterate through children joints
             for child in joint.children:
