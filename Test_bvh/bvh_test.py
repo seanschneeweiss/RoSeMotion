@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 from sklearn.pipeline import Pipeline
 import pickle
+from string import Template
 
 import os
 import sys
@@ -17,6 +18,7 @@ from pymo.parsers import BVHParser
 from pymo.preprocessing import *
 from pymo.viz_tools import *
 from pymo.writers import BVHWriter
+from AnyBodyExport.AnyWriter import AnyWriter
 from pymo.Leap2BVH_pos import Leap2BVH
 
 
@@ -28,9 +30,19 @@ parsed_data = parser.parse('test_output.bvh')
 #parsed_data.values.head(10)
 print("Test")
 
+
 # leap = Leap2BVH()
 # leapdata = leap.parse()
 
 # writer = BVHWriter()
 # f = open("test_output.bvh", 'w')
 # writer.write(leapdata, f)
+writer = AnyWriter()
+writer.write(parsed_data)
+
+
+# #open the file
+# filein = open( 'Finger2.any' )
+# #read it
+# src = Template( filein.read() )
+# test = result

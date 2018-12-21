@@ -1,26 +1,75 @@
 import numpy as np
-
+from string import Template
+import re
 
 class AnyWriter:
     def __init__(self):
         pass
     
-    def write(self, data, ofile):
-        maping = {'Finger2': ['MCPFlexion', 'MCPAbduction', 'PIPFlexion', 'DIPFlexion'],
-                  'Finger3': ['MCPFlexion', 'MCPAbduction', 'PIPFlexion', 'DIPFlexion'],
-                  'Finger4': ['MCPFlexion', 'MCPAbduction', 'PIPFlexion', 'DIPFlexion'],
-                  'Finger5': ['MCPFlexion', 'MCPAbduction', 'PIPFlexion', 'DIPFlexion']}
+    def write(self, data):
+        maping = {'Finger2': {'joint_leap': 'RightHandIndex',
+                              'joint_any': ['MCPFlexion', 'MCPAbduction', 'PIPFlexion', 'DIPFlexion']},
+                  'Finger3': {'joint_leap': 'RightHandMiddle',
+                              'joint_any': ['MCPFlexion', 'MCPAbduction', 'PIPFlexion', 'DIPFlexion']},
+                  'Finger4': {'joint_leap': 'RightHandRing',
+                              'joint_any': ['MCPFlexion', 'MCPAbduction', 'PIPFlexion', 'DIPFlexion']},
+                  'Finger5': {'joint_leap': 'RightHandPinky',
+                              'joint_any': ['MCPFlexion', 'MCPAbduction', 'PIPFlexion', 'DIPFlexion']}}
 
-    def get_joint(self, joint):
-        # TODO: generalize by splitting string i.e MCP Flexion
+        result = {}
+
+        for finger, value in maping.items():
+            result[finger] = {}
+            for joint in value['joint_any']:
+                joint_values = np.asarray(data.values[value['joint_leap'] + self._joint2channel(joint)].values)
+                result[finger][joint] = joint_values
+
+        print(result)
+
+        # #open the file
+        # filein = open( 'Finger2.any' )
+        # #read it
+        # src = Template( filein.read() )
+        # test = result['Finger2']['MCPFlexion']
+        # # d = {'MCPFlexion': test.tolist()}
+        # sarr = [str(a) for a in test]
+        # d = {'MCPFlexion': ', '.join(sarr)}
+        # res = src.substitute(d)
+        # print(res)
+        #
+        # file = open('testfile.any', 'w')
+        #
+        # file.write(res)
+        #
+        # file.close()
+
+        for finger, finger_joints in result.items():
+            if finger == 'Thumb':
+                print("Thumb")
+                return
+
+            # Finger2-5
+            mcp_flexion = np.array2string(result[finger]['MCPFlexion'], separator=', ')[1:-1]
+            mcp_abduction = np.array2string(result[finger]['MCPAbduction'], separator=', ')[1:-1]
+            pip_flexion = np.array2string(result[finger]['PIPFlexion'], separator=', ')[1:-1]
+            dip_flexion = np.array2string(result[finger]['DIPFlexion'], separator=', ')[1:-1]
+            template = open('Finger.template', 'r').read().format(MCPFLEXION=mcp_flexion,
+                                                                     MCPABDUCTION=mcp_abduction,
+                                                                     PIPFLEXION=pip_flexion,
+                                                                     DIPFLEXION=dip_flexion)
+            open(finger + '.any', 'w').write(template)
+
+    @staticmethod
+    def _joint2channel(joint):
         if joint == 'MCPFlexion':
-            return 'Xrotation', 2
+            return '2_Xrotation'
         if joint == 'MCPAbduction':
-            return 'Yrotation', 2
+            return '2_Yrotation'
         if joint == 'PIPFlexion':
-            return 'Xrotation', 3
+            return '3_Xrotation'
         if joint == 'DIPFlexion':
-            return 'Xrotation', 4
+            return '4_Xrotation'
+
 
     def write_bak(self, X, ofile):
         
