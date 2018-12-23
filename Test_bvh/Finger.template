@@ -1,4 +1,4 @@
-//Interpolationvector for Finger
+//Interpolationvector for {FINGERNAME}
 AnyVector MCPFlexionVec={{{MCPFLEXION}}};
 AnyVector MCPAbductionVec={{{MCPABDUCTION}}};
 AnyVector PIPFlexionVec={{{PIPFLEXION}}};

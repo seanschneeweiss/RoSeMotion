@@ -41,6 +41,7 @@ class BVHListener(Leap.Listener):
         writer = BVHWriter()
         f = open("test_output.bvh", 'w')
         writer.write(self.leap2bvh.parse(), f)
+        f.close()
 
     def on_frame(self, controller):
         # Get the most recent frame and report some basic information
