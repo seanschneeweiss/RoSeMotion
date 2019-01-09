@@ -1,7 +1,5 @@
 import numpy as np
-from string import Template
-import re
-
+import itertools
 
 class AnyWriter:
     def __init__(self):
@@ -20,10 +18,17 @@ class AnyWriter:
                         'template': 'Finger.template'},
             'Finger5': {'joint_leap': 'RightHandPinky',
                         'joint_any': ['MCPFLEXION', 'MCPABDUCTION', 'PIPFLEXION', 'DIPFLEXION'],
-                        'template': 'Finger.template'}}
+                        'template': 'Finger.template'},
+            'Wrist': {'joint_leap': 'RightHand',
+                      'joint_any': ['WRISTFLEXION', 'WRISTABDUCTION'],
+                      'template': 'Wrist.template'},
+            'Elbow': {'joint_leap': 'RightHand',
+                      'joint_any': ['ELBOWPRONATION'],
+                      'template': 'Elbow.template'}}
         pass
 
     def write(self, data):
+        np.set_printoptions(formatter={'float': '{: 0.3f}'.format})
         finger_values = {}
 
         for finger_name, joint_mapping in self.mapping.items():
@@ -33,7 +38,19 @@ class AnyWriter:
                     data.values[joint_mapping['joint_leap']
                                 + self._joint2channel(finger_name, joint_name)].values)
 
+                entries = len(finger_values[finger_name][joint_name])
+
         print(finger_values)
+        print(self._calctimeseries(data, entries))
+
+        template_dict = {'TIMESERIES': self._joint2array(self._calctimeseries(data, entries))}
+        template_string = open('TimeSeries.template', 'r').read().format(**template_dict)
+        f = open('TimeSeries.any', 'w')
+        f.write(template_string)
+        f.close()
+
+        # b = np.array([0., 3, 2.0])
+        # print(b)
 
         # #open the file
         # filein = open( 'Finger2.any' )
@@ -66,8 +83,11 @@ class AnyWriter:
             f.close()
 
     @staticmethod
+    def _floatformatter(x): "%.2f" % x
+
+    @staticmethod
     def _joint2channel(finger_name, joint_name):
-        thumb = 'Thumb' in finger_name
+        thumb = 'Finger1' == finger_name
 
         if joint_name == 'CMCABDUCTION':
             # CMCABDUCTION is named CMCDEVIATION in Anybody unfortunately
@@ -94,9 +114,32 @@ class AnyWriter:
             # for all fingers
             return '4_Zrotation'
 
+        if joint_name == 'WRISTFLEXION':
+            # only for wrist
+            return '_Zrotation'
+
+        if joint_name == 'WRISTABDUCTION':
+            # only for wrist
+            return '_Xrotation'
+
+        if joint_name == 'ELBOWPRONATION':
+            # only for wrist
+            return '_Yrotation'
+
+    @staticmethod
+    def _range(start, step, num, dtype=np.float):
+        # return np.fromiter(itertools.count(start, step), dtype, num)
+        return np.linspace(0, 1, num=num)
+
+
+    def _calctimeseries(self, data, entries):
+        timeseries = self._range(0.0, data.framerate, entries)
+        return timeseries
+
+
     @staticmethod
     def _joint2array(joint_values):
-        return np.array2string(joint_values, separator=', ')[1:-1]
+        return np.array2string(joint_values.astype(float), separator=', ')[1:-1]
 
     def write_bak(self, X, ofile):
 

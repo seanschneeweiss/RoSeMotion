@@ -1,0 +1,3 @@
+//Interpolationvector for {FINGERNAME}
+AnyVector WristFlexionVec={{{WRISTFLEXION}}};
+AnyVector WristAbductionVec={{{WRISTABDUCTION}}};
