@@ -11,6 +11,41 @@ import numpy as np
 import math
 
 
+def get_order():
+    ##############
+    #  i, j, k, n
+    #  n = parity of axis permutation (even=False, odd=True)
+    #  from https://github.com/dfelinto/blender/blob/master/source/blender/blenlib/intern/math_rotation.c
+    ##############
+
+    return [0, 1, 2, False]  # XYZ
+    # return [0, 2, 1, True]   # XZY
+    # return [1, 0, 2, True]   # YXZ
+    # return [1, 2, 0, False]  # YZX
+    # return [2, 0, 1, False]  # ZXY
+    # return [2, 1, 0, True]   # ZYX
+
+
+def _rot2eulsimple(rotmat):
+    eul = np.zeros(3)
+    if rotmat[1, 1] < 1 and rotmat[1, 1] > -1:
+        eul[1] = math.acos(rotmat[1, 1])
+    if rotmat[1, 1] >= 1.0:
+        eul[1] = 0
+    if rotmat[1, 1] <= -1.0:
+        eul[1] = np.pi
+
+    if rotmat[0, 0] < 1 and rotmat[1, 1] > -1:
+        eul[0] = math.acos(rotmat[0, 0])
+    if rotmat[1, 1] >= 1.0:
+        eul[0] = 0
+    if rotmat[1, 1] <= -1.0:
+        eul[0] = np.pi
+
+    eul[2] = 0
+    return eul
+
+
 def _rot2eul(rotmat):
     ##############
     #  i, j, k, n
@@ -22,8 +57,10 @@ def _rot2eul(rotmat):
     # order = [0, 2, 1, True] # XZY
     # order = [1, 0, 2, True] # YXZ
     # order = [1, 2, 0, False] # YZX
-    order = [2, 0, 1, False]  # ZXY
+    # order = [2, 0, 1, False]  # ZXY
     # order = [2, 1, 0, True] # ZYX
+
+    order = get_order()
 
     i = int(order[0])
     j = int(order[1])
@@ -35,7 +72,7 @@ def _rot2eul(rotmat):
 
     cy = np.hypot(rotmat[i, i], rotmat[i, j])
 
-    if cy > 16 * Leap.EPSILON:
+    if cy > Leap.EPSILON:
         eul1[i] = math.atan2(rotmat[j, k], rotmat[k, k])
         eul1[j] = math.atan2(-rotmat[i, k], cy)
         eul1[k] = math.atan2(rotmat[i, j], rotmat[i, i])

@@ -1,10 +1,6 @@
 root_name = 'Leap_Root'
-framerate = 0.01875222
-#channels = ['Xposition', 'Yposition', 'Zposition', 'Zrotation', 'Xrotation', 'Yrotation']
-#bone_context = ['Brekel_Pro_Hands', 'LeftHand', 'LeftHandThumb1', 'LeftHandThumb2', 'LeftHandThumb3']
-# 'offsets': [0.0, -26.7, 0.0]}}
+framerate = 0.033333
 
-#TODO: channels, offsets
 skeleton = \
  {'Leap_Root': {'channels': ['Xposition', 'Yposition', 'Zposition', 'Zrotation', 'Xrotation', 'Yrotation'], 'children': [
 #     'LeftHand',
@@ -59,4 +55,37 @@ skeleton = \
 'RightHandThumb3': {'channels': ['Zrotation', 'Xrotation', 'Yrotation'], 'children': ['RightHandThumb4'], 'parent': 'RightHandThumb2'},
 'RightHandThumb4': {'channels': ['Zrotation', 'Xrotation', 'Yrotation'], 'children': ['RightHandThumb5'], 'parent': 'RightHandThumb3'},
 'RightHandThumb5': {'channels': ['Zrotation', 'Xrotation', 'Yrotation'], 'children': ['RightHandThumb5_End'], 'parent': 'RightHandThumb4'},
+'RightHandThumb5_End': {'channels': [], 'children': [], 'parent': 'RightHandThumb5'}}
+
+skeleton_no_channels = \
+ {'Leap_Root': {'channels': [], 'children': ['RightHand'], 'parent': None},
+'RightHand': {'channels': [], 'children': ['RightHandThumb2', 'RightHandIndex1', 'RightHandMiddle1', 'RightHandRing1', 'RightHandPinky1'], 'parent': 'Leap_Root'},
+'RightHandIndex1': {'channels': [], 'children': ['RightHandIndex2'], 'parent': 'RightHand'},
+'RightHandIndex2': {'channels': [], 'children': ['RightHandIndex3'], 'parent': 'RightHandIndex1'},
+'RightHandIndex3': {'channels': [], 'children': ['RightHandIndex4'], 'parent': 'RightHandIndex2'},
+'RightHandIndex4': {'channels': [], 'children': ['RightHandIndex5'], 'parent': 'RightHandIndex3'},
+'RightHandIndex5': {'channels': [], 'children': ['RightHandIndex5_End'], 'parent': 'RightHandIndex4'},
+'RightHandIndex5_End': {'channels': [], 'children': [], 'parent': 'RightHandIndex5'},
+'RightHandMiddle1': {'channels': [], 'children': ['RightHandMiddle2'], 'parent': 'RightHand'},
+'RightHandMiddle2': {'channels': [], 'children': ['RightHandMiddle3'], 'parent': 'RightHandMiddle1'},
+'RightHandMiddle3': {'channels': [], 'children': ['RightHandMiddle4'], 'parent': 'RightHandMiddle2'},
+'RightHandMiddle4': {'channels': [], 'children': ['RightHandMiddle5'], 'parent': 'RightHandMiddle3'},
+'RightHandMiddle5': {'channels': [], 'children': ['RightHandMiddle5_End'], 'parent': 'RightHandMiddle4'},
+'RightHandMiddle5_End': {'channels': [], 'children': [], 'parent': 'RightHandMiddle5'},
+'RightHandPinky1': {'channels': [], 'children': ['RightHandPinky2'], 'parent': 'RightHand'},
+'RightHandPinky2': {'channels': [], 'children': ['RightHandPinky3'], 'parent': 'RightHandPinky1'},
+'RightHandPinky3': {'channels': [], 'children': ['RightHandPinky4'], 'parent': 'RightHandPinky2'},
+'RightHandPinky4': {'channels': [], 'children': ['RightHandPinky5'], 'parent': 'RightHandPinky3'},
+'RightHandPinky5': {'channels': [], 'children': ['RightHandPinky5_End'], 'parent': 'RightHandPinky4'},
+'RightHandPinky5_End': {'channels': [], 'children': [], 'parent': 'RightHandPinky5'},
+'RightHandRing1': {'channels': [], 'children': ['RightHandRing2'], 'parent': 'RightHand'},
+'RightHandRing2': {'channels': [], 'children': ['RightHandRing3'], 'parent': 'RightHandRing1'},
+'RightHandRing3': {'channels': [], 'children': ['RightHandRing4'], 'parent': 'RightHandRing2'},
+'RightHandRing4': {'channels': [], 'children': ['RightHandRing5'], 'parent': 'RightHandRing3'},
+'RightHandRing5': {'channels': [], 'children': ['RightHandRing5_End'], 'parent': 'RightHandRing4'},
+'RightHandRing5_End': {'channels': [], 'children': [], 'parent': 'RightHandRing5'},
+'RightHandThumb2': {'channels': [], 'children': ['RightHandThumb3'], 'parent': 'RightHand'},
+'RightHandThumb3': {'channels': [], 'children': ['RightHandThumb4'], 'parent': 'RightHandThumb2'},
+'RightHandThumb4': {'channels': [], 'children': ['RightHandThumb5'], 'parent': 'RightHandThumb3'},
+'RightHandThumb5': {'channels': [], 'children': ['RightHandThumb5_End'], 'parent': 'RightHandThumb4'},
 'RightHandThumb5_End': {'channels': [], 'children': [], 'parent': 'RightHandThumb5'}}

@@ -28,7 +28,7 @@ parsed_data = parser.parse('test_output.bvh')
 # print(parsed_data:)
 #print_skel(parsed_data)
 #parsed_data.values.head(10)
-print("Test")
+#print(parsed_data.values["RightHandIndex2_Yrotation"].values)
 
 
 # leap = Leap2BVH()

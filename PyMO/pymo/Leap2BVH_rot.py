@@ -4,10 +4,9 @@ import re
 import sys
 
 import numpy as np
-# import math
-from pymo.RotationUtil import vec2eul, rot2eul
+from pymo.RotationUtil import rot2eul, get_order
 
-from leapmotion_setup_rot import root_name, skeleton, framerate
+from leapmotion_setup_rot import root_name, skeleton_no_channels, framerate
 from pymo.data import MocapData
 
 src_dir = os.path.dirname(inspect.getfile(inspect.currentframe()))
@@ -47,7 +46,9 @@ class Leap2BVH:
         return self.data
 
     def do(self):
-        self._skeleton = skeleton
+        self._skeleton = skeleton_no_channels
+        self._skeleton_apply_channels()  # fill channels into skeleton in selected order (i.e. xyz)
+
         # self._motion_channels = motion_channels
         self.root_name = root_name
         self.framerate = framerate  # TODO: framerate
@@ -83,7 +84,7 @@ class Leap2BVH:
                     x_offset = y_offset = z_offset = 0.0
                 else:
                     x_offset, y_offset, z_offset, _, _, _ = self._get_finger_values(key, hand)
-                value['offsets'] = [x_offset, y_offset, z_offset]
+                value['offsets'] = [x_offset, y_offset, z_offset]  # y, z, x
 
                 # print("pitch hand x = {}, angle hand x = {}".format(hand.basis.x_basis.pitch * Leap.RAD_TO_DEG,
                 #                                                     hand.basis.x_basis.angle_to(Leap.Vector.x_axis) * Leap.RAD_TO_DEG))
@@ -232,6 +233,28 @@ class Leap2BVH:
         return np.array([[basis.x_basis.x, basis.y_basis.x, basis.z_basis.x],
                         [basis.x_basis.y, basis.y_basis.y, basis.z_basis.y],
                         [basis.x_basis.z, basis.y_basis.z, basis.z_basis.z]])
+
+    @staticmethod
+    def _get_channels(joint_name):
+        if '_End' in joint_name:
+            return []
+
+        channels_position = ['Xposition', 'Yposition', 'Zposition']
+        channels_rotation = ['Xrotation', 'Yrotation', 'Zrotation']
+
+        order = get_order()
+        # order = [0, 1, 2]
+        channels_rotation = [channels_rotation[order[0]]] + [channels_rotation[order[1]]] + [
+            channels_rotation[order[2]]]
+
+        if joint_name in ('Leap_Root', 'RightHand'):
+            return channels_position + channels_rotation
+
+        return channels_rotation
+
+    def _skeleton_apply_channels(self):
+        for joint_name, joint_dict in self._skeleton.items():
+            joint_dict['channels'] = self._get_channels(joint_name)
 
     def _to_DataFrame(self):
         """Returns all of the channels parsed from the file as a pandas DataFrame"""

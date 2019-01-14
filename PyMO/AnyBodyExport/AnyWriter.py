@@ -40,8 +40,8 @@ class AnyWriter:
 
                 entries = len(finger_values[finger_name][joint_name])
 
-        print(finger_values)
-        print(self._calctimeseries(data, entries))
+        # print(finger_values)
+        # print(self._calctimeseries(data, entries))
 
         template_dict = {'TIMESERIES': self._joint2array(self._calctimeseries(data, entries))}
         template_string = open('TimeSeries.template', 'r').read().format(**template_dict)
@@ -74,7 +74,7 @@ class AnyWriter:
             template_dict = {'FINGERNAME': finger_name}
 
             for joint_name in joint_mapping['joint_any']:
-                template_dict[joint_name] = self._joint2array(finger_values[finger_name][joint_name])
+                template_dict[joint_name] = self._joint2arrayneg(finger_values[finger_name][joint_name])
 
             template_filename = joint_mapping['template']
             template_string = open(template_filename, 'r').read().format(**template_dict)
@@ -92,39 +92,39 @@ class AnyWriter:
         if joint_name == 'CMCABDUCTION':
             # CMCABDUCTION is named CMCDEVIATION in Anybody unfortunately
             # Thumb only
-            return '2_Xrotation'
+            return '2_Yrotation'
 
         if joint_name == 'CMCFLEXION':
             # Thumb only
-            return '2_Zrotation'
+            return '2_Xrotation'
 
         if joint_name == 'MCPFLEXION':
-            return '3_Zrotation' if thumb else '2_Zrotation'
+            return '3_Xrotation' if thumb else '2_Xrotation'
 
         if joint_name == 'MCPABDUCTION':
             # MCPABDUCTION is named MCPDEVIATION in Anybody unfortunately
             # for all fingers
-            return '3_Xrotation' if thumb else '2_Xrotation'
+            return '3_Yrotation' if thumb else '2_Yrotation'
 
         if joint_name == 'PIPFLEXION':
             # not used for Thumb
-            return '3_Zrotation'
+            return '3_Xrotation'
 
         if joint_name == 'DIPFLEXION':
             # for all fingers
-            return '4_Zrotation'
+            return '4_Xrotation'
 
         if joint_name == 'WRISTFLEXION':
             # only for wrist
-            return '_Zrotation'
+            return '_Xrotation'
 
         if joint_name == 'WRISTABDUCTION':
             # only for wrist
-            return '_Xrotation'
+            return '_Yrotation'
 
         if joint_name == 'ELBOWPRONATION':
             # only for wrist
-            return '_Yrotation'
+            return '_Zrotation'
 
     @staticmethod
     def _range(start, step, num, dtype=np.float):
@@ -136,10 +136,13 @@ class AnyWriter:
         timeseries = self._range(0.0, data.framerate, entries)
         return timeseries
 
-
     @staticmethod
     def _joint2array(joint_values):
         return np.array2string(joint_values.astype(float), separator=', ')[1:-1]
+
+    @staticmethod
+    def _joint2arrayneg(joint_values):
+        return np.array2string(np.negative(joint_values.astype(float)), separator=', ')[1:-1]
 
     def write_bak(self, X, ofile):
 
