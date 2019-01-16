@@ -62,9 +62,9 @@ def _rot2eul(rotmat):
 
     order = get_order()
 
-    i = int(order[0])
+    i = int(order[2])
     j = int(order[1])
-    k = int(order[2])
+    k = int(order[0])
     parity = order[3]
 
     eul1 = np.zeros(3)
@@ -95,9 +95,18 @@ def _rot2eul(rotmat):
 
     # return best, which is just the one with lowest values in it
     if np.sum(np.absolute(eul1)) > np.sum(np.absolute(eul2)):
-        return np.negative(eul2)
-    return np.negative(eul1)
+        return eul2
+    return eul1
 
+
+def dcm2eul(mat):
+    # order = get_order()
+
+    yaw = np.acos(mat[2, 2])
+    pitch = -np.atan2(mat[2, 0], mat[2, 1])
+    roll = -np.atan2(mat[0, 2], mat[1, 2])
+
+    return yaw, pitch, roll
 
 def quat2mat(quat):
     q0 = math.sqrt(2) * quat[0]

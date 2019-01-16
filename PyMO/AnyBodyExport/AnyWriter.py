@@ -131,7 +131,6 @@ class AnyWriter:
         # return np.fromiter(itertools.count(start, step), dtype, num)
         return np.linspace(0, 1, num=num)
 
-
     def _calctimeseries(self, data, entries):
         timeseries = self._range(0.0, data.framerate, entries)
         return timeseries
