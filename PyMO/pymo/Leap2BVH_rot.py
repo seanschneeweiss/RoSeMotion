@@ -77,6 +77,8 @@ class Leap2BVH:
                 # offsets
                 if key == 'Leap_Root':
                     x_offset, y_offset, z_offset, _, _, _ = self._get_root_values()
+                elif key == 'RightElbow':
+                    x_offset, y_offset, z_offset, _, _, _ = self._get_elbow_values(hand)
                 elif key == 'RightHand':
                     x_offset, y_offset, z_offset, _, _, _ = self._get_wrist_values(hand)
                 elif 'End' in key:
@@ -93,6 +95,8 @@ class Leap2BVH:
                 # motion data with rotations
                 if key == 'Leap_Root':
                     x_pos, y_pos, z_pos, x_rot, y_rot, z_rot = self._get_root_values()
+                elif key == 'RightElbow':
+                    x_pos, y_pos, z_pos, x_rot, y_rot, z_rot = self._get_elbow_values(hand)
                 elif key == 'RightHand':
                     x_pos, y_pos, z_pos, x_rot, y_rot, z_rot = self._get_wrist_values(hand)
                 else:
@@ -117,14 +121,37 @@ class Leap2BVH:
     def _get_root_values():
         return 0, 0, 0, 0, 0, 0
 
-    def _get_wrist_values(self, hand):
-        x_wrist = hand.wrist_position.x
-        y_wrist = hand.wrist_position.y
-        z_wrist = hand.wrist_position.z
+    def _get_elbow_values(self, hand):
+        arm = hand.arm
+
+        x_elbow = arm.elbow_position.x
+        y_elbow = arm.elbow_position.y
+        z_elbow = arm.elbow_position.z
 
         # rotation matrix from basis vectors
-        rotmat = self._basis2rot(hand.basis)
+        rotmat = self._basis2rot(arm.basis)
         eul_x, eul_y, eul_z = rot2eul(rotmat)
+
+        return \
+            x_elbow, \
+            y_elbow, \
+            z_elbow, \
+            eul_x * Leap.RAD_TO_DEG, \
+            eul_y * Leap.RAD_TO_DEG, \
+            eul_z * Leap.RAD_TO_DEG
+
+    def _get_wrist_values(self, hand):
+        arm = hand.arm
+
+        x_wrist = hand.wrist_position.x - arm.elbow_position.x
+        y_wrist = hand.wrist_position.y - arm.elbow_position.y
+        z_wrist = hand.wrist_position.z - arm.elbow_position.z
+
+        # rotation matrix from basis vectors
+
+        rotmat_prev = self._basis2rot(arm.basis)
+        rotmat_next = self._basis2rot(hand.basis)
+        eul_x, eul_y, eul_z = rot2eul(np.matmul(rotmat_next, np.transpose(rotmat_prev)))
 
         return \
             x_wrist, \
@@ -142,7 +169,7 @@ class Leap2BVH:
         # vector between wrist and metacarpal proximal (carpals)
         if bone_number == 1 or ('Thumb' in key and bone_number == 2):
             bone = fingerlist[0].bone(self._get_bone_type(bone_number))
-            x_wrist, y_wrist, z_wrist, _, _, _ = self._get_wrist_values(hand)
+
             # print("1: key: {}, bone_number: {}, bone: {}, prev_joint: {}"
             #       .format(key, bone_number, bone, bone.prev_joint))
             # print("p1_rot = [{}; {}; {}];".format(x_wrist, y_wrist, z_wrist))
@@ -154,9 +181,9 @@ class Leap2BVH:
             # print('bone.next_joint.z = {}, bone.prev_joint.z = {}, z_wrist = {}, vec_prev = {}'.format(bone.next_joint.z, bone.prev_joint.z, z_wrist, vec_prev[2]))
 
             return \
-                bone.prev_joint.x - x_wrist, \
-                bone.prev_joint.y - y_wrist, \
-                bone.prev_joint.z - z_wrist, \
+                bone.prev_joint.x - hand.wrist_position.x, \
+                bone.prev_joint.y - hand.wrist_position.y, \
+                bone.prev_joint.z - hand.wrist_position.z, \
                 0.0, \
                 0.0, \
                 0.0
@@ -247,7 +274,7 @@ class Leap2BVH:
         channels_rotation = [channels_rotation[order[0]]] + [channels_rotation[order[1]]] + [
             channels_rotation[order[2]]]
 
-        if joint_name in ('Leap_Root', 'RightHand'):
+        if joint_name in ('Leap_Root', 'RightElbow'):
             return channels_position + channels_rotation
 
         return channels_rotation

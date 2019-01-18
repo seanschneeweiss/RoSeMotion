@@ -58,8 +58,9 @@ skeleton = \
 'RightHandThumb5_End': {'channels': [], 'children': [], 'parent': 'RightHandThumb5'}}
 
 skeleton_no_channels = \
- {'Leap_Root': {'channels': [], 'children': ['RightHand'], 'parent': None},
-'RightHand': {'channels': [], 'children': ['RightHandThumb2', 'RightHandIndex1', 'RightHandMiddle1', 'RightHandRing1', 'RightHandPinky1'], 'parent': 'Leap_Root'},
+ {'Leap_Root': {'channels': [], 'children': ['RightElbow'], 'parent': None},
+'RightElbow': {'channels': [], 'children': ['RightHand'], 'parent': 'Leap_Root'},
+'RightHand': {'channels': [], 'children': ['RightHandThumb2', 'RightHandIndex1', 'RightHandMiddle1', 'RightHandRing1', 'RightHandPinky1'], 'parent': 'RightElbow'},
 'RightHandIndex1': {'channels': [], 'children': ['RightHandIndex2'], 'parent': 'RightHand'},
 'RightHandIndex2': {'channels': [], 'children': ['RightHandIndex3'], 'parent': 'RightHandIndex1'},
 'RightHandIndex3': {'channels': [], 'children': ['RightHandIndex4'], 'parent': 'RightHandIndex2'},
