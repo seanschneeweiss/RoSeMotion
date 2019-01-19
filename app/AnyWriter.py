@@ -2,7 +2,8 @@ import numpy as np
 
 
 class AnyWriter:
-    def __init__(self):
+    def __init__(self, template_directory='config/anybody_templates'):
+        self._template_directory = template_directory
         self.mapping = {
             'Finger1': {'joint_leap': 'RightHandThumb',
                         'joint_any': ['CMCABDUCTION', 'CMCFLEXION', 'MCPFLEXION', 'MCPABDUCTION', 'DIPFLEXION'],
@@ -57,7 +58,7 @@ class AnyWriter:
                 template_dict[joint_name] = self._joint2arrayneg(finger_values[finger_name][joint_name])
 
             template_filename = joint_mapping['template']
-            template_string = open(template_filename, 'r').read().format(**template_dict)
+            template_string = open(self._template_directory + template_filename, 'r').read().format(**template_dict)
             f = open(finger_name + '.any', 'w')
             f.write(template_string)
             f.close()
