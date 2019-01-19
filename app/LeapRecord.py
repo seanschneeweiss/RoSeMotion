@@ -1,8 +1,8 @@
 from LeapData import LeapData
-from resources.pymo.pymo.parsers import BVHParser
-from resources.pymo.pymo.writers import BVHWriter
-from resources.b3d.bvh_reader import BVH as BVHReader
-from resources.b3d.c3d_convertor import Convertor as C3DWriter
+from resources.pymo.pymo.parsers import BVHParser as Pymo_BVHParser
+from resources.pymo.pymo.writers import BVHWriter as Pymo_BVHWriter
+from resources.b3d.bvh_reader import BVH as B3D_BVHReader
+from resources.b3d.c3d_convertor import Convertor as B3D_C3DWriter
 from AnyWriter import AnyWriter
 
 import os, sys, inspect
@@ -14,7 +14,9 @@ from resources.LeapSDK.lib import Leap
 
 
 class LeapRecord(Leap.Listener):
-    def __init__(self):
+    def on_init(self, controller):
+        print("Initialized")
+
         # Initialize Leap2DataFrame parser
         self.leap2bvh = LeapData(channel_setting='rotation')
         self.write_c3d = False
@@ -22,9 +24,6 @@ class LeapRecord(Leap.Listener):
         self.file_name = 'LeapRecord'
 
         self.actual_frame = 0
-
-    def on_init(self, controller):
-        print("Initialized")
 
     def on_connect(self, controller):
         print("Connected")
@@ -37,24 +36,24 @@ class LeapRecord(Leap.Listener):
         print("Exited")
 
         bvh_filepath = '../output/BVH/{}.bvh'.format(self.file_name)
-        bvh_writer = BVHWriter()
+        bvh_writer = Pymo_BVHWriter()
         bvh_file = open(bvh_filepath, 'w')
         bvh_writer.write(self.leap2bvh.parse(), bvh_file)
         bvh_file.close()
         print('"{}" written'.format(bvh_file.name))
 
         if self.write_c3d:
-            bvh_reader = BVHReader()
+            bvh_reader = B3D_BVHReader()
             if not bvh_reader.load_from_file(bvh_file.name):
                 raise Exception('error: can not read "{}"'.format(bvh_file.name))
 
             c3d_filepath = '../output/C3D/{}.c3d'.format(self.file_name)
-            c3d_writer = C3DWriter()
+            c3d_writer = B3D_C3DWriter()
             c3d_writer.convert(bvh_reader, c3d_filepath)
             print('"{}" written from "{}"'.format(c3d_filepath, bvh_file.name))
 
         if self.write_anybody:
-            AnyWriter().write(BVHParser().parse(bvh_file.name))
+            AnyWriter().write(Pymo_BVHParser().parse(bvh_file.name))
             print('Anybody files written from "{}"'.format(bvh_file.name))
 
     def on_frame(self, controller):
