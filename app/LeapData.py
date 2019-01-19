@@ -1,38 +1,32 @@
-import inspect
-import os
 import re
-import sys
-
 import numpy as np
-# import math
-from pymo.RotationUtil import vec2eul, rot2eul
 
-from leapmotion_setup_rot import root_name, skeleton, framerate
-from pymo.data import MocapData
+from config.Skeleton import Skeleton
+from resources.pymo.pymo.data import MocapData
+from RotationUtil import rot2eul, get_order
 
+import os, sys, inspect
 src_dir = os.path.dirname(inspect.getfile(inspect.currentframe()))
 # Windows and Linux
-arch_dir = '../../lib/x64' if sys.maxsize > 2 ** 32 else '../../lib/x86'
-
+arch_dir = './resources/LeapSDK/lib/x64' if sys.maxsize > 2 ** 32 else './resources/LeapSDK/lib/x86'
 sys.path.insert(0, os.path.abspath(os.path.join(src_dir, arch_dir)))
-import Leap
+from resources.LeapSDK.lib import Leap
 
 
-class Leap2BVH:
+class LeapData:
     """
-    A class to convert LeapMotion frames to PyMO data structure (MocapData) to be parsed to a BVH file
+    A class to convert LeapMotion frames to PyMO data structure (MocapData)
 
     Calculates translations (offsets) and rotation data for the joints
     """
 
-    def __init__(self, filename=None):
+    def __init__(self, channel_setting='rotation'):
         self._skeleton = {}
-        self.bone_context = []
+        self._setting = Skeleton(channel_setting)
         self._motion_channels = []
         self._motions = []
-        self.current_token = 0
-        self.framerate = 0.0
-        self.root_name = ''
+        self._framerate = 0.0
+        self._root_name = ''
         self.data = MocapData()
 
         self.do()
@@ -40,75 +34,66 @@ class Leap2BVH:
     def parse(self):
         self.data.skeleton = self._skeleton
         self.data.channel_names = self._motion_channels
-        self.data.values = self._to_DataFrame()
-        self.data.root_name = self.root_name
-        self.data.framerate = self.framerate
+        self.data.values = self._motion2DataFrame()
+        self.data.root_name = self._root_name
+        self.data.framerate = self._framerate
 
         return self.data
 
     def do(self):
-        self._skeleton = skeleton
-        # self._motion_channels = motion_channels
-        self.root_name = root_name
-        self.framerate = framerate  # TODO: framerate
+        self._skeleton = self._setting.skeleton
+        self._skeleton_apply_channels(self._setting.channel_setting)  # fill channels into skeleton in selected order (i.e. xyz)
 
-        # frame_count = 188#TODO:frame_count
-        # frame_time = 0.0
-        # self._motions = [()] * frame_count
+        # self._motion_channels = motion_channels
+        self._root_name = self._setting.root_name
+        self._framerate = self._setting.framerate  # TODO: framerate
 
         for key, value in self._skeleton.items():
             value['offsets'] = [0, 0, 0]
             for channel in value['channels']:
                 self._motion_channels.append((key, channel))
 
-        # for ii in range(frame_count):
-        #     channel_values = []
-        #     for key, value in self._skeleton.items():
-        #         for channel in value['channels']:
-        #             channel_values.append((key, channel, float(1)))
-        #     self._motions[ii] = (frame_time, channel_values)
-        #     frame_time = frame_time + framerate
-
     def add_frame(self, frame_id, hand):
         channel_values = []
-        for key, value in self._skeleton.items():
+        for joint_name, joint_value in self._skeleton.items():
             if frame_id == 0:
                 # offsets
-                if key == 'Leap_Root':
+                if joint_name == 'Leap_Root':
                     x_offset, y_offset, z_offset, _, _, _ = self._get_root_values()
-                elif key == 'RightHand':
+                elif joint_name == 'RightElbow':
+                    x_offset, y_offset, z_offset, _, _, _ = self._get_elbow_values(hand)
+                elif joint_name == 'RightHand':
                     x_offset, y_offset, z_offset, _, _, _ = self._get_wrist_values(hand)
-                elif 'End' in key:
+                elif 'End' in joint_name:
                     # Workaround for getting motion data also from finger tip by adding a not used end
                     x_offset = y_offset = z_offset = 0.0
                 else:
-                    x_offset, y_offset, z_offset, _, _, _ = self._get_finger_values(key, hand)
-                value['offsets'] = [x_offset, y_offset, z_offset]
+                    x_offset, y_offset, z_offset, _, _, _ = self._get_finger_values(joint_name, hand)
+                joint_value['offsets'] = [x_offset, y_offset, z_offset]  # y, z, x
 
-                # print("pitch hand x = {}, angle hand x = {}".format(hand.basis.x_basis.pitch * Leap.RAD_TO_DEG,
-                #                                                     hand.basis.x_basis.angle_to(Leap.Vector.x_axis) * Leap.RAD_TO_DEG))
-
-            for channel in value['channels']:
+            for channel in joint_value['channels']:
                 # motion data with rotations
-                if key == 'Leap_Root':
+                if joint_name == 'Leap_Root':
                     x_pos, y_pos, z_pos, x_rot, y_rot, z_rot = self._get_root_values()
-                elif key == 'RightHand':
+                elif joint_name == 'RightElbow':
+                    x_pos, y_pos, z_pos, x_rot, y_rot, z_rot = self._get_elbow_values(hand)
+                elif joint_name == 'RightHand':
                     x_pos, y_pos, z_pos, x_rot, y_rot, z_rot = self._get_wrist_values(hand)
                 else:
-                    x_pos, y_pos, z_pos, x_rot, y_rot, z_rot = self._get_finger_values(key, hand)
+                    x_pos, y_pos, z_pos, x_rot, y_rot, z_rot = self._get_finger_values(joint_name, hand)
 
                 if channel == 'Xposition':
-                    channel_values.append((key, channel, x_pos))
+                    channel_values.append((joint_name, channel, x_pos))
                 if channel == 'Yposition':
-                    channel_values.append((key, channel, y_pos))
+                    channel_values.append((joint_name, channel, y_pos))
                 if channel == 'Zposition':
-                    channel_values.append((key, channel, z_pos))
+                    channel_values.append((joint_name, channel, z_pos))
                 if channel == 'Xrotation':
-                    channel_values.append((key, channel, x_rot))
+                    channel_values.append((joint_name, channel, x_rot))
                 if channel == 'Yrotation':
-                    channel_values.append((key, channel, y_rot))
+                    channel_values.append((joint_name, channel, y_rot))
                 if channel == 'Zrotation':
-                    channel_values.append((key, channel, z_rot))
+                    channel_values.append((joint_name, channel, z_rot))
 
         self._motions.append((frame_id, channel_values))
 
@@ -116,14 +101,37 @@ class Leap2BVH:
     def _get_root_values():
         return 0, 0, 0, 0, 0, 0
 
-    def _get_wrist_values(self, hand):
-        x_wrist = hand.wrist_position.x
-        y_wrist = hand.wrist_position.y
-        z_wrist = hand.wrist_position.z
+    def _get_elbow_values(self, hand):
+        arm = hand.arm
+
+        x_elbow = arm.elbow_position.x
+        y_elbow = arm.elbow_position.y
+        z_elbow = arm.elbow_position.z
 
         # rotation matrix from basis vectors
-        rotmat = self._basis2rot(hand.basis)
+        rotmat = self._basis2rot(arm.basis)
         eul_x, eul_y, eul_z = rot2eul(rotmat)
+
+        return \
+            x_elbow, \
+            y_elbow, \
+            z_elbow, \
+            eul_x * Leap.RAD_TO_DEG, \
+            eul_y * Leap.RAD_TO_DEG, \
+            eul_z * Leap.RAD_TO_DEG
+
+    def _get_wrist_values(self, hand):
+        arm = hand.arm
+
+        x_wrist = hand.wrist_position.x - arm.elbow_position.x
+        y_wrist = hand.wrist_position.y - arm.elbow_position.y
+        z_wrist = hand.wrist_position.z - arm.elbow_position.z
+
+        # rotation matrix from basis vectors
+
+        rotmat_prev = self._basis2rot(arm.basis)
+        rotmat_next = self._basis2rot(hand.basis)
+        eul_x, eul_y, eul_z = rot2eul(np.matmul(rotmat_next, np.transpose(rotmat_prev)))
 
         return \
             x_wrist, \
@@ -141,7 +149,7 @@ class Leap2BVH:
         # vector between wrist and metacarpal proximal (carpals)
         if bone_number == 1 or ('Thumb' in key and bone_number == 2):
             bone = fingerlist[0].bone(self._get_bone_type(bone_number))
-            x_wrist, y_wrist, z_wrist, _, _, _ = self._get_wrist_values(hand)
+
             # print("1: key: {}, bone_number: {}, bone: {}, prev_joint: {}"
             #       .format(key, bone_number, bone, bone.prev_joint))
             # print("p1_rot = [{}; {}; {}];".format(x_wrist, y_wrist, z_wrist))
@@ -153,9 +161,9 @@ class Leap2BVH:
             # print('bone.next_joint.z = {}, bone.prev_joint.z = {}, z_wrist = {}, vec_prev = {}'.format(bone.next_joint.z, bone.prev_joint.z, z_wrist, vec_prev[2]))
 
             return \
-                bone.prev_joint.x - x_wrist, \
-                bone.prev_joint.y - y_wrist, \
-                bone.prev_joint.z - z_wrist, \
+                bone.prev_joint.x - hand.wrist_position.x, \
+                bone.prev_joint.y - hand.wrist_position.y, \
+                bone.prev_joint.z - hand.wrist_position.z, \
                 0.0, \
                 0.0, \
                 0.0
@@ -163,26 +171,15 @@ class Leap2BVH:
         # vector for bones metacarpal, proximal, intermediate, distal
         bone_prev = fingerlist[0].bone(self._get_bone_type(bone_number - 1))
 
-        #  no rotation for finger tip
         if not bone_number == 5:
             bone_next = fingerlist[0].bone(self._get_bone_type(bone_number))
 
-            # # rotation matrix from basis vectors
-            # rotmat_prev = self._basis2rot(bone_prev.basis)
-            # rotmat_next = self._basis2rot(bone_next.basis)
-            #
-            # # rotation matrix between rotmat_prev and rotmat_next by multiplying
-            # eul_x, eul_y, eul_z = rot2eul(np.matmul(rotmat_next, np.transpose(rotmat_prev)))
+            # rotation matrix from basis vectors
+            rotmat_prev = self._basis2rot(bone_prev.basis)
+            rotmat_next = self._basis2rot(bone_next.basis)
 
-            vec_prev = np.array([bone_prev.next_joint.x - bone_prev.prev_joint.x,
-                                 bone_prev.next_joint.y - bone_prev.prev_joint.y,
-                                 bone_prev.next_joint.z - bone_prev.prev_joint.z])
-
-            vec_next = np.array([bone_next.next_joint.x - bone_next.prev_joint.x,
-                                 bone_next.next_joint.y - bone_next.prev_joint.y,
-                                 bone_next.next_joint.z - bone_next.prev_joint.z])
-
-            eul_x, eul_y, eul_z = vec2eul(vec_prev, vec_next)
+            # rotation matrix between rotmat_prev and rotmat_next by multiplying
+            eul_x, eul_y, eul_z = rot2eul(np.matmul(rotmat_next, np.transpose(rotmat_prev)))
 
             return \
                 bone_prev.next_joint.x - bone_prev.prev_joint.x, \
@@ -192,6 +189,7 @@ class Leap2BVH:
                 eul_y * Leap.RAD_TO_DEG, \
                 eul_z * Leap.RAD_TO_DEG
 
+        #  no rotation, only offset for finger tip
         return \
             bone_prev.next_joint.x - bone_prev.prev_joint.x, \
             bone_prev.next_joint.y - bone_prev.prev_joint.y, \
@@ -243,8 +241,30 @@ class Leap2BVH:
                         [basis.x_basis.y, basis.y_basis.y, basis.z_basis.y],
                         [basis.x_basis.z, basis.y_basis.z, basis.z_basis.z]])
 
-    def _to_DataFrame(self):
-        """Returns all of the channels parsed from the file as a pandas DataFrame"""
+    @staticmethod
+    def _get_channels(joint_name, channel_setting):
+        if '_End' in joint_name:
+            return []
+
+        channels_position = ['Xposition', 'Yposition', 'Zposition']
+        channels_rotation = ['Xrotation', 'Yrotation', 'Zrotation']
+
+        order = get_order()  # rotation order, i.e. xyz
+        channels_rotation = \
+            [channels_rotation[order[0]]] + [channels_rotation[order[1]]] + [channels_rotation[order[2]]]
+
+        # TODO: make position joints generic (Leap_root, RightElbow), parent==None or parent==self.root_name
+        if channel_setting == 'position' or joint_name in ('Leap_Root', 'RightElbow'):
+            return channels_position + channels_rotation
+
+        return channels_rotation
+
+    def _skeleton_apply_channels(self, channel_setting):
+        for joint_name, joint_dict in self._skeleton.items():
+            joint_dict['channels'] = self._get_channels(joint_name, channel_setting)
+
+    def _motion2DataFrame(self):
+        """Returns all of the channels parsed from the LeapMotion sensor as a pandas DataFrame"""
 
         import pandas as pd
         time_index = pd.to_timedelta([f[0] for f in self._motions], unit='s')
