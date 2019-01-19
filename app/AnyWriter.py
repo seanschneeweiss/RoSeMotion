@@ -45,6 +45,9 @@ class AnyWriter:
         # print(finger_values)
         # print(self._calctimeseries(data, entries))
 
+        # workaround for printing more than 1000 values
+        np.set_printoptions(threshold=np.inf)
+
         template_dict = {'TIMESERIES': self._joint2array(self._calctimeseries(data, entries))}
         template_string = open(self._template_directory + 'TimeSeries.template', 'r').read().format(**template_dict)
         f = open(self._output_directory + 'TimeSeries.any', 'w')
