@@ -26,7 +26,7 @@ def get_order():
 
 def _rot2eulsimple(rotmat):
     eul = np.zeros(3)
-    if rotmat[1, 1] < 1 and rotmat[1, 1] > -1:
+    if -1 < rotmat[1, 1] < 1:
         eul[1] = math.acos(rotmat[1, 1])
     if rotmat[1, 1] >= 1.0:
         eul[1] = 0
