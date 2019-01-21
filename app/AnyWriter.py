@@ -30,7 +30,8 @@ class AnyWriter:
         pass
 
     def write(self, data):
-        np.set_printoptions(formatter={'float': '{: 0.3f}'.format})
+        # threshold: workaround for printing more than 1000 values
+        np.set_printoptions(formatter={'float': '{: 0.3f}'.format}, threshold=np.inf)
         finger_values = {}
 
         for finger_name, joint_mapping in self.mapping.items():
@@ -40,14 +41,9 @@ class AnyWriter:
                     data.values[joint_mapping['joint_leap']
                                 + self._joint2channel(finger_name, joint_name)].values)
 
-                entries = len(finger_values[finger_name][joint_name])
+                entries = len(finger_values[finger_name][joint_name])  # TODO: move this out of for loop
 
-        # print(finger_values)
-        # print(self._calctimeseries(data, entries))
-
-        # workaround for printing more than 1000 values
-        np.set_printoptions(threshold=np.inf)
-
+        # TODO: add TIMESERIES to the dictionary in the __init__ method
         template_dict = {'TIMESERIES': self._joint2array(self._calctimeseries(data, entries))}
         template_string = open(self._template_directory + 'TimeSeries.template', 'r').read().format(**template_dict)
         f = open(self._output_directory + 'TimeSeries.any', 'w')
@@ -67,9 +63,6 @@ class AnyWriter:
             f.write(template_string)
             f.close()
             print('"{} written"'.format(f.name))
-
-    @staticmethod
-    def _floatformatter(x): "%.2f" % x
 
     @staticmethod
     def _joint2channel(finger_name, joint_name):
