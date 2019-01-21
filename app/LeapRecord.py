@@ -65,9 +65,12 @@ class LeapRecord(Leap.Listener):
             hand = frame.hands[0]
 
             if hand.is_left:
-                print("Please use your right hand")
+                sys.stdout.write("Please use your right hand\r")
+                sys.stdout.flush()
 
             if hand.is_right and hand.is_valid:
+                sys.stdout.write("Valid right hand found, recording data ...\r")
+                sys.stdout.flush()
                 # Check if the hand has any fingers
                 fingers = hand.fingers
                 if not fingers.is_empty:
