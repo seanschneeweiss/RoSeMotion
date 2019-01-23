@@ -35,10 +35,13 @@ class LeapRecord(Leap.Listener):
     def on_exit(self, controller):
         print("Exited")
 
+        bvh_data = self.leap2bvh.parse()
+
         bvh_filepath = '../output/BVH/{}.bvh'.format(self.file_name)
         bvh_writer = Pymo_BVHWriter()
         bvh_file = open(bvh_filepath, 'w')
-        bvh_writer.write(self.leap2bvh.parse(), bvh_file)
+        # bvh_writer.write(self.leap2bvh.parse(), bvh_file)
+        bvh_writer.write(bvh_data, bvh_file)
         bvh_file.close()
         print('"{}" written'.format(bvh_file.name))
 
@@ -53,7 +56,8 @@ class LeapRecord(Leap.Listener):
             print('"{}" written from "{}"'.format(c3d_filepath, bvh_file.name))
 
         if self.write_anybody:
-            AnyWriter().write(Pymo_BVHParser().parse(bvh_file.name))
+            # AnyWriter().write(Pymo_BVHParser().parse(bvh_file.name))
+            AnyWriter().write(bvh_data)
             print('Anybody files written from "{}"'.format(bvh_file.name))
 
     def on_frame(self, controller):
@@ -65,12 +69,15 @@ class LeapRecord(Leap.Listener):
             hand = frame.hands[0]
 
             if hand.is_left:
-                sys.stdout.write("Please use your right hand\r")
-                sys.stdout.flush()
+                # sys.stdout.write("Please use your right hand\r")
+                # sys.stdout.flush()
+                print("Please use your right hand")
 
             if hand.is_right and hand.is_valid:
-                sys.stdout.write("Valid right hand found, recording data ...\r")
-                sys.stdout.flush()
+                # sys.stdout.write("Valid right hand found, recording data ...\r")
+                # sys.stdout.flush()
+                print("Valid right hand found, recording data ...")
+
                 # Check if the hand has any fingers
                 fingers = hand.fingers
                 if not fingers.is_empty:

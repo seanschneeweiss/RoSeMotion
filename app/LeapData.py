@@ -3,7 +3,7 @@ import numpy as np
 
 from config.Skeleton import Skeleton
 from resources.pymo.pymo.data import MocapData
-from RotationUtil import rot2eul, get_order
+from RotationUtil import rot2eul, vec2eul, get_order
 
 import os, sys, inspect
 src_dir = os.path.dirname(inspect.getfile(inspect.currentframe()))
@@ -59,28 +59,28 @@ class LeapData:
             if frame_id == 0:
                 # offsets
                 if joint_name == 'Leap_Root':
-                    x_offset, y_offset, z_offset, _, _, _ = self._get_root_values()
+                    x_offset, y_offset, z_offset, _, _, _ = LeapData._get_root_values()
                 elif joint_name == 'RightElbow':
-                    x_offset, y_offset, z_offset, _, _, _ = self._get_elbow_values(hand)
+                    x_offset, y_offset, z_offset, _, _, _ = LeapData._get_elbow_values(hand)
                 elif joint_name == 'RightHand':
-                    x_offset, y_offset, z_offset, _, _, _ = self._get_wrist_values(hand)
+                    x_offset, y_offset, z_offset, _, _, _ = LeapData._get_wrist_values(hand)
                 elif 'End' in joint_name:
                     # Workaround for getting motion data also from finger tip by adding a not used end
                     x_offset = y_offset = z_offset = 0.0
                 else:
-                    x_offset, y_offset, z_offset, _, _, _ = self._get_finger_values(joint_name, hand)
+                    x_offset, y_offset, z_offset, _, _, _ = LeapData._get_finger_values(joint_name, hand)
                 joint_value['offsets'] = [x_offset, y_offset, z_offset]  # y, z, x
 
             for channel in joint_value['channels']:
                 # motion data with rotations
                 if joint_name == 'Leap_Root':
-                    x_pos, y_pos, z_pos, x_rot, y_rot, z_rot = self._get_root_values()
+                    x_pos, y_pos, z_pos, x_rot, y_rot, z_rot = LeapData._get_root_values()
                 elif joint_name == 'RightElbow':
-                    x_pos, y_pos, z_pos, x_rot, y_rot, z_rot = self._get_elbow_values(hand)
+                    x_pos, y_pos, z_pos, x_rot, y_rot, z_rot = LeapData._get_elbow_values(hand)
                 elif joint_name == 'RightHand':
-                    x_pos, y_pos, z_pos, x_rot, y_rot, z_rot = self._get_wrist_values(hand)
+                    x_pos, y_pos, z_pos, x_rot, y_rot, z_rot = LeapData._get_wrist_values(hand)
                 else:
-                    x_pos, y_pos, z_pos, x_rot, y_rot, z_rot = self._get_finger_values(joint_name, hand)
+                    x_pos, y_pos, z_pos, x_rot, y_rot, z_rot = LeapData._get_finger_values(joint_name, hand)
 
                 if channel == 'Xposition':
                     channel_values.append((joint_name, channel, x_pos))
@@ -101,7 +101,8 @@ class LeapData:
     def _get_root_values():
         return 0, 0, 0, 0, 0, 0
 
-    def _get_elbow_values(self, hand):
+    @staticmethod
+    def _get_elbow_values(hand):
         arm = hand.arm
 
         x_elbow = arm.elbow_position.x
@@ -109,7 +110,7 @@ class LeapData:
         z_elbow = arm.elbow_position.z
 
         # rotation matrix from basis vectors
-        rotmat = self._basis2rot(arm.basis)
+        rotmat = LeapData._basis2rot(arm.basis)
         eul_x, eul_y, eul_z = rot2eul(rotmat)
 
         return \
@@ -120,7 +121,8 @@ class LeapData:
             eul_y * Leap.RAD_TO_DEG, \
             eul_z * Leap.RAD_TO_DEG
 
-    def _get_wrist_values(self, hand):
+    @staticmethod
+    def _get_wrist_values(hand):
         arm = hand.arm
 
         x_wrist = hand.wrist_position.x - arm.elbow_position.x
@@ -129,8 +131,8 @@ class LeapData:
 
         # rotation matrix from basis vectors
 
-        rotmat_prev = self._basis2rot(arm.basis)
-        rotmat_next = self._basis2rot(hand.basis)
+        rotmat_prev = LeapData._basis2rot(arm.basis)
+        rotmat_next = LeapData._basis2rot(hand.basis)
         eul_x, eul_y, eul_z = rot2eul(np.matmul(rotmat_next, np.transpose(rotmat_prev)))
 
         return \
@@ -141,10 +143,11 @@ class LeapData:
             eul_y * Leap.RAD_TO_DEG, \
             eul_z * Leap.RAD_TO_DEG
 
-    def _get_finger_values(self, key, hand):
-        key, bone_number = self._split_key(key)
+    @staticmethod
+    def _get_finger_values(key, hand):
+        key, bone_number = LeapData._split_key(key)
 
-        fingerlist = hand.fingers.finger_type(self._get_finger_type(key))
+        fingerlist = hand.fingers.finger_type(LeapData._get_finger_type(key))
 
         # vector between wrist and metacarpal proximal (carpals)
         if bone_number == 1 or ('Thumb' in key and bone_number == 2):
@@ -169,18 +172,18 @@ class LeapData:
                 0.0
 
         # vector for bones metacarpal, proximal, intermediate, distal
-        bone_prev = fingerlist[0].bone(self._get_bone_type(bone_number - 1))
+        bone_prev = fingerlist[0].bone(LeapData._get_bone_type(bone_number - 1))
 
         if not bone_number == 5:
-            bone_next = fingerlist[0].bone(self._get_bone_type(bone_number))
+            bone_next = fingerlist[0].bone(LeapData._get_bone_type(bone_number))
 
             # rotation matrix from basis vectors
-            rotmat_prev = self._basis2rot(bone_prev.basis)
-            rotmat_next = self._basis2rot(bone_next.basis)
+            rotmat_prev = LeapData._basis2rot(bone_prev.basis)
+            rotmat_next = LeapData._basis2rot(bone_next.basis)
 
             # rotation matrix between rotmat_prev and rotmat_next by multiplying
             eul_x, eul_y, eul_z = rot2eul(np.matmul(rotmat_next, np.transpose(rotmat_prev)))
-
+         
             return \
                 bone_prev.next_joint.x - bone_prev.prev_joint.x, \
                 bone_prev.next_joint.y - bone_prev.prev_joint.y, \
