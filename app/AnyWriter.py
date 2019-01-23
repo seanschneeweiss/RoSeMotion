@@ -8,30 +8,35 @@ class AnyWriter:
         self.mapping = {
             'Finger1': {'joint_leap': 'RightHandThumb',
                         'joint_any': ['CMCABDUCTION', 'CMCFLEXION', 'MCPFLEXION', 'MCPABDUCTION', 'DIPFLEXION'],
-                        'template': 'Thumb.template'},
+                        'template': 'Thumb.template',
+                        'function': ['negative']},
             'Finger2': {'joint_leap': 'RightHandIndex',
                         'joint_any': ['MCPFLEXION', 'MCPABDUCTION', 'PIPFLEXION', 'DIPFLEXION'],
-                        'template': 'Finger.template'},
+                        'template': 'Finger.template',
+                        'function': ['negative']},
             'Finger3': {'joint_leap': 'RightHandMiddle',
                         'joint_any': ['MCPFLEXION', 'MCPABDUCTION', 'PIPFLEXION', 'DIPFLEXION'],
-                        'template': 'Finger.template'},
+                        'template': 'Finger.template',
+                        'function': ['negative']},
             'Finger4': {'joint_leap': 'RightHandRing',
                         'joint_any': ['MCPFLEXION', 'MCPABDUCTION', 'PIPFLEXION', 'DIPFLEXION'],
-                        'template': 'Finger.template'},
+                        'template': 'Finger.template',
+                        'function': ['negative']},
             'Finger5': {'joint_leap': 'RightHandPinky',
                         'joint_any': ['MCPFLEXION', 'MCPABDUCTION', 'PIPFLEXION', 'DIPFLEXION'],
-                        'template': 'Finger.template'},
+                        'template': 'Finger.template',
+                        'function': ['negative']},
             'Wrist': {'joint_leap': 'RightHand',
                       'joint_any': ['WRISTFLEXION', 'WRISTABDUCTION'],
-                      'template': 'Wrist.template'},
+                      'template': 'Wrist.template',
+                      'function': ['negative']},
             'Elbow': {'joint_leap': 'RightElbow',
                       'joint_any': ['ELBOWPRONATION'],
-                      'template': 'Elbow.template'}}
+                      'template': 'Elbow.template',
+                      'function': ['correct_pronation']}}
         pass
 
     def write(self, data):
-        # threshold: workaround for printing more than 1000 values
-        np.set_printoptions(formatter={'float': '{: 0.3f}'.format}, threshold=np.inf)
         finger_values = {}
 
         for finger_name, joint_mapping in self.mapping.items():
@@ -43,6 +48,9 @@ class AnyWriter:
 
                 entries = len(finger_values[finger_name][joint_name])  # TODO: move this out of for loop
 
+        # threshold: workaround for printing more than 1000 values
+        np.set_printoptions(formatter={'float': '{: 0.4f}'.format}, threshold=np.inf)
+
         # TODO: add TIMESERIES to the dictionary in the __init__ method
         template_dict = {'TIMESERIES': self._joint2array(self._calctimeseries(data, entries))}
         template_string = open(self._template_directory + 'TimeSeries.template', 'r').read().format(**template_dict)
@@ -50,12 +58,17 @@ class AnyWriter:
         f.write(template_string)
         f.close()
 
+        np.set_printoptions(formatter={'float': '{: 0.2f}'.format})
+
         #  finger_values = {'Finger2': {'MCPABDUCTION': [0, 1, 2], 'MCPFLEXION': [0, 1, 2]}, 'Finger3': ...}
         for finger_name, joint_mapping in self.mapping.items():
             template_dict = {'FINGERNAME': finger_name}
 
             for joint_name in joint_mapping['joint_any']:
-                template_dict[joint_name] = self._joint2arrayneg(finger_values[finger_name][joint_name])
+                # Apply functions for correcting data, if set in mapping (see __init__ method)
+                joint_values = AnyWriter._apply_function(joint_mapping['function'],
+                                                         finger_values[finger_name][joint_name])
+                template_dict[joint_name] = self._joint2array(joint_values)
 
             template_filename = joint_mapping['template']
             template_string = open(self._template_directory + template_filename, 'r').read().format(**template_dict)
@@ -119,5 +132,12 @@ class AnyWriter:
         return np.array2string(joint_values.astype(float), separator=', ')[1:-1]
 
     @staticmethod
-    def _joint2arrayneg(joint_values):
-        return np.array2string(np.negative(joint_values.astype(float)), separator=', ')[1:-1]
+    def _apply_function(operations, joint_values):
+        for op in operations:
+            if op == 'negative':
+                joint_values = np.negative(joint_values)
+
+            if op == 'correct_pronation':
+                joint_values = 90.0 + joint_values
+
+        return joint_values
