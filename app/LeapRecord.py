@@ -33,7 +33,7 @@ class LeapRecord(Leap.Listener):
         print("Disconnected")
 
     def on_exit(self, controller):
-        print("Exited")
+        print("\nExited")
 
         bvh_data = self.leap2bvh.parse()
 
@@ -69,14 +69,13 @@ class LeapRecord(Leap.Listener):
             hand = frame.hands[0]
 
             if hand.is_left:
-                # sys.stdout.write("Please use your right hand\r")
-                # sys.stdout.flush()
-                print("Please use your right hand")
+                sys.stdout.write("\rPlease use your right hand")
+                sys.stdout.flush()
 
             if hand.is_right and hand.is_valid:
-                # sys.stdout.write("Valid right hand found, recording data ...\r")
-                # sys.stdout.flush()
-                print("Valid right hand found, recording data ...")
+                sys.stdout.write("\rValid right hand found, recording data. Current frame: {}"
+                                 .format(self.actual_frame))
+                sys.stdout.flush()
 
                 # Check if the hand has any fingers
                 fingers = hand.fingers
