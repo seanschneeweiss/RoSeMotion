@@ -84,11 +84,11 @@ class AnyWriter:
         if joint_name == 'CMCABDUCTION':
             # CMCABDUCTION is named CMCDEVIATION in Anybody unfortunately
             # Thumb only
-            return '2_Yrotation'
+            return '2_Xrotation'
 
         if joint_name == 'CMCFLEXION':
             # Thumb only
-            return '2_Xrotation'
+            return '2_Yrotation'
 
         if joint_name == 'MCPFLEXION':
             return '3_Xrotation' if thumb else '2_Xrotation'

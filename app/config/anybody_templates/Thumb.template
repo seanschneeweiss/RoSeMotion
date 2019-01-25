@@ -1,6 +1,6 @@
 //Interpolationvector for {FINGERNAME}
-AnyVector CMCDeviationVec={{{CMCABDUCTION}}};
+AnyVector CMCAbductionVec={{{CMCABDUCTION}}};
 AnyVector CMCFlexionVec={{{CMCFLEXION}}};
 AnyVector MCPFlexionVec={{{MCPFLEXION}}};
-AnyVector MCPDeviationVec={{{MCPABDUCTION}}};
+AnyVector MCPAbductionVec={{{MCPABDUCTION}}};
 AnyVector DIPFlexionVec={{{DIPFLEXION}}};

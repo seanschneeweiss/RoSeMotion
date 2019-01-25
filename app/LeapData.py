@@ -149,9 +149,9 @@ class LeapData:
 
         fingerlist = hand.fingers.finger_type(LeapData._get_finger_type(key))
 
-        # vector between wrist and metacarpal proximal (carpals)
-        if bone_number == 1 or ('Thumb' in key and bone_number == 2):
-            bone = fingerlist[0].bone(self._get_bone_type(bone_number))
+        # vector between wrist and metacarpal proximal (carpals), thumb is excluded
+        if bone_number == 1:
+            bone = fingerlist[0].bone(LeapData._get_bone_type(bone_number))
 
             # print("1: key: {}, bone_number: {}, bone: {}, prev_joint: {}"
             #       .format(key, bone_number, bone, bone.prev_joint))
@@ -170,6 +170,38 @@ class LeapData:
                 0.0, \
                 0.0, \
                 0.0
+        
+        # thumb carpometacarpal joint
+        if 'Thumb' in key and bone_number == 2:
+            bone = fingerlist[0].bone(LeapData._get_bone_type(bone_number))
+            
+            # rotmat_prev = LeapData._basis2rot(hand.basis)
+
+            # basis = bone.basis
+            # rotmat_next = np.array([[basis.z_basis.x, basis.y_basis.x, basis.x_basis.x],
+            #                         [basis.z_basis.y, basis.y_basis.y, basis.x_basis.y],
+            #                         [basis.z_basis.z, basis.y_basis.z, basis.x_basis.z]])
+
+            # rotmat_next = LeapData._basis2rot(bone.basis)
+
+            # eul_x, eul_y, eul_z = rot2eul(np.matmul(rotmat_next, np.transpose(rotmat_prev)))
+            vec_prev = np.array([bone.prev_joint.x - hand.wrist_position.x,
+                                 bone.prev_joint.y - hand.wrist_position.y,
+                                 bone.prev_joint.z - hand.wrist_position.z])
+
+            vec_next = np.array([bone.next_joint.x - bone.prev_joint.x,
+                                 bone.next_joint.y - bone.prev_joint.y,
+                                 bone.next_joint.z - bone.prev_joint.z])
+
+            eul_x, eul_y, eul_z = vec2eul(vec_prev, vec_next)
+            
+            return \
+                bone.prev_joint.x - hand.wrist_position.x, \
+                bone.prev_joint.y - hand.wrist_position.y, \
+                bone.prev_joint.z - hand.wrist_position.z, \
+                eul_x * Leap.RAD_TO_DEG, \
+                eul_y * Leap.RAD_TO_DEG, \
+                eul_z * Leap.RAD_TO_DEG
 
         # vector for bones metacarpal, proximal, intermediate, distal
         bone_prev = fingerlist[0].bone(LeapData._get_bone_type(bone_number - 1))
