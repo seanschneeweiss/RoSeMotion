@@ -1,5 +1,6 @@
+from config.Configuration import env
+
 from LeapData import LeapData
-from resources.pymo.pymo.parsers import BVHParser as Pymo_BVHParser
 from resources.pymo.pymo.writers import BVHWriter as Pymo_BVHWriter
 from resources.b3d.bvh_reader import BVH as B3D_BVHReader
 from resources.b3d.c3d_convertor import Convertor as B3D_C3DWriter
@@ -18,10 +19,17 @@ class LeapRecord(Leap.Listener):
         print("Initialized")
 
         # Initialize Leap2DataFrame parser
-        self.leap2bvh = LeapData(channel_setting='rotation')
-        self.write_c3d = False
-        self.write_anybody = True
-        self.file_name = 'LeapRecord'
+        self.leap2bvh = LeapData(channel_setting=env.config.channels)
+
+        self.bvh_write = env.config.bvh
+        self.bvh_filename = env.config.bvh_path + '\\' + env.config.bvh_filename + '.bvh'
+
+        self.c3d_write = env.config.c3d
+        self.c3d_filename = env.config.c3d_path + '\\' + env.config.c3d_filename + '.c3d'
+
+        self.anybody_write = env.config.anybody
+        self.anybody_template_path = env.config.anybody_template_path + '\\'
+        self.amybody_output_path = env.config.anybody_output_path + '\\'
 
         self.actual_frame = 0
 
@@ -33,32 +41,42 @@ class LeapRecord(Leap.Listener):
         print("Disconnected")
 
     def on_exit(self, controller):
-        print("\nExited")
+        print("Exited")
 
         bvh_data = self.leap2bvh.parse()
 
-        bvh_filepath = '../output/BVH/{}.bvh'.format(self.file_name)
-        bvh_writer = Pymo_BVHWriter()
-        bvh_file = open(bvh_filepath, 'w')
-        # bvh_writer.write(self.leap2bvh.parse(), bvh_file)
-        bvh_writer.write(bvh_data, bvh_file)
-        bvh_file.close()
-        print('"{}" written'.format(bvh_file.name))
+        # bvh_filepath = '../output/BVH/{}.bvh'.format(self.bvh_filename)
+        if self.bvh_write:
+            bvh_writer = Pymo_BVHWriter()
+            bvh_file = open(self.bvh_filename, 'w')
+            bvh_writer.write(bvh_data, bvh_file)
+            bvh_file.close()
+            print('"{}" written'.format(bvh_file.name))
 
-        if self.write_c3d:
+        if self.c3d_write:
+            # workaround, need bvh
+            bvh_writer = Pymo_BVHWriter()
+            bvh_file = open(self.c3d_filename.strip('.c3d') + '-tmp.bvh', 'w')
+            bvh_writer.write(bvh_data, bvh_file)
+            bvh_file.close()
+            print('"{}" written'.format(bvh_file.name))
+
             bvh_reader = B3D_BVHReader()
             if not bvh_reader.load_from_file(bvh_file.name):
                 raise Exception('error: can not read "{}"'.format(bvh_file.name))
 
-            c3d_filepath = '../output/C3D/{}.c3d'.format(self.file_name)
             c3d_writer = B3D_C3DWriter()
-            c3d_writer.convert(bvh_reader, c3d_filepath)
-            print('"{}" written from "{}"'.format(c3d_filepath, bvh_file.name))
+            c3d_writer.convert(bvh_reader, self.c3d_filename)
+            print('"{}" written from "{}"'.format(self.c3d_filename, bvh_file.name))
 
-        if self.write_anybody:
-            # AnyWriter().write(Pymo_BVHParser().parse(bvh_file.name))
-            AnyWriter().write(bvh_data)
-            print('Anybody files written from "{}"'.format(bvh_file.name))
+            os.remove(bvh_file.name)
+            print('"{}" deleted'.format(bvh_file.name))
+
+        if self.anybody_write:
+            AnyWriter(template_directory=self.anybody_template_path,
+                      output_directory=self.amybody_output_path
+                      ).write(bvh_data)
+            print('Anybody files written to "{}"'.format(self.amybody_output_path))
 
     def on_frame(self, controller):
         # Get the most recent frame
@@ -69,12 +87,14 @@ class LeapRecord(Leap.Listener):
             hand = frame.hands[0]
 
             if hand.is_left:
-                sys.stdout.write("\rPlease use your right hand")
+                # sys.stdout.write("\rPlease use your right hand")
+                print("Please use your right hand")
                 sys.stdout.flush()
 
             if hand.is_right and hand.is_valid:
-                sys.stdout.write("\rValid right hand found, recording data. Current frame: {}"
-                                 .format(self.actual_frame))
+                # sys.stdout.write("\rValid right hand found, recording data. Current frame: {}"
+                #                  .format(self.actual_frame))
+                print("Valid right hand found, recording data. Current frame: {}".format(self.actual_frame))
                 sys.stdout.flush()
 
                 # Check if the hand has any fingers
@@ -84,7 +104,7 @@ class LeapRecord(Leap.Listener):
                     self.actual_frame = self.actual_frame + 1
 
 
-def main():
+def start_recording():
     # Create a sample listener and controller
     listener = LeapRecord()
     controller = Leap.Controller()
@@ -93,7 +113,7 @@ def main():
     controller.add_listener(listener)
 
     # Keep this process running until Enter is pressed
-    print("Press Enter to quit...")
+    print("Listener added")
     try:
         sys.stdin.readline()
     except KeyboardInterrupt:
@@ -101,7 +121,4 @@ def main():
     finally:
         # Remove the sample listener when done
         controller.remove_listener(listener)
-
-
-if __name__ == "__main__":
-    main()
+        print("Listener removed")
