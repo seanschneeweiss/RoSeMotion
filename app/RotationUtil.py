@@ -4,9 +4,10 @@ import math
 import os, sys, inspect
 src_dir = os.path.dirname(inspect.getfile(inspect.currentframe()))
 # Windows and Linux
-arch_dir = './resources/LeapSDK/lib/x64' if sys.maxsize > 2 ** 32 else './resources/LeapSDK/lib/x86'
+arch_dir = './resources/LeapSDK/v4_python37/lib/x64' if sys.maxsize > 2 ** 32 \
+    else './resources/LeapSDK/v4_python37/lib/x86'
 sys.path.insert(0, os.path.abspath(os.path.join(src_dir, arch_dir)))
-from resources.LeapSDK.lib import Leap
+from resources.LeapSDK.v4_python37 import Leap
 
 
 def get_order():

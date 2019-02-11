@@ -2,16 +2,17 @@ from config.Configuration import env
 
 from LeapData import LeapData
 from resources.pymo.pymo.writers import BVHWriter as Pymo_BVHWriter
-from resources.b3d.bvh_reader import BVH as B3D_BVHReader
-from resources.b3d.c3d_convertor import Convertor as B3D_C3DWriter
+# from resources.b3d.bvh_reader import BVH as B3D_BVHReader
+# from resources.b3d.c3d_convertor import Convertor as B3D_C3DWriter
 from AnyWriter import AnyWriter
 
 import os, sys, inspect
 src_dir = os.path.dirname(inspect.getfile(inspect.currentframe()))
 # Windows and Linux
-arch_dir = './resources/LeapSDK/lib/x64' if sys.maxsize > 2 ** 32 else './resources/LeapSDK/lib/x86'
+arch_dir = './resources/LeapSDK/v4_python37/lib/x64' if sys.maxsize > 2 ** 32 \
+    else './resources/LeapSDK/v4_python37/lib/x86'
 sys.path.insert(0, os.path.abspath(os.path.join(src_dir, arch_dir)))
-from resources.LeapSDK.lib import Leap
+from resources.LeapSDK.v4_python37 import Leap
 
 
 class LeapRecord(Leap.Listener):
@@ -53,24 +54,24 @@ class LeapRecord(Leap.Listener):
             bvh_file.close()
             print('"{}" written'.format(bvh_file.name))
 
-        if self.c3d_write:
+        # if self.c3d_write:
             # workaround, need bvh
-            bvh_writer = Pymo_BVHWriter()
-            bvh_file = open(self.c3d_filename.strip('.c3d') + '-tmp.bvh', 'w')
-            bvh_writer.write(bvh_data, bvh_file)
-            bvh_file.close()
-            print('"{}" written'.format(bvh_file.name))
-
-            bvh_reader = B3D_BVHReader()
-            if not bvh_reader.load_from_file(bvh_file.name):
-                raise Exception('error: can not read "{}"'.format(bvh_file.name))
-
-            c3d_writer = B3D_C3DWriter()
-            c3d_writer.convert(bvh_reader, self.c3d_filename)
-            print('"{}" written from "{}"'.format(self.c3d_filename, bvh_file.name))
-
-            os.remove(bvh_file.name)
-            print('"{}" deleted'.format(bvh_file.name))
+        # bvh_writer = Pymo_BVHWriter()
+        # bvh_file = open(self.c3d_filename.strip('.c3d') + '-tmp.bvh', 'w')
+        # bvh_writer.write(bvh_data, bvh_file)
+        # bvh_file.close()
+        # print('"{}" written'.format(bvh_file.name))
+        #
+        # bvh_reader = B3D_BVHReader()
+        # if not bvh_reader.load_from_file(bvh_file.name):
+        #     raise Exception('error: can not read "{}"'.format(bvh_file.name))
+        #
+        # c3d_writer = B3D_C3DWriter()
+        # c3d_writer.convert(bvh_reader, self.c3d_filename)
+        # print('"{}" written from "{}"'.format(self.c3d_filename, bvh_file.name))
+        #
+        # os.remove(bvh_file.name)
+        # print('"{}" deleted'.format(bvh_file.name))
 
         if self.anybody_write:
             AnyWriter(template_directory=self.anybody_template_path,

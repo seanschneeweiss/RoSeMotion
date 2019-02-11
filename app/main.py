@@ -1,10 +1,8 @@
-
-
 import os, sys, inspect
 src_dir = os.path.dirname(inspect.getfile(inspect.currentframe()))
-# Windows and Linux
 arch_dir = './resources/Gooey'
 sys.path.insert(0, os.path.abspath(os.path.join(src_dir, arch_dir)))
+
 from resources.Gooey.gooey.python_bindings import gooey_decorator, gooey_parser
 from resources.Gooey.gooey.gui import processor
 from resources.Gooey.gooey.gui.containers import application as containers_application
@@ -22,7 +20,7 @@ def on_stop(self):
 
 
 def stop_leap(self):
-    self._process.stdin.write("\n")
+    self._process.stdin.write(b"\n")
     self._process.stdin.close()
 
 
