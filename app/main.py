@@ -1,14 +1,11 @@
-import os, sys, inspect
-src_dir = os.path.dirname(inspect.getfile(inspect.currentframe()))
-arch_dir = './resources/Gooey'
-sys.path.insert(0, os.path.abspath(os.path.join(src_dir, arch_dir)))
+import os
+import json
 
 from resources.Gooey.gooey.python_bindings import gooey_decorator, gooey_parser
 from resources.Gooey.gooey.gui import processor
 from resources.Gooey.gooey.gui.containers import application as containers_application
 from resources.Gooey.gooey.gui import application
 
-import json
 from config.Configuration import env
 import LeapRecord
 
@@ -24,7 +21,7 @@ def stop_leap(self):
     self._process.stdin.close()
 
 
-# overwrite classes and methods
+# overwrite classes and methods of the stop button
 containers_application.GooeyApplication.onStopExecution = on_stop
 processor.ProcessController.stop_leap = stop_leap
 
@@ -40,7 +37,8 @@ GooeyParser = gooey_parser.GooeyParser
 @Gooey(program_name="Leap Motion Recorder (c) Robin, Sean",
        sidebar_title='Actions',
        # return_to_config=True,
-       force_stop_is_error=False)
+       force_stop_is_error=False,
+       language='leap-english')
 def parse_args():
     """ Use GooeyParser to build up the arguments we will use in our script
     Save the arguments in a default json file so that we can retrieve them

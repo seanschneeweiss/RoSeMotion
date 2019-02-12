@@ -4,13 +4,6 @@ import numpy as np
 from config.Skeleton import Skeleton
 from resources.pymo.pymo.data import MocapData
 from RotationUtil import rot2eul, vec2eul, get_order
-
-import os, sys, inspect
-src_dir = os.path.dirname(inspect.getfile(inspect.currentframe()))
-# Windows and Linux
-arch_dir = './resources/LeapSDK/v4_python37/lib/x64' if sys.maxsize > 2 ** 32 \
-    else './resources/LeapSDK/v4_python37/lib/x86'
-sys.path.insert(0, os.path.abspath(os.path.join(src_dir, arch_dir)))
 from resources.LeapSDK.v4_python37 import Leap
 
 

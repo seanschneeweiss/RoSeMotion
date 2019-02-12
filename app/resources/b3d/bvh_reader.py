@@ -43,7 +43,7 @@ class BVH(object):
 
 	def parse_hierarchy(self):
 		if self.tokens[self.token_index] != 'HIERARCHY':
-			print 'keyword HIERARCHY not found'
+			print('keyword HIERARCHY not found')
 			return False
 		self.token_index += 1
 		self.joint_count = 0
@@ -60,24 +60,24 @@ class BVH(object):
 			return False
 		self.token_index += 1
 		if self.tokens[self.token_index] != 'Frames:':
-			print 'keyword Frames: not found'
+			print('keyword Frames: not found')
 			return False
 		self.token_index += 1
 		try:
 			self.frame_count = int(self.tokens[self.token_index])
 		except ValueError:
-			print 'frame count invalid'
+			print('frame count invalid')
 			return False
 		self.token_index += 1
 		# Frame Time: is treated as two tokens
 		if self.tokens[self.token_index] != 'Frame' or self.tokens[self.token_index + 1] != 'Time:':
-			print 'keyword Frame Time: not found'
+			print('keyword Frame Time: not found')
 			return False
 		self.token_index += 2
 		try:
 			self.frame_time = float(self.tokens[self.token_index])
 		except ValueError:
-			print 'frame time invalid'
+			print('frame time invalid')
 			return False
 		self.token_index += 1
 		for i in range(self.frame_count):
@@ -86,7 +86,7 @@ class BVH(object):
 					self.channel_values[j].append(float(self.tokens[self.token_index]))
 					self.token_index += 1
 				except ValueError:
-					print 'frame data invalid', self.tokens[self.token_index]
+					print('frame data invalid', self.tokens[self.token_index])
 					return False
 		return True
 		
@@ -109,28 +109,28 @@ class BVH(object):
 			joint_name = self.tokens[self.token_index]
 		self.token_index += 1
 		if self.tokens[self.token_index] != '{':
-			print 'open brace not found'
+			print('open brace not found')
 			return None
 		self.token_index += 1
 		if self.tokens[self.token_index] != 'OFFSET':
-			print 'keyword OFFSET not found'
+			print('keyword OFFSET not found')
 			return None
 		self.token_index += 1	
 		try:
 			joint_offset = [float(self.tokens[self.token_index]), float(self.tokens[self.token_index + 1]), float(self.tokens[self.token_index + 2])]
 		except ValueError:
-			print 'offset value error'
+			print('offset value error')
 			return None
 		self.token_index += 3
 		if joint_type == 0:
 			if self.tokens[self.token_index] != 'CHANNELS':
-				print 'keyword CHANNELS not found'
+				print('keyword CHANNELS not found')
 				return None
 			self.token_index += 1
 			try:
 				joint_channel_count = int(self.tokens[self.token_index])
 			except ValueError:
-				print 'channel count value error'
+				print('channel count value error')
 				return None
 			self.token_index += 1
 			joint_channels = []
@@ -158,7 +158,7 @@ class BVH(object):
 				if child_joint:
 					joint_children.append(child_joint)
 		if self.tokens[self.token_index] != '}':
-			print 'close brace not found : ', self.tokens[self.token_index]
+			print('close brace not found : ', self.tokens[self.token_index])
 			return None
 		if joint_type == 0:
 			joint = Joint(joint_name, joint_offset, joint_channels, joint_children)
