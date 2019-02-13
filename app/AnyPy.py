@@ -25,8 +25,9 @@ class AnyPy:
         any_path, any_model = os.path.split(self.main_filepath)
 
         # copy interpolation files
-        for file in glob.glob(self.template_directory + r'/*.any'):
-            shutil.copy(file, any_path + '/Model/InterpolVec')
+        if self.template_directory:
+            for file in glob.glob(self.template_directory + r'/*.any'):
+                shutil.copy(file, any_path + '/Model/InterpolVec')
 
         # build macrolist
         operation_cmd = {AnyPy.LOAD: Load(any_model),
