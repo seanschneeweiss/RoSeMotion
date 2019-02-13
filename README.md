@@ -15,6 +15,8 @@
   python -m pip install --upgrade pip
   pip install numpy
   pip install pandas
+  pip install wxpython
+  pip install scipy
 ```
 ---
 Following python packages are required: _Numpy_, _Pandas_

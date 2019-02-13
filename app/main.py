@@ -8,6 +8,7 @@ from resources.Gooey.gooey.gui import application
 
 from config.Configuration import env
 import LeapRecord
+import AnyPy
 
 
 # overwrite the Gooey default stop method to cancel Leap Motion recording
@@ -178,6 +179,13 @@ def parse_args():
         }
     )
 
+    anybody_group.add_argument('any_main_file',
+                               metavar='Source of HAND.Main.any',
+                               action='store',
+                               default=stored_args.get('any_main_file'),
+                               widget='FileChooser',
+                               help='Choose the main anybody file for the calculation')
+
     anybody_group.add_argument('any_files_dir',
                                metavar='Source (.any)',
                                action='store',
@@ -190,10 +198,10 @@ def parse_args():
                                action='store_true',
                                default=stored_args.get('load'))
 
-    anybody_group.add_argument('-initial_condition',
-                               metavar='Calc initial condition',
+    anybody_group.add_argument('-initial_conditions',
+                               metavar='Calc initial conditions',
                                action='store_true',
-                               default=stored_args.get('initial_condition'))
+                               default=stored_args.get('initial_conditions'))
 
     anybody_group.add_argument('-kinematic',
                                metavar='Calc kinematic analysis',
@@ -269,7 +277,6 @@ def parse_args():
 
 def main():
     env.save_arguments(parse_args())
-    print(env.config.anybody_template_path)
 
     # Record, Anybody, Converter
     if env.config.command == 'Record':
@@ -278,6 +285,7 @@ def main():
         print("Record Ende")
         return 1
     if env.config.command == 'Anybody':
+        AnyPy.run()
         return 1
     if env.config.command == 'Converter':
         return 1
