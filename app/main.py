@@ -35,6 +35,33 @@ Gooey = gooey_decorator.Gooey
 GooeyParser = gooey_parser.GooeyParser
 
 
+class StoredArgs:
+    def __init__(self):
+        self.stored_args = {}
+        self.json_loaded = False
+        # get the script name without the extension & use it to build up
+        # the json filename
+        script_name = os.path.splitext(os.path.basename(__file__))[0]
+        self.args_file = "{}-args.json".format(script_name)
+
+    def load(self):
+        # Read in the prior arguments as a dictionary
+        if os.path.isfile(self.args_file):
+            self.json_loaded = True
+            with open(self.args_file) as data_file:
+                self.stored_args = json.load(data_file)
+        return self
+
+    def get(self, arg, default):
+        return self.stored_args.get(arg) if self.json_loaded else default
+
+    def save(self, args):
+        # Store the values of the arguments so we have them next time we run
+        with open(self.args_file, 'w') as data_file:
+            # Using vars(args) returns the data as a dictionary
+            json.dump(vars(args), data_file)
+
+
 @Gooey(program_name="Leap Motion Recorder (c) Robin, Sean",
        sidebar_title='Actions',
        # return_to_config=True,
@@ -45,17 +72,8 @@ def parse_args():
     Save the arguments in a default json file so that we can retrieve them
     every time we run the script.
     """
-    stored_args = {}
 
-    # get the script name without the extension & use it to build up
-    # the json filename
-    script_name = os.path.splitext(os.path.basename(__file__))[0]
-    args_file = "{}-args.json".format(script_name)
-
-    # Read in the prior arguments as a dictionary
-    if os.path.isfile(args_file):
-        with open(args_file) as data_file:
-            stored_args = json.load(data_file)
+    stored_args = StoredArgs().load()
 
     parser = GooeyParser(description='Record Leap Motion data and export to bvh/c3d/any')
     subs = parser.add_subparsers(help='Befehle', dest='command')
@@ -73,7 +91,7 @@ def parse_args():
 
     record_group.add_argument('channels',
                               action='store',
-                              default=stored_args.get('channels'),
+                              default=stored_args.get('channels', 'rotation'),
                               widget='Dropdown',
                               help='Rotation: (X,Y,Z) rotation only\n'
                                    'Position: (X,Y,Z) rotation and position for all channels',
@@ -91,27 +109,26 @@ def parse_args():
         "BVH",
         gooey_options={
             'show_border': True,
-            'columns': 1
+            'columns': 2
         }
     )
     bvh_group.add_argument('-bvh',
                            metavar='Write BVH-File',
                            action='store_true',
-                           default=stored_args.get('bvh')
-                           )
-
-    bvh_group.add_argument('-bvh_path',
-                           metavar=' ',
-                           action='store',
-                           default=stored_args.get('bvh_path'),
-                           widget='DirChooser',
-                           help='Output directory for bvh file')
+                           default=stored_args.get('bvh', True))
 
     bvh_group.add_argument('-bvh_filename',
                            metavar=' ',
                            action='store',
-                           default=stored_args.get('bvh_filename'),
+                           default=stored_args.get('bvh_filename', 'RightHand'),
                            help='Filename')
+
+    bvh_group.add_argument('-bvh_path',
+                           metavar=' ',
+                           action='store',
+                           default=stored_args.get('bvh_path', '../output/BVH'),
+                           widget='DirChooser',
+                           help='Output directory for bvh file')
 
     # interpol Group
     interpol_group = record_parser.add_argument_group(
@@ -124,20 +141,19 @@ def parse_args():
     interpol_group.add_argument('-anybody',
                                 metavar='Write Interpolation-Files',
                                 action='store_true',
-                                default=stored_args.get('anybody')
-                                )
+                                default=stored_args.get('anybody', True))
 
     interpol_group.add_argument('-anybody_template_path',
                                 metavar='Anybody templates',
                                 action='store',
-                                default=stored_args.get('anybody_template_path'),
+                                default=stored_args.get('anybody_template_path', 'config/anybody_templates'),
                                 widget='DirChooser',
                                 help='Source directory that contains *.template files for Anybody')
 
     interpol_group.add_argument('-anybody_output_path',
                                 metavar=' ',
                                 action='store',
-                                default=stored_args.get('anybody_output_path'),
+                                default=stored_args.get('anybody_output_path', '../output/Anybody'),
                                 widget='DirChooser',
                                 help='Output directory for interpolation files')
 
@@ -146,27 +162,26 @@ def parse_args():
         "C3D",
         gooey_options={
             'show_border': True,
-            'columns': 1
+            'columns': 2
         }
     )
     c3d_group.add_argument('-c3d',
                            metavar='Write C3D-File',
                            action='store_true',
-                           default=stored_args.get('c3d')
-                           )
-
-    c3d_group.add_argument('-c3d_path',
-                           metavar=' ',
-                           action='store',
-                           default=stored_args.get('c3d_path'),
-                           widget='DirChooser',
-                           help='Output directory for c3d file')
+                           default=stored_args.get('c3d', False))
 
     c3d_group.add_argument('-c3d_filename',
                            metavar=' ',
                            action='store',
-                           default=stored_args.get('c3d_filename'),
+                           default=stored_args.get('c3d_filename', 'RightHand'),
                            help='Filename')
+
+    c3d_group.add_argument('-c3d_path',
+                           metavar=' ',
+                           action='store',
+                           default=stored_args.get('c3d_path', '../output/C3D'),
+                           widget='DirChooser',
+                           help='Output directory for c3d file')
 
     # === anybody === #
     anybody_parser = subs.add_parser('Anybody', help='Anybody Simulation')
@@ -182,41 +197,48 @@ def parse_args():
     anybody_group.add_argument('any_main_file',
                                metavar='Source of HAND.Main.any',
                                action='store',
-                               default=stored_args.get('any_main_file'),
+                               default=stored_args.get('any_main_file', ''),
                                widget='FileChooser',
                                help='Choose the main anybody file for the calculation')
 
-    anybody_group.add_argument('any_files_dir',
+    anybody_group.add_argument('-any_bvh_file',
+                               metavar='Source of the *.bvh file',
+                               action='store',
+                               default=stored_args.get('any_bvh_file', '../output/BVH/RightHand.bvh'),
+                               widget='FileChooser',
+                               help='Choose a bvh file to be converted to the interpolation vector files')
+
+    anybody_group.add_argument('-any_files_dir',
                                metavar='Source (.any)',
                                action='store',
-                               default=stored_args.get('any_files_dir'),
+                               default=stored_args.get('any_files_dir', '../output/Anybody'),
                                widget='DirChooser',
                                help='Source directory that contains *.any files for Anybody')
 
     anybody_group.add_argument('-load',
                                metavar='Load Anybody model',
                                action='store_true',
-                               default=stored_args.get('load'))
+                               default=stored_args.get('load', True))
 
     anybody_group.add_argument('-initial_conditions',
                                metavar='Calc initial conditions',
                                action='store_true',
-                               default=stored_args.get('initial_conditions'))
+                               default=stored_args.get('initial_conditions', True))
 
     anybody_group.add_argument('-kinematic',
                                metavar='Calc kinematic analysis',
                                action='store_true',
-                               default=stored_args.get('kinematic'))
+                               default=stored_args.get('kinematic', False))
 
     anybody_group.add_argument('-inverse_dynamics',
                                metavar='Calc inverse dynamics',
                                action='store_true',
-                               default=stored_args.get('inverse_dynamics'))
+                               default=stored_args.get('inverse_dynamics', False))
 
     anybody_group.add_argument('-results',
                                metavar='Print result files',
                                action='store_true',
-                               default=stored_args.get('results'))
+                               default=stored_args.get('results', False))
 
     # === converter === #
     converter_parser = subs.add_parser('Converter', help='Convert a BVH-File in .any-Files or C3d-File')
@@ -232,24 +254,24 @@ def parse_args():
     converter_group.add_argument('bvh_file',
                                  metavar='Source (.bvh)',
                                  action='store',
-                                 default=stored_args.get('bvh_file'),
+                                 default=stored_args.get('bvh_file', '../output/BVH/RightHand.bvh'),
                                  widget='FileChooser',
                                  help='Source bvh-file to convert')
 
     converter_group.add_argument('-any_file',
                                  metavar='Convert to .any files',
                                  action='store_true',
-                                 default=stored_args.get('any_file'))
+                                 default=stored_args.get('any_file', False))
 
     converter_group.add_argument('-c3d',
                                  metavar='Convert to .c3d files',
                                  action='store_true',
-                                 default=stored_args.get('c3d'))
+                                 default=stored_args.get('c3d', False))
 
     converter_group.add_argument('file_dir',
                                  metavar='Store files',
                                  action='store',
-                                 default=stored_args.get('file_dir'),
+                                 default=stored_args.get('file_dir', ''),
                                  widget='DirChooser',
                                  help='Directory to store the converted files')
 
@@ -267,11 +289,7 @@ def parse_args():
     #                            action='store_true')
 
     args = parser.parse_args()
-
-    # Store the values of the arguments so we have them next time we run
-    with open(args_file, 'w') as data_file:
-        # Using vars(args) returns the data as a dictionary
-        json.dump(vars(args), data_file)
+    stored_args.save(args)
     return args
 
 
