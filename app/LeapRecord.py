@@ -17,14 +17,17 @@ class LeapRecord(Leap.Listener):
         self.leap2bvh = LeapData(channel_setting=env.config.channels)
 
         self.bvh_write = env.config.bvh
-        self.bvh_filename = env.config.bvh_path + '\\' + env.config.bvh_filename + '.bvh'
+        if self.bvh_write:
+            self.bvh_filename = env.config.bvh_path + '\\' + env.config.bvh_filename + '.bvh'
 
         self.c3d_write = env.config.c3d
-        self.c3d_filename = env.config.c3d_path + '\\' + env.config.c3d_filename + '.c3d'
+        if self.c3d_write:
+            self.c3d_filename = env.config.c3d_path + '\\' + env.config.c3d_filename + '.c3d'
 
         self.anybody_write = env.config.anybody
-        self.anybody_template_path = env.config.anybody_template_path + '\\'
-        self.amybody_output_path = env.config.anybody_output_path + '\\'
+        if self.anybody_write:
+            self.anybody_template_path = env.config.anybody_template_path + '\\'
+            self.amybody_output_path = env.config.anybody_output_path + '\\'
 
         self.actual_frame = 0
 
