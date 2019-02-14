@@ -1,5 +1,6 @@
 import re
 import numpy as np
+import pandas
 
 from config.Skeleton import Skeleton
 from resources.pymo.pymo.data import MocapData
@@ -295,10 +296,9 @@ class LeapData:
     def _motion2DataFrame(self):
         """Returns all of the channels parsed from the LeapMotion sensor as a pandas DataFrame"""
 
-        import pandas as pd
-        time_index = pd.to_timedelta([f[0] for f in self._motions], unit='s')
+        time_index = pandas.to_timedelta([f[0] for f in self._motions], unit='s')
         frames = [f[1] for f in self._motions]
         channels = np.asarray([[channel[2] for channel in frame] for frame in frames])
         column_names = ['%s_%s' % (c[0], c[1]) for c in self._motion_channels]
 
-        return pd.DataFrame(data=channels, index=time_index, columns=column_names)
+        return pandas.DataFrame(data=channels, index=time_index, columns=column_names)
