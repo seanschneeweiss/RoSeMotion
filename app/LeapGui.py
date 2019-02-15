@@ -132,7 +132,8 @@ class LeapGui:
         interpol_group.add_argument('-anybody_output_path',
                                     metavar=' ',
                                     action='store',
-                                    default=stored_args.get(ACTION_RECORD, 'anybody_output_path', '../output/Anybody'),
+                                    default=stored_args.get(ACTION_RECORD,
+                                                            'anybody_output_path', '../output/Anybody'),
                                     widget='DirChooser',
                                     help='Output directory for interpolation files')
 
@@ -182,7 +183,8 @@ class LeapGui:
         anybody_group.add_argument('-any_bvh_file',
                                    metavar='Source of the *.bvh file',
                                    action='store',
-                                   default=stored_args.get(ACTION_ANYBODY, 'any_bvh_file', '../output/BVH/RightHand.bvh'),
+                                   default=stored_args.get(ACTION_ANYBODY,
+                                                           'any_bvh_file', '../output/BVH/RightHand.bvh'),
                                    widget='FileChooser',
                                    help='Choose a bvh file to be converted to the interpolation vector files')
 
@@ -227,7 +229,8 @@ class LeapGui:
         converter_group.add_argument('bvh_file',
                                      metavar='Source (.bvh)',
                                      action='store',
-                                     default=stored_args.get(ACTION_CONVERTER, 'bvh_file', '../output/BVH/RightHand.bvh'),
+                                     default=stored_args.get(ACTION_CONVERTER,
+                                                             'bvh_file', '../output/BVH/RightHand.bvh'),
                                      widget='FileChooser',
                                      help='Source bvh-file to convert')
 
