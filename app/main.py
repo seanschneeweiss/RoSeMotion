@@ -1,8 +1,8 @@
-import LeapGui
+from LeapGui import LeapGui
 
 
 def main():
-    LeapGui.main()
+    LeapGui.run()
 
 
 if __name__ == "__main__":
