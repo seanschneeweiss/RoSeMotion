@@ -1,5 +1,6 @@
 import os
 import json
+import subprocess
 
 from resources.Gooey.gooey.python_bindings import gooey_decorator, gooey_parser
 from resources.Gooey.gooey.gui import processor
@@ -302,8 +303,9 @@ class LeapGui:
 
         # Record, Anybody, Converter
         if env.config.command == 'Record':
+            p = subprocess.Popen('"C:\\Program Files\\Leap Motion\\Core Services\\Visualizer.exe"')
             LeapRecord.start_recording()
-            # os.system('"C:\\Program Files\\Leap Motion\\Core Services\\Visualizer.exe"')
+            p.terminate()
             print("Record Ende")
             return 1
         if env.config.command == 'Anybody':
