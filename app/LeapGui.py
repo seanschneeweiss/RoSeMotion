@@ -91,7 +91,8 @@ class LeapGui:
         bvh_group.add_argument('-bvh_path',
                                metavar=' ',
                                action='store',
-                               default=stored_args.get(ACTION_RECORD, 'bvh_path', '../output/BVH'),
+                               default=stored_args.get(
+                                   ACTION_RECORD, 'bvh_path', LeapGui.StoredArgs.path('../output/BVH')),
                                widget='DirChooser',
                                help='Output directory for bvh file')
 
@@ -124,16 +125,18 @@ class LeapGui:
         interpol_group.add_argument('-anybody_template_path',
                                     metavar='Anybody templates',
                                     action='store',
-                                    default=stored_args.get(ACTION_RECORD,
-                                                            'anybody_template_path', 'config/anybody_templates'),
+                                    default=stored_args.get(
+                                        ACTION_RECORD, 'anybody_template_path',
+                                        LeapGui.StoredArgs.path('config/anybody_templates')),
                                     widget='DirChooser',
                                     help='Source directory that contains *.template files for Anybody')
 
         interpol_group.add_argument('-anybody_output_path',
                                     metavar=' ',
                                     action='store',
-                                    default=stored_args.get(ACTION_RECORD,
-                                                            'anybody_output_path', '../output/Anybody'),
+                                    default=stored_args.get(
+                                        ACTION_RECORD, 'anybody_output_path',
+                                        LeapGui.StoredArgs.path('../output/Anybody')),
                                     widget='DirChooser',
                                     help='Output directory for interpolation files')
 
@@ -158,7 +161,8 @@ class LeapGui:
         c3d_group.add_argument('-c3d_path',
                                metavar=' ',
                                action='store',
-                               default=stored_args.get(ACTION_RECORD, 'c3d_path', '../output/C3D'),
+                               default=stored_args.get(
+                                   ACTION_RECORD, 'c3d_path', LeapGui.StoredArgs.path('../output/C3D')),
                                widget='DirChooser',
                                help='Output directory for c3d file')
 
@@ -183,15 +187,17 @@ class LeapGui:
         anybody_group.add_argument('-any_bvh_file',
                                    metavar='Source of the *.bvh file',
                                    action='store',
-                                   default=stored_args.get(ACTION_ANYBODY,
-                                                           'any_bvh_file', '../output/BVH/RightHand.bvh'),
+                                   default=stored_args.get(
+                                       ACTION_ANYBODY, 'any_bvh_file',
+                                       LeapGui.StoredArgs.path('../output/BVH/RightHand.bvh')),
                                    widget='FileChooser',
                                    help='Choose a bvh file to be converted to the interpolation vector files')
 
         anybody_group.add_argument('-any_files_dir',
                                    metavar='Source (.any)',
                                    action='store',
-                                   default=stored_args.get(ACTION_ANYBODY, 'any_files_dir', '../output/Anybody'),
+                                   default=stored_args.get(
+                                       ACTION_ANYBODY, 'any_files_dir', LeapGui.StoredArgs.path('../output/Anybody')),
                                    widget='DirChooser',
                                    help='Source directory that contains *.any files for Anybody')
 
@@ -229,8 +235,9 @@ class LeapGui:
         converter_group.add_argument('bvh_file',
                                      metavar='Source (.bvh)',
                                      action='store',
-                                     default=stored_args.get(ACTION_CONVERTER,
-                                                             'bvh_file', '../output/BVH/RightHand.bvh'),
+                                     default=stored_args.get(
+                                         ACTION_CONVERTER, 'bvh_file',
+                                         LeapGui.StoredArgs.path('../output/BVH/RightHand.bvh')),
                                      widget='FileChooser',
                                      help='Source bvh-file to convert')
 
@@ -245,7 +252,8 @@ class LeapGui:
         converter_group.add_argument('file_dir',
                                      metavar='Store files',
                                      action='store',
-                                     default=stored_args.get(ACTION_CONVERTER, 'file_dir', ''),
+                                     default=stored_args.get(
+                                         ACTION_CONVERTER, 'file_dir', LeapGui.StoredArgs.path('../output')),
                                      widget='DirChooser',
                                      help='Directory to store the converted files')
 
@@ -254,6 +262,7 @@ class LeapGui:
 
     class StoredArgs:
         """class for loading and saving arguments from/to json, also to handle default values"""
+
         def __init__(self):
             self.stored_args = {}
             self.loaded_actions = {}
@@ -271,6 +280,10 @@ class LeapGui:
 
         def get(self, action, arg, default):
             return self.stored_args[action].get(arg) if action in self.loaded_actions else default
+
+        @staticmethod
+        def path(relative_path):
+            return os.path.normpath(os.path.join(os.getcwd(), relative_path))
 
         def save(self, args):
             # Store the values of the arguments to the environment to access them in the code
