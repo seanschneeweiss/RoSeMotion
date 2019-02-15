@@ -4,10 +4,12 @@ import shutil
 
 from resources.AnyPyTools.anypytools import AnyPyProcess
 from resources.AnyPyTools.anypytools import AnyMacro
+from resources.AnyPyTools.anypytools import tools
 from resources.AnyPyTools.anypytools.macro_commands import (MacroCommand, Load, SetValue, SetValue_random,  Dump,
                                                             SaveDesign, LoadDesign, SaveValues, LoadValues,
                                                             UpdateValues, SaveData, OperationRun)
 from config.Configuration import env
+
 
 class AnyPy:
     LOAD = 'load'
@@ -16,6 +18,7 @@ class AnyPy:
     INVERSE_DYNAMICS = 'inverse_dynamics'
     SAVE_HDF5 = 'hdf5'
     # SAVE_CSV = 'csv'
+    LOG_FILE = 'AnyPy.log'
 
     def __init__(self, main_filepath, template_directory):
         self.main_filepath = main_filepath
@@ -46,12 +49,11 @@ class AnyPy:
         print('Executing "{}" in "{}"'.format(any_path, any_model))
         cwd = os.getcwd()
         os.chdir(any_path)
-        app = AnyPyProcess(num_processes=1,
-                           return_task_info=True,
-                           anybodycon_path="C:/Program Files/AnyBody Technology/AnyBody.7.1/AnyBodyCon.exe")
+        app = AnyPyProcess(return_task_info=True,
+                           anybodycon_path=tools.get_anybodycon_path())
 
         app.start_macro(macrolist=self.macrolist,
-                        logfile='anybody.log')
+                        logfile=AnyPy.LOG_FILE)
         os.chdir(cwd)
 
     def add_operation(self, operation):
@@ -73,4 +75,3 @@ def run():
         anypy.add_operation(AnyPy.SAVE_HDF5)
 
     anypy.initialize()
-    # tools.parse_anybodycon_output()
