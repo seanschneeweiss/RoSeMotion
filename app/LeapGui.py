@@ -9,7 +9,7 @@ from resources.Gooey.gooey.gui import application
 
 from config.Configuration import env
 import LeapRecord
-import AnyPy
+from AnyPy import AnyPy
 
 # strings for the actions in the Gooey side-menu
 ACTION_RECORD = 'Record'
@@ -66,6 +66,7 @@ class LeapGui:
         stored_args = LeapGui.StoredArgs().load()
 
         parser = LeapGui.GooeyParser(description='Record Leap Motion data and export to bvh/c3d/any')
+        env.add_parser(parser)
         subs = parser.add_subparsers(help='Tools', dest='command')
 
         # === record === #
@@ -171,12 +172,36 @@ class LeapGui:
         anybody_parser = subs.add_parser(ACTION_ANYBODY, help='Anybody Simulation')
         anybody_group = anybody_parser.add_argument_group(
             "Anybody",
-            "Convert to Anybody Files",
+            "Run Anybody analysis",
             gooey_options={
                 'show_border': True,
                 'columns': 1
             }
         )
+        anybody_file_group = anybody_group.add_mutually_exclusive_group(required=True)
+
+        anybody_file_group.add_argument('-any_interpol_files',
+                                        metavar='Use existing vector files',
+                                        help='Use interpolation vector files from Anybody project default directory',
+                                        action='store_true')
+
+        anybody_file_group.add_argument('-any_bvh_file',
+                                        metavar='Source of the *.bvh file',
+                                        action='store',
+                                        default=stored_args.get(
+                                            ACTION_ANYBODY, 'any_bvh_file',
+                                            LeapGui.StoredArgs.path('../output/BVH/RightHand.bvh')),
+                                        widget='FileChooser',
+                                        help='Choose a bvh file to be converted to the interpolation vector files')
+
+        anybody_file_group.add_argument('-any_files_dir',
+                                        metavar='Source (.any)',
+                                        action='store',
+                                        default=stored_args.get(
+                                            ACTION_ANYBODY, 'any_files_dir',
+                                            LeapGui.StoredArgs.path('../output/Anybody')),
+                                        widget='DirChooser',
+                                        help='Source directory that contains interpolation *.any files for Anybody')
 
         anybody_group.add_argument('any_main_file',
                                    metavar='Source of HAND.Main.any',
@@ -184,23 +209,6 @@ class LeapGui:
                                    default=stored_args.get(ACTION_ANYBODY, 'any_main_file', ''),
                                    widget='FileChooser',
                                    help='Choose the main anybody file for the calculation')
-
-        anybody_group.add_argument('-any_bvh_file',
-                                   metavar='Source of the *.bvh file',
-                                   action='store',
-                                   default=stored_args.get(
-                                       ACTION_ANYBODY, 'any_bvh_file',
-                                       LeapGui.StoredArgs.path('../output/BVH/RightHand.bvh')),
-                                   widget='FileChooser',
-                                   help='Choose a bvh file to be converted to the interpolation vector files')
-
-        anybody_group.add_argument('-any_files_dir',
-                                   metavar='Source (.any)',
-                                   action='store',
-                                   default=stored_args.get(
-                                       ACTION_ANYBODY, 'any_files_dir', LeapGui.StoredArgs.path('../output/Anybody')),
-                                   widget='DirChooser',
-                                   help='Source directory that contains *.any files for Anybody')
 
         anybody_group.add_argument('-load',
                                    metavar='Load Anybody model',
@@ -221,6 +229,11 @@ class LeapGui:
         anybody_group.add_argument('-results',
                                    metavar='Print result files',
                                    action='store_true')
+
+        anybody_group.add_argument('-result_type',
+                                   metavar='Select the joint to make a plot for',
+                                   widget='Dropdown',
+                                   choices=['CMC1Flexion', 'CMC1Abduction', 'MCP1Flexion', 'MCP1Abduction'])
 
         # === converter === #
         converter_parser = subs.add_parser(ACTION_CONVERTER, help='Convert a BVH-File in .any-Files or C3d-File')
@@ -304,15 +317,20 @@ class LeapGui:
         # Record, Anybody, Converter
         if env.config.command == 'Record':
             p = subprocess.Popen('"C:\\Program Files\\Leap Motion\\Core Services\\Visualizer.exe"')
+            import time
+            countdown = 5
+            for ii in range(countdown):
+                print("Record starting in {} seconds ...".format(countdown-ii))
+                time.sleep(1)
             LeapRecord.start_recording()
             p.terminate()
             print("Record Ende")
-            return 1
+            return True
         if env.config.command == 'Anybody':
-            AnyPy.run()
-            return 1
+            AnyPy(env.config.any_main_file, env.config.any_files_dir).run()
+            return True
         if env.config.command == 'Converter':
-            return 1
+            return True
 
 
 if __name__ == "__main__":
