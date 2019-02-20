@@ -1,4 +1,7 @@
+h5py
+matplotlib
 numpy
 pandas
 scipy
 wxPython
+h5py

@@ -1,6 +1,9 @@
 import os
 import glob
 import shutil
+import h5py
+import numpy as np
+import matplotlib.pyplot as plt
 
 from resources.AnyPyTools.anypytools import AnyPyProcess
 from resources.AnyPyTools.anypytools import AnyMacro
@@ -49,11 +52,37 @@ class AnyPy:
         print('Executing "{}" in "{}"'.format(any_path, any_model))
         cwd = os.getcwd()
         os.chdir(any_path)
-        app = AnyPyProcess(return_task_info=True,
-                           anybodycon_path=tools.get_anybodycon_path())
+        # app = AnyPyProcess(return_task_info=True,
+        #                   anybodycon_path=tools.get_anybodycon_path())
+        app = AnyPyProcess(num_processes=1,
+                           return_task_info=True,
+                           anybodycon_path="C:/Program Files/AnyBody Technology/AnyBody.7.1/AnyBodyCon.exe")
 
         app.start_macro(macrolist=self.macrolist,
                         logfile=AnyPy.LOG_FILE)
+
+
+        # Plot
+        h5file = h5py.File('output.anydata.h5')
+        cmc1_flexion_data = np.array(h5file['/Output/JointAngleOutputs/CMC1Flexion'])
+        h5file.close()
+        number_frames = np.size(cmc1_flexion_data)
+        frames = np.arange(0, number_frames)
+
+        # use LaTeX fonts in the plot
+        # plt.rc('text', usetex=True)
+        plt.rc('font', family='serif')
+
+        plt.plot(frames, np.multiply(cmc1_flexion_data, 180 / np.pi))
+        plt.xlim(0, number_frames)
+        plt.ylim(-90, 90)
+        plt.xlabel('frames')
+        plt.ylabel('angle in degree')
+        plt.title('flexion (x-axis)')
+        plt.legend(['bvh', 'any'], loc=2)
+        plt.grid(True)
+        plt.show()
+
         os.chdir(cwd)
 
     def add_operation(self, operation):
@@ -72,6 +101,11 @@ def run():
     if env.config.inverse_dynamics:
         anypy.add_operation(AnyPy.INVERSE_DYNAMICS)
     if env.config.results:
+        # TODO: dump instead of h5
         anypy.add_operation(AnyPy.SAVE_HDF5)
 
     anypy.initialize()
+
+    if env.config.results:
+        # run print of plots
+        pass
