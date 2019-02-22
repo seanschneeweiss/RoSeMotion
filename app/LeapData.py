@@ -85,13 +85,11 @@ class LeapData:
 
     def add_frame(self, frame):
         if not self._check_frame(frame):
-            print("Skipping frame")
             return
 
         # Get the first hand
         hand = frame.hands[0]
         if not self.first_frame:
-            print("First Frame detection 1")
             self.first_frame = frame
             channel_values = self._get_channel_values(hand, firstframe=True)
             self._motions.append((0, channel_values))
@@ -143,7 +141,7 @@ class LeapData:
         initial_hand = self.first_frame.hands[0]
 
         # special case for root and finger tip
-        if joint_name == self._root_name or '5' in joint_name:
+        if joint_name == self._root_name or '4' in joint_name:
             # print("save 0 values, {}".format(joint_name))
             return 0.0, 0.0, 0.0
 
@@ -197,31 +195,20 @@ class LeapData:
 
         fingerlist = hand.fingers.finger_type(LeapData._get_finger_type(key))
 
-        # vector between wrist and metacarpal proximal (carpals), thumb is excluded
-        if bone_number == 1:
+        # vector between wrist and joint metacarpal proximal (length of carpals)
+        if bone_number == 1 or ('Thumb' in key and bone_number == 2):
             bone = fingerlist[0].bone(LeapData._get_bone_type(bone_number))
-
-            return \
-                bone.prev_joint.x - hand.wrist_position.x, \
-                bone.prev_joint.y - hand.wrist_position.y, \
-                bone.prev_joint.z - hand.wrist_position.z
-        
-        # thumb carpometacarpal joint
-        if 'Thumb' in key and bone_number == 2:
-            bone = fingerlist[0].bone(LeapData._get_bone_type(bone_number))
-            
             return \
                 bone.prev_joint.x - hand.wrist_position.x, \
                 bone.prev_joint.y - hand.wrist_position.y, \
                 bone.prev_joint.z - hand.wrist_position.z
 
         # vector for bones metacarpal, proximal, intermediate, distal
-        bone_prev = fingerlist[0].bone(LeapData._get_bone_type(bone_number - 1))
-
+        bone = fingerlist[0].bone(LeapData._get_bone_type(bone_number - 1))
         return \
-            bone_prev.next_joint.x - bone_prev.prev_joint.x, \
-            bone_prev.next_joint.y - bone_prev.prev_joint.y, \
-            bone_prev.next_joint.z - bone_prev.prev_joint.z
+            bone.next_joint.x - bone.prev_joint.x, \
+            bone.next_joint.y - bone.prev_joint.y, \
+            bone.next_joint.z - bone.prev_joint.z
 
     @staticmethod
     def _split_key(key):
