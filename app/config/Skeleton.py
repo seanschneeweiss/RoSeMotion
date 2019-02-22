@@ -10,8 +10,8 @@ class Skeleton:
         self.root_name = 'Leap_Root'
         self.framerate = 0.033333
         self.skeleton = \
-            {'Leap_Root': {'channels': [], 'children': ['RightElbow'], 'parent': None},
-             'RightElbow': {'channels': [], 'children': ['RightHand'], 'parent': 'Leap_Root'},
+            {self.root_name: {'channels': [], 'children': ['RightElbow'], 'parent': None},
+             'RightElbow': {'channels': [], 'children': ['RightHand'], 'parent': self.root_name},
              'RightHand': {'channels': [], 'children': ['RightHandThumb2', 'RightHandIndex1', 'RightHandMiddle1', 'RightHandRing1', 'RightHandPinky1'], 'parent': 'RightElbow'},
              'RightHandIndex1': {'channels': [], 'children': ['RightHandIndex2'], 'parent': 'RightHand'},
              'RightHandIndex2': {'channels': [], 'children': ['RightHandIndex3'], 'parent': 'RightHandIndex1'},

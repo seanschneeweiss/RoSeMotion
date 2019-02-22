@@ -52,23 +52,23 @@ class LeapRecord(Leap.Listener):
             print('"{}" written'.format(bvh_file.name))
 
         # if self.c3d_write:
-            # workaround, need bvh
-        # bvh_writer = Pymo_BVHWriter()
-        # bvh_file = open(self.c3d_filename.strip('.c3d') + '-tmp.bvh', 'w')
-        # bvh_writer.write(bvh_data, bvh_file)
-        # bvh_file.close()
-        # print('"{}" written'.format(bvh_file.name))
+        #     # workaround, need bvh
+        #     bvh_writer = Pymo_BVHWriter()
+        #     bvh_file = open(self.c3d_filename.strip('.c3d') + '-tmp.bvh', 'w')
+        #     bvh_writer.write(bvh_data, bvh_file)
+        #     bvh_file.close()
+        #     print('"{}" written'.format(bvh_file.name))
         #
-        # bvh_reader = B3D_BVHReader()
-        # if not bvh_reader.load_from_file(bvh_file.name):
-        #     raise Exception('error: can not read "{}"'.format(bvh_file.name))
+        #     bvh_reader = B3D_BVHReader()
+        #     if not bvh_reader.load_from_file(bvh_file.name):
+        #         raise Exception('error: can not read "{}"'.format(bvh_file.name))
         #
-        # c3d_writer = B3D_C3DWriter()
-        # c3d_writer.convert(bvh_reader, self.c3d_filename)
-        # print('"{}" written from "{}"'.format(self.c3d_filename, bvh_file.name))
+        #     c3d_writer = B3D_C3DWriter()
+        #     c3d_writer.convert(bvh_reader, self.c3d_filename)
+        #     print('"{}" written from "{}"'.format(self.c3d_filename, bvh_file.name))
         #
-        # os.remove(bvh_file.name)
-        # print('"{}" deleted'.format(bvh_file.name))
+        #     os.remove(bvh_file.name)
+        #     print('"{}" deleted'.format(bvh_file.name))
 
         if self.anybody_write:
             AnyWriter(template_directory=self.anybody_template_path,
@@ -78,28 +78,28 @@ class LeapRecord(Leap.Listener):
 
     def on_frame(self, controller):
         # Get the most recent frame
-        frame = controller.frame()
+        self.leap2bvh.add_frame(controller.frame())
 
-        if not frame.hands.is_empty:
-            # Get the first hand
-            hand = frame.hands[0]
-
-            if hand.is_left:
-                # sys.stdout.write("\rPlease use your right hand")
-                print("Please use your right hand")
-                sys.stdout.flush()
-
-            if hand.is_right and hand.is_valid:
-                # sys.stdout.write("\rValid right hand found, recording data. Current frame: {}"
-                #                  .format(self.actual_frame))
-                print("Valid right hand found, recording data. Current frame: {}".format(self.actual_frame))
-                sys.stdout.flush()
-
-                # Check if the hand has any fingers
-                fingers = hand.fingers
-                if not fingers.is_empty:
-                    self.leap2bvh.add_frame(self.actual_frame, hand)
-                    self.actual_frame = self.actual_frame + 1
+        # if not frame.hands.is_empty:
+        #     # Get the first hand
+        #     hand = frame.hands[0]
+        #
+        #     if hand.is_left:
+        #         # sys.stdout.write("\rPlease use your right hand")
+        #         print("Please use your right hand")
+        #         sys.stdout.flush()
+        #
+        #     if hand.is_right and hand.is_valid:
+        #         # sys.stdout.write("\rValid right hand found, recording data. Current frame: {}"
+        #         #                  .format(self.actual_frame))
+        #         print("Valid right hand found, recording data. Current frame: {}".format(self.actual_frame))
+        #         sys.stdout.flush()
+        #
+        #         # Check if the hand has any fingers
+        #         fingers = hand.fingers
+        #         if not fingers.is_empty:
+        #             self.leap2bvh.add_frame(self.actual_frame, hand)
+        #             self.actual_frame = self.actual_frame + 1
 
 
 def start_recording():
