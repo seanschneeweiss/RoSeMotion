@@ -24,6 +24,8 @@ class LeapData:
         self._root_name = ''
         self.data = MocapData()
 
+        self.initial_rotation = {}
+
         self.do()
 
     def parse(self):
@@ -37,9 +39,9 @@ class LeapData:
 
     def do(self):
         self._skeleton = self._setting.skeleton
-        self._skeleton_apply_channels(self._setting.channel_setting)  # fill channels into skeleton in selected order (i.e. xyz)
+        # fill channels into skeleton in selected order (i.e. xyz)
+        self._skeleton_apply_channels(self._setting.channel_setting)
 
-        # self._motion_channels = motion_channels
         self._root_name = self._setting.root_name
         self._framerate = self._setting.framerate  # TODO: framerate
 
@@ -54,17 +56,23 @@ class LeapData:
             if frame_id == 0:
                 # offsets
                 if joint_name == 'Leap_Root':
-                    x_offset, y_offset, z_offset, _, _, _ = LeapData._get_root_values()
+                    x_offset, y_offset, z_offset, x_rot, y_rot, z_rot = LeapData._get_root_values()
                 elif joint_name == 'RightElbow':
-                    x_offset, y_offset, z_offset, _, _, _ = LeapData._get_elbow_values(hand)
+                    x_offset, y_offset, z_offset, x_rot, y_rot, z_rot = LeapData._get_elbow_values(hand)
                 elif joint_name == 'RightHand':
-                    x_offset, y_offset, z_offset, _, _, _ = LeapData._get_wrist_values(hand)
+                    x_offset, y_offset, z_offset, x_rot, y_rot, z_rot = LeapData._get_wrist_values(hand)
                 elif 'End' in joint_name:
                     # Workaround for getting motion data also from finger tip by adding a not used end
-                    x_offset = y_offset = z_offset = 0.0
+                    x_offset = y_offset = z_offset = x_rot = y_rot = z_rot = 0.0
                 else:
-                    x_offset, y_offset, z_offset, _, _, _ = LeapData._get_finger_values(joint_name, hand)
-                joint_value['offsets'] = [x_offset, y_offset, z_offset]  # y, z, x
+                    x_offset, y_offset, z_offset, x_rot, y_rot, z_rot = LeapData._get_finger_values(joint_name, hand)
+                joint_value['offsets'] = [x_offset, y_offset, z_offset]
+                """
+                Save initial rotations to subtract from all following frames.
+                This is to subtract the translation added by the initial offset.
+                """
+                self.initial_rotation[joint_name] = [x_rot, y_rot, z_rot]
+                print('initial_rotation: x={}, y={}, z={}'.format(x_rot, y_rot, z_rot))
 
             for channel in joint_value['channels']:
                 # motion data with rotations
@@ -84,11 +92,11 @@ class LeapData:
                 if channel == 'Zposition':
                     channel_values.append((joint_name, channel, z_pos))
                 if channel == 'Xrotation':
-                    channel_values.append((joint_name, channel, x_rot))
+                    channel_values.append((joint_name, channel, x_rot - self.initial_rotation[joint_name][0]))
                 if channel == 'Yrotation':
-                    channel_values.append((joint_name, channel, y_rot))
+                    channel_values.append((joint_name, channel, y_rot - self.initial_rotation[joint_name][1]))
                 if channel == 'Zrotation':
-                    channel_values.append((joint_name, channel, z_rot))
+                    channel_values.append((joint_name, channel, z_rot - self.initial_rotation[joint_name][2]))
 
         self._motions.append((frame_id, channel_values))
 
