@@ -1,7 +1,8 @@
-output/
 *-args.json
 .idea/*
 ### Python ###
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.pyc
+### Output ###
+output/
