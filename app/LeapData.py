@@ -119,6 +119,7 @@ class LeapData:
             z_rot *= Leap.RAD_TO_DEG
 
             if firstframe:
+                x_pos, y_pos, z_pos = self._calculate_offset(joint_name)
                 joint_value['offsets'] = [x_pos, y_pos, z_pos]
                 x_rot = y_rot = z_rot = 0.0
 
@@ -139,8 +140,7 @@ class LeapData:
 
     def _calculate_euler_angles(self, hand, joint_name):
         # special case for root and finger tip
-        if joint_name == self._root_name:
-            # print("save 0 values, {}".format(joint_name))
+        if joint_name == self._root_name or not self._skeleton[joint_name]['children']:
             return 0.0, 0.0, 0.0
 
         parent_initial_basis = self._get_anybody_basis(self._skeleton[joint_name]['parent'])
@@ -170,7 +170,25 @@ class LeapData:
         return LeapData._basismatrix(bone.basis)
 
     def _get_anybody_basis(self, joint_name):
+        if joint_name == self._root_name:
+            return np.array([[1, 0, 0],
+                             [0, 1, 0],
+                             [0, 0, 1]])
         return self.anybody_first_frame.get_basis(joint_name)
+
+    def _calculate_offset(self, joint_name):
+        if joint_name == self._root_name:
+            return 0, 0, 0
+        position = self._get_anybody_position(joint_name)
+        position_parent = self._get_anybody_position(self._skeleton[joint_name]['parent'])
+        offset = position - position_parent
+        print('joint: {}, offset = {}]'.format(joint_name, offset))
+        return offset[0], offset[1], offset[2]
+
+    def _get_anybody_position(self, joint_name):
+        if joint_name == self._root_name:
+            return np.array([0, 0, 0])
+        return self.anybody_first_frame.get_position(joint_name)
 
     @staticmethod
     def _get_root_offset():

@@ -10,9 +10,8 @@ from AnyWriter import AnyWriter
 
 
 class LeapRecord(Leap.Listener):
-    def on_init(self, controller):
-        print("Initialized")
-
+    def __init__(self):
+        super(LeapRecord, self).__init__()
         # Initialize Leap2DataFrame parser
         self.leap2bvh = LeapData(channel_setting=env.config.channels)
 
@@ -30,6 +29,9 @@ class LeapRecord(Leap.Listener):
             self.amybody_output_path = env.config.anybody_output_path + '\\'
 
         self.actual_frame = 0
+
+    def on_init(self, controller):
+        print("Initialized")
 
     def on_connect(self, controller):
         print("Connected")
