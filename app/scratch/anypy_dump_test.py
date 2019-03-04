@@ -40,6 +40,8 @@ macrolist = [
     # OperationRun('Main.MyStudy.InverseDynamics'),
 ]
 output = app.start_macro(macrolist)
+
+
 print(output['Main.HumanModel.Mannequin.Posture.Right.Finger1.CMCFlexionVec'])
 # parameter_study_macro = AnyMacro(macro, number_of_macros= len(patella_tendon_lengths))
 
