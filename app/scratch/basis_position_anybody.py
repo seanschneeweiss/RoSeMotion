@@ -56,6 +56,8 @@ for finger_name in finger_joints:
         for value in joint_values:
             macrolist.append(Dump(finger_joint_path.format(finger_name, joint_name, value)))
             finger_dumps.append({'finger_name': finger_name, 'joint_name': joint_name, 'value': value})
+    macrolist.append(Dump(finger_joint_path.format(finger_name, 'DistalPhalanx', 'DistalJointSurfaceNode') + '.r'))
+    finger_dumps.append({'finger_name': finger_name, 'joint_name': 'DistalJointSurfaceNode', 'value': 'r'})
 
 # dump of joint_values for elbow and wrist
 other_joints = {'WristJointSeg': {},
@@ -66,7 +68,6 @@ for joint_name in other_joints:
     for value in joint_values:
         macrolist.append(Dump(other_joint_path.format(joint_name, value)))
         other_dumps.append({'joint_name': joint_name, 'value': value})
-
 
 output = app.start_macro(macrolist)
 
