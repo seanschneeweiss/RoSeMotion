@@ -4,6 +4,7 @@ import numpy as np
 import pandas
 
 from config.Skeleton import Skeleton
+from config.AnybodyFirstFrame import AnybodyFirstFrame
 from resources.pymo.pymo.data import MocapData
 from RotationUtil import rot2eul, vec2eul, get_order
 from resources.LeapSDK.v4_python37 import Leap
@@ -26,6 +27,7 @@ class LeapData:
         self.data = MocapData()
 
         self.first_frame = None
+        self.anybody_first_frame = AnybodyFirstFrame()
 
         self._skeleton = self._setting.skeleton
         # fill channels into skeleton in selected order (i.e. xyz)
@@ -77,7 +79,6 @@ class LeapData:
             print("No valid fingers found.")
             return False
 
-        # TODO
         frame_number = 0 if not self.first_frame else frame.id - self.first_frame.id
         print("Valid right hand found, recording data. Current frame: {}".format(frame_number))
         # sys.stdout.flush()
@@ -120,7 +121,6 @@ class LeapData:
             if firstframe:
                 joint_value['offsets'] = [x_pos, y_pos, z_pos]
                 x_rot = y_rot = z_rot = 0.0
-                print("First Frame detection 2, {}".format(joint_name))
 
             for channel in joint_value['channels']:
                 if channel == 'Xposition':
@@ -138,16 +138,14 @@ class LeapData:
         return channel_values
 
     def _calculate_euler_angles(self, hand, joint_name):
-        initial_hand = self.first_frame.hands[0]
-
         # special case for root and finger tip
-        if joint_name == self._root_name or '4' in joint_name:
+        if joint_name == self._root_name:
             # print("save 0 values, {}".format(joint_name))
             return 0.0, 0.0, 0.0
 
-        parent_initial_basis = self._get_basis(initial_hand, self._skeleton[joint_name]['parent'])
+        parent_initial_basis = self._get_anybody_basis(self._skeleton[joint_name]['parent'])
         parent_basis = self._get_basis(hand, self._skeleton[joint_name]['parent'])
-        initial_basis = self._get_basis(initial_hand, joint_name)
+        initial_basis = self._get_anybody_basis(joint_name)
         basis = self._get_basis(hand, joint_name)
 
         return rot2eul(
@@ -170,6 +168,9 @@ class LeapData:
         fingerlist = hand.fingers.finger_type(LeapData._get_finger_type(finger))
         bone = fingerlist[0].bone(LeapData._get_bone_type(bone_number))
         return LeapData._basismatrix(bone.basis)
+
+    def _get_anybody_basis(self, joint_name):
+        return self.anybody_first_frame.get_basis(joint_name)
 
     @staticmethod
     def _get_root_offset():
