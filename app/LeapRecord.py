@@ -26,9 +26,7 @@ class LeapRecord(Leap.Listener):
         self.anybody_write = env.config.anybody
         if self.anybody_write:
             self.anybody_template_path = env.config.anybody_template_path + '\\'
-            self.amybody_output_path = env.config.anybody_output_path + '\\'
-
-        self.actual_frame = 0
+            self.anybody_output_path = env.config.anybody_output_path + '\\'
 
     def on_init(self, controller):
         print("Initialized")
@@ -45,7 +43,6 @@ class LeapRecord(Leap.Listener):
 
         bvh_data = self.leap2bvh.parse()
 
-        # bvh_filepath = '../output/BVH/{}.bvh'.format(self.bvh_filename)
         if self.bvh_write:
             bvh_writer = Pymo_BVHWriter()
             bvh_file = open(self.bvh_filename, 'w')
@@ -74,34 +71,13 @@ class LeapRecord(Leap.Listener):
 
         if self.anybody_write:
             AnyWriter(template_directory=self.anybody_template_path,
-                      output_directory=self.amybody_output_path
+                      output_directory=self.anybody_output_path
                       ).write(bvh_data)
-            print('Anybody files written to "{}"'.format(self.amybody_output_path))
+            print('Anybody files written to "{}"'.format(self.anybody_output_path))
 
     def on_frame(self, controller):
         # Get the most recent frame
         self.leap2bvh.add_frame(controller.frame())
-
-        # if not frame.hands.is_empty:
-        #     # Get the first hand
-        #     hand = frame.hands[0]
-        #
-        #     if hand.is_left:
-        #         # sys.stdout.write("\rPlease use your right hand")
-        #         print("Please use your right hand")
-        #         sys.stdout.flush()
-        #
-        #     if hand.is_right and hand.is_valid:
-        #         # sys.stdout.write("\rValid right hand found, recording data. Current frame: {}"
-        #         #                  .format(self.actual_frame))
-        #         print("Valid right hand found, recording data. Current frame: {}".format(self.actual_frame))
-        #         sys.stdout.flush()
-        #
-        #         # Check if the hand has any fingers
-        #         fingers = hand.fingers
-        #         if not fingers.is_empty:
-        #             self.leap2bvh.add_frame(self.actual_frame, hand)
-        #             self.actual_frame = self.actual_frame + 1
 
 
 def start_recording():
