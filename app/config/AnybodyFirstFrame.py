@@ -3,9 +3,18 @@ import numpy as np
 
 
 # rotation matrix from anybody to LeapMotion
-ROTATION_KS = np.array([[0, 0, -1], [0, 1, 0], [1, 0, 0]])
-ROTATION_BASIS = np.array([[0, -1, 0], [0, 0, 1], [-1, 0, 0]])
-ROTATION_WRIST = np.array([[0, 0, 1], [1, 0, 0], [0, 1, 0]])
+ROTATION_KS = np.array([[0, 0, -1],
+                        [0, 1, 0],
+                        [1, 0, 0]])
+ROTATION_FINGER = np.array([[0, 0, 1],
+                            [0, 1, 0],
+                            [-1, 0, 0]])
+ROTATION_THUMB = np.array([[0, -1, 0],
+                           [0, 0, 1],
+                           [-1, 0, 0]])
+ROTATION_HAND = np.array([[0, -1, 0],
+                          [1, 0, 0],
+                          [0, 0, 1]])
 
 
 class AnybodyFirstFrame:
@@ -20,13 +29,14 @@ class AnybodyFirstFrame:
 
     def get_basis(self, joint_name):
         anybody_basis = self.joint_values[joint_name]['Axes0']
-        # print("joint: {}, basis: \n{}".format(joint_name, np.matmul(ROTATION_BASIS, np.matmul(ROTATION_KS, np.array(anybody_basis)))))
+        # print("joint: {}, basis: \n{}".format(joint_name, np.matmul(ROTATION_BASIS,
+        # np.matmul(ROTATION_KS, np.array(anybody_basis)))))
         if joint_name in ('RightElbow', 'RightHand'):
-            rotation = ROTATION_WRIST
-        else:
-            rotation = ROTATION_BASIS
-        return np.matmul(rotation, np.matmul(ROTATION_KS, np.transpose(np.array(anybody_basis))))
-    
+            return np.matmul(ROTATION_HAND, np.transpose(np.array(anybody_basis)))
+        if 'RightHandThumb' in joint_name:
+            return np.matmul(ROTATION_FINGER, np.transpose(np.array(anybody_basis)))
+        return np.matmul(ROTATION_FINGER, np.transpose(np.array(anybody_basis)))
+
     def get_position(self, joint_name):
         if '_End' in joint_name:
             anybody_position = self.joint_values[joint_name]['r']
