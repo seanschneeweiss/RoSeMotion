@@ -64,7 +64,7 @@ class LeapData:
         if hand.is_left:
             # sys.stdout.write("\rPlease use your right hand")
             print("Please use your right hand.")
-            sys.stdout.flush()
+            #sys.stdout.flush()
             return False
 
         if not hand.is_right and not hand.is_valid:
@@ -101,6 +101,7 @@ class LeapData:
 
     def _get_channel_values(self, hand, firstframe=False):
         channel_values = []
+        export_basis = {}
         for joint_name, joint_value in self._skeleton.items():
             # motion data with rotations
             if joint_name == self._root_name:
@@ -123,6 +124,10 @@ class LeapData:
                 joint_value['offsets'] = [x_pos, y_pos, z_pos]
                 x_rot = y_rot = z_rot = 0.0
 
+                # dump the basis of leap motion bones
+                if 'End' not in joint_name and 'Root' not in joint_name:
+                    export_basis[joint_name] = np.ndarray.tolist(self._get_basis(hand, joint_name))
+
             for channel in joint_value['channels']:
                 if channel == 'Xposition':
                     channel_values.append((joint_name, channel, x_pos))
@@ -136,6 +141,12 @@ class LeapData:
                     channel_values.append((joint_name, channel, y_rot))
                 if channel == 'Zrotation':
                     channel_values.append((joint_name, channel, z_rot))
+
+        # dump the basis of leap motion bones
+        if firstframe:
+            import json
+            json.dump(export_basis, open('../output/lm_basis.json', 'w'))
+
         return channel_values
 
     def _calculate_euler_angles(self, hand, joint_name):
@@ -154,6 +165,7 @@ class LeapData:
                 np.transpose(np.matmul(parent_basis, np.transpose(parent_initial_basis)))))
 
     def _get_basis(self, hand, joint_name):
+        # print("get_basis: {}".format(joint_name))
         if joint_name == self._root_name:
             return np.array([[1, 0, 0],
                              [0, 1, 0],
@@ -182,7 +194,7 @@ class LeapData:
         position = self._get_anybody_position(joint_name)
         position_parent = self._get_anybody_position(self._skeleton[joint_name]['parent'])
         offset = position - position_parent
-        print('joint: {}, offset = {}]'.format(joint_name, offset))
+        # print('joint: {}, offset = {}]'.format(joint_name, offset))
         return offset[0], offset[1], offset[2]
 
     def _get_anybody_position(self, joint_name):
@@ -268,6 +280,10 @@ class LeapData:
 
     @staticmethod
     def _basismatrix(basis):
+        # print("basis:\n{}".format(
+        # np.array([[basis.x_basis.x, basis.y_basis.x, basis.z_basis.x],
+        #           [basis.x_basis.y, basis.y_basis.y, basis.z_basis.y],
+        #           [basis.x_basis.z, basis.y_basis.z, basis.z_basis.z]])))
         return np.array([[basis.x_basis.x, basis.y_basis.x, basis.z_basis.x],
                         [basis.x_basis.y, basis.y_basis.y, basis.z_basis.y],
                         [basis.x_basis.z, basis.y_basis.z, basis.z_basis.z]])
