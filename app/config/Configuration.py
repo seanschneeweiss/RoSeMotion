@@ -18,7 +18,6 @@ class Configuration:
     def args(var):
         import sys
         arguments = sys.argv
-        print(arguments)
         if var in arguments or "-" + var in arguments:
             return True
         return False
