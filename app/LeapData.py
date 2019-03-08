@@ -5,8 +5,9 @@ import pandas
 
 from config.Skeleton import Skeleton
 from config.AnybodyFirstFrame import AnybodyFirstFrame
+from config.BasisFirstFrame import BasisFirstFrame
 from resources.pymo.pymo.data import MocapData
-from RotationUtil import rot2eul, vec2eul, get_order
+from RotationUtil import rot2eul, get_order
 from resources.LeapSDK.v4_python37 import Leap
 
 
@@ -28,6 +29,7 @@ class LeapData:
 
         self.first_frame = None
         self.anybody_first_frame = AnybodyFirstFrame()
+        self.basis_first_frame = BasisFirstFrame()
 
         self._skeleton = self._setting.skeleton
         # fill channels into skeleton in selected order (i.e. xyz)
@@ -64,7 +66,7 @@ class LeapData:
         if hand.is_left:
             # sys.stdout.write("\rPlease use your right hand")
             print("Please use your right hand.")
-            #sys.stdout.flush()
+            # sys.stdout.flush()
             return False
 
         if not hand.is_right and not hand.is_valid:
@@ -101,7 +103,7 @@ class LeapData:
 
     def _get_channel_values(self, hand, firstframe=False):
         channel_values = []
-        export_basis = {}
+        # export_basis = {}
         for joint_name, joint_value in self._skeleton.items():
             # motion data with rotations
             if joint_name == self._root_name:
@@ -125,8 +127,8 @@ class LeapData:
                 x_rot = y_rot = z_rot = 0.0
 
                 # dump the basis of leap motion bones
-                if 'End' not in joint_name and 'Root' not in joint_name:
-                    export_basis[joint_name] = np.ndarray.tolist(self._get_basis(hand, joint_name))
+                # if 'End' not in joint_name and 'Root' not in joint_name:
+                #     export_basis[joint_name] = np.ndarray.tolist(self._get_basis(hand, joint_name))
 
             for channel in joint_value['channels']:
                 if channel == 'Xposition':
@@ -143,12 +145,12 @@ class LeapData:
                     channel_values.append((joint_name, channel, z_rot))
 
         # dump the basis of leap motion bones
-        if firstframe:
-            import json, datetime
-            json.dump(export_basis,
-                      open('../output/{}basis.json'
-                           .format(datetime.datetime.today().strftime('%Y%m%d_%H%M%S')),
-                           'w'))
+        # if firstframe:
+        #     import json, datetime
+        #     json.dump(export_basis,
+        #               open('../output/{}basis.json'
+        #                    .format(datetime.datetime.today().strftime('%Y%m%d_%H%M%S')),
+        #                    'w'))
 
         return channel_values
 
@@ -157,9 +159,9 @@ class LeapData:
         if joint_name == self._root_name or not self._skeleton[joint_name]['children']:
             return 0.0, 0.0, 0.0
 
-        parent_initial_basis = self._get_anybody_basis(self._skeleton[joint_name]['parent'])
+        parent_initial_basis = self._get_basis_first_frame(self._skeleton[joint_name]['parent'], anybody=True)
         parent_basis = self._get_basis(hand, self._skeleton[joint_name]['parent'])
-        initial_basis = self._get_anybody_basis(joint_name)
+        initial_basis = self._get_basis_first_frame(joint_name, anybody=True)
         basis = self._get_basis(hand, joint_name)
 
         return rot2eul(
@@ -184,12 +186,14 @@ class LeapData:
         bone = fingerlist[0].bone(LeapData._get_bone_type(bone_number))
         return LeapData._basismatrix(bone.basis)
 
-    def _get_anybody_basis(self, joint_name):
+    def _get_basis_first_frame(self, joint_name, anybody=False):
         if joint_name == self._root_name:
             return np.array([[1, 0, 0],
                              [0, 1, 0],
                              [0, 0, 1]])
-        return self.anybody_first_frame.get_basis(joint_name)
+        if anybody:
+            return self.anybody_first_frame.get_basis(joint_name)
+        return self.basis_first_frame.get_basis(joint_name)
 
     def _calculate_offset(self, joint_name):
         if joint_name == self._root_name:
