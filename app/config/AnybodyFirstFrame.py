@@ -3,9 +3,9 @@ import numpy as np
 
 
 # rotation matrix from anybody to LeapMotion
-ROTATION_KS = np.array([[0, 0, -1],
+ROTATION_KS = np.array([[0, 0, 1],
                         [0, 1, 0],
-                        [1, 0, 0]])
+                        [-1, 0, 0]])
 ROTATION_FINGER = np.array([[0, 0, 1],
                             [0, 1, 0],
                             [-1, 0, 0]])
