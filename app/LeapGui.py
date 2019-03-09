@@ -1,6 +1,6 @@
 import os
 import json
-import subprocess
+from threading import Thread
 
 from resources.Gooey.gooey.python_bindings import gooey_decorator, gooey_parser
 from resources.Gooey.gooey.gui import processor
@@ -8,6 +8,7 @@ from resources.Gooey.gooey.gui.containers import application as containers_appli
 from resources.Gooey.gooey.gui import application
 
 from config.Configuration import env
+from LogWatcher import log_watcher
 import LeapRecord
 from AnyPy import AnyPy
 from GuiControl import GuiControl
@@ -336,7 +337,10 @@ class LeapGui:
             return True
 
         if env.config.command == 'Anybody':
-            AnyPy(env.config.any_main_file, env.config.any_files_dir).run()
+            anypy = AnyPy(env.config.any_main_file, env.config.any_files_dir)
+            log_watcher.start(os.path.join(anypy.any_path, AnyPy.LOG_FILE))
+            anypy.run()
+            log_watcher.stop()
             return True
 
         if env.config.command == 'Converter':
