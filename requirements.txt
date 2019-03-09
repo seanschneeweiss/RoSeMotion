@@ -2,6 +2,7 @@ h5py
 matplotlib
 numpy
 pandas
+pywin32
+pywinauto
 scipy
 wxPython
-h5py

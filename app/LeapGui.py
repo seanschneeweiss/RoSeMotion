@@ -10,6 +10,7 @@ from resources.Gooey.gooey.gui import application
 from config.Configuration import env
 import LeapRecord
 from AnyPy import AnyPy
+from GuiControl import GuiControl
 
 # strings for the actions in the Gooey side-menu
 ACTION_RECORD = 'Record'
@@ -318,19 +319,26 @@ class LeapGui:
 
         # Record, Anybody, Converter
         if env.config.command == 'Record':
-            p = subprocess.Popen('"C:\\Program Files\\Leap Motion\\Core Services\\Visualizer.exe"')
+            # p = subprocess.Popen('"C:\\Program Files\\Leap Motion\\Core Services\\Visualizer.exe"')
+            gui = GuiControl()
+            gui.set_windows_record()
+
             import time
             countdown = 5
             for ii in range(countdown):
                 print("Record starting in {} seconds ...".format(countdown-ii))
                 time.sleep(1)
+
             LeapRecord.start_recording()
-            p.terminate()
+            # p.terminate()
+            gui.end_record()
             print("Record Ende")
             return True
+
         if env.config.command == 'Anybody':
             AnyPy(env.config.any_main_file, env.config.any_files_dir).run()
             return True
+
         if env.config.command == 'Converter':
             return True
 

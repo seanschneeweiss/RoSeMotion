@@ -29,6 +29,8 @@ Following python packages are required:
  * _Matplotlib_ (3.0.2) (only for AnyPyTools)
  * _Numpy_ (1.16.1)
  * _Pandas_ (0.24.1)
+ * _pywin32_ (224) (only for window size automation)
+ * _pywinauto_ (0.6.6) (only for window size automation)
  * _Scipy_ (1.2.1) (only for AnyPyTools)
  * _wxPython_ (4.0.4)
 
