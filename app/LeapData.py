@@ -146,11 +146,10 @@ class LeapData:
 
         # dump the basis of leap motion bones
         # if firstframe:
-        #     import json, datetime
-        #     json.dump(export_basis,
-        #               open('../output/{}basis.json'
-        #                    .format(datetime.datetime.today().strftime('%Y%m%d_%H%M%S')),
-        #                    'w'))
+        #     import json
+        #     import datetime
+        #     with open('../output/{}basis.json'.format(datetime.datetime.today().strftime('%Y%m%d_%H%M%S')), 'w') as o:
+        #         json.dump(export_basis, o)
 
         return channel_values
 

@@ -25,7 +25,8 @@ class AnybodyFirstFrame:
             self.load('config/anybody_joint_values.json')
 
     def load(self, filename):
-        self.joint_values = json.load(open(filename))
+        with open(filename) as o:
+            self.joint_values = json.load(o)
 
     def get_basis(self, joint_name):
         anybody_basis = self.joint_values[joint_name]['Axes0']
