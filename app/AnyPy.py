@@ -41,7 +41,7 @@ class AnyPy:
             self.copy_files()
 
     def initialize_operations(self):
-        # build macrolist
+        """build the macrolist executed by AnyPyTools"""
         operation_cmd = {AnyPy.LOAD: Load(self.any_model),
                          AnyPy.INITIAL_CONDITIONS: OperationRun("Main.Study.InitialConditions"),
                          AnyPy.KINEMATICS: OperationRun("Main.Study.Kinematics"),
@@ -64,6 +64,7 @@ class AnyPy:
             self.macrolist.append(operation_cmd[operation])
 
     def add_operation(self, operation):
+        """add operation to a list if not already in the list (unique)"""
         if operation not in self.operations:
             self.operations.append(operation)
 
