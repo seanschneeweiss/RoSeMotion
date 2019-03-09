@@ -55,7 +55,8 @@ class LeapGui:
     @Gooey(program_name="Leap Motion Recorder (c) Robin, Sean",
            sidebar_title='Actions',
            # return_to_config=True,
-           language='leap-english')
+           language='leap-english',
+           tabbed_groups=True)
     def parse_args():
         """ Use GooeyParser to build up the arguments we will use in our script
         Save the arguments in a default json file so that we can retrieve them
