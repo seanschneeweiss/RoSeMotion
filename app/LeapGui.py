@@ -56,7 +56,8 @@ class LeapGui:
            sidebar_title='Actions',
            # return_to_config=True,
            language='leap-english',
-           tabbed_groups=True)
+           tabbed_groups=True,
+           default_size=(1000, 600))
     def parse_args():
         """ Use GooeyParser to build up the arguments we will use in our script
         Save the arguments in a default json file so that we can retrieve them
