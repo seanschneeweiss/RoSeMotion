@@ -35,6 +35,7 @@ class GuiControl:
 
     def end_record(self):
         self.visualizer.kill()
+        self.recorder_dlg.restore()
         self.recorder_dlg.maximize()
 
     @staticmethod
