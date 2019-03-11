@@ -3,11 +3,11 @@ from pywinauto.application import Application
 
 class GuiControl:
     def __init__(self):
-            self.visualizer = None
-            self.visualizer_dlg = None
+        self.visualizer = None
+        self.visualizer_dlg = None
 
-            self.recorder = None
-            self.recorder_dlg = None
+        self.recorder = None
+        self.recorder_dlg = None
 
     def set_windows_record(self):
         self.visualizer = Application().start(r"C:\Program Files\Leap Motion\Core Services\Visualizer.exe")
