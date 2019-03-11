@@ -102,7 +102,20 @@ class LeapGui:
                                widget='DirChooser',
                                help='Output directory for bvh file')
 
+        bvh_group.add_argument('frames_per_second',
+                               metavar='Frames per second',
+                               action='store',
+                               default=stored_args.get(ACTION_RECORD, 'frames_per_second', '30'),
+                               gooey_options={
+                                   'validator': {
+                                       'test': '1 <= int(user_input) <= 150',
+                                       'message': 'Must be between 1 and 150'
+                                   }
+                               }
+                               )
+
         bvh_group.add_argument('channels',
+                               metavar='BVH Channels',
                                action='store',
                                default=stored_args.get(ACTION_RECORD, 'channels', 'rotation'),
                                widget='Dropdown',

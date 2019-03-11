@@ -18,25 +18,24 @@ class LeapData:
     Calculates translations (offsets) and rotation data for the joints
     """
 
-    def __init__(self, channel_setting='rotation'):
+    def __init__(self, channel_setting='rotation', frame_rate=0.033333):
         self._skeleton = {}
         self._setting = Skeleton(channel_setting)
         self._motion_channels = []
         self._motions = []
-        self._framerate = 0.0
         self._root_name = ''
         self.data = MocapData()
 
         self.first_frame = None
         self.anybody_first_frame = AnybodyFirstFrame()
         self.basis_first_frame = BasisFirstFrame()
+        self.status = 0
+        self._frame_rate = frame_rate
 
         self._skeleton = self._setting.skeleton
         # fill channels into skeleton in selected order (i.e. xyz)
         self._skeleton_apply_channels(self._setting.channel_setting)
-
         self._root_name = self._setting.root_name
-        self._framerate = self._setting.framerate  # TODO: framerate
 
         for key, value in self._skeleton.items():
             value['offsets'] = [0, 0, 0]
@@ -48,7 +47,7 @@ class LeapData:
         self.data.channel_names = self._motion_channels
         self.data.values = self._motion2DataFrame()
         self.data.root_name = self._root_name
-        self.data.framerate = self._framerate
+        self.data.framerate = self._frame_rate
 
         return self.data
 
@@ -88,7 +87,7 @@ class LeapData:
 
     def add_frame(self, frame):
         if not self._check_frame(frame):
-            return
+            return None
 
         # Get the first hand
         hand = frame.hands[0]
@@ -100,6 +99,7 @@ class LeapData:
 
         channel_values = self._get_channel_values(hand)
         self._motions.append((frame.timestamp - self.first_frame.timestamp, channel_values))
+        return frame
 
     def _get_channel_values(self, hand, firstframe=False):
         channel_values = []

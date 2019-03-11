@@ -8,7 +8,6 @@ class Skeleton:
         self.channel_setting = channel_setting
 
         self.root_name = 'Leap_Root'
-        self.framerate = 0.033333
         self.skeleton = \
             {self.root_name: {'channels': [], 'children': ['RightElbow'], 'parent': None},
              'RightElbow': {'channels': [], 'children': ['RightHand'], 'parent': self.root_name},

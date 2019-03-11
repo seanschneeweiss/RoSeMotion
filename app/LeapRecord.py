@@ -1,4 +1,6 @@
 import sys
+from collections import deque
+from threading import Thread
 
 from config.Configuration import env
 from resources.LeapSDK.v4_python37 import Leap
@@ -9,11 +11,15 @@ from resources.pymo.pymo.writers import BVHWriter as Pymo_BVHWriter
 from AnyWriter import AnyWriter
 
 
+_LEAP_QUEUE = deque()
+
+
 class LeapRecord(Leap.Listener):
     def __init__(self):
         super(LeapRecord, self).__init__()
         # Initialize Leap2DataFrame parser
-        self.leap2bvh = LeapData(channel_setting=env.config.channels)
+        self.fps = int(env.config.frames_per_second)
+        self.leap2bvh = LeapData(channel_setting=env.config.channels, frame_rate=1 / self.fps)
 
         self.bvh_write = env.config.bvh
         if self.bvh_write:
@@ -28,7 +34,13 @@ class LeapRecord(Leap.Listener):
             self.anybody_template_path = env.config.anybody_template_path + '\\'
             self.anybody_output_path = env.config.anybody_output_path + '\\'
 
+        self.processing = True
+        self.t = None
+        self.last_time = 0
+
     def on_init(self, controller):
+        self.t = Thread(target=self.process_frame, args=(self,))
+        self.t.start()
         print("Initialized")
 
     def on_connect(self, controller):
@@ -41,6 +53,32 @@ class LeapRecord(Leap.Listener):
     def on_exit(self, controller):
         print("Exited")
 
+    def on_frame(self, controller):
+        # Get the most recent frame
+        frame = controller.frame()
+        _LEAP_QUEUE.append(frame)
+        # self.leap2bvh.add_frame(controller.frame())
+
+    @staticmethod
+    def process_frame(listener):
+        while listener.processing:
+            try:
+                while True:
+                    frame = _LEAP_QUEUE.popleft()
+                    if frame.timestamp - listener.last_time > int(1000000 / listener.fps):
+                        added_frame = listener.leap2bvh.add_frame(frame)
+                        if added_frame:
+                            # print(added_frame.timestamp - listener.last_time)
+                            listener.last_time = added_frame.timestamp
+            except IndexError:
+                pass
+
+    def exit(self):
+        self.processing = False
+        self.t.join()
+        self.exit_actions()
+
+    def exit_actions(self):
         bvh_data = self.leap2bvh.parse()
 
         if self.bvh_write:
@@ -75,18 +113,16 @@ class LeapRecord(Leap.Listener):
                       ).write(bvh_data)
             print('Anybody files written to "{}"'.format(self.anybody_output_path))
 
-    def on_frame(self, controller):
-        # Get the most recent frame
-        self.leap2bvh.add_frame(controller.frame())
-
 
 def start_recording():
-    # Create a sample listener and controller
+    # Create a listener and controller
     listener = LeapRecord()
     controller = Leap.Controller()
    
-    # Have the sample listener receive events from the controller
+    # Have the listener receive events from the controller
     controller.add_listener(listener)
+
+    #
 
     # Keep this process running until Enter is pressed
     print("Listener added")
@@ -95,6 +131,7 @@ def start_recording():
     except KeyboardInterrupt:
         pass
     finally:
-        # Remove the sample listener when done
+        # Remove the listener when done
         controller.remove_listener(listener)
         print("Listener removed")
+        listener.exit()
