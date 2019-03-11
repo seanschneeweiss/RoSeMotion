@@ -45,12 +45,14 @@ class LeapRecord(Leap.Listener):
 
     def on_connect(self, controller):
         print("Connected")
+        print("=====================")
 
     def on_disconnect(self, controller):
         # Note: not dispatched when running in a debugger.
         print("Disconnected")
 
     def on_exit(self, controller):
+        print("=====================")
         print("Exited")
 
     def on_frame(self, controller):

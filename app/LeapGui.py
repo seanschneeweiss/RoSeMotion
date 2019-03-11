@@ -59,7 +59,7 @@ class LeapGui:
            # return_to_config=True,
            language='leap-english',
            tabbed_groups=True,
-           default_size=(1000, 600))
+           default_size=(1000, 700))
     def parse_args():
         """ Use GooeyParser to build up the arguments we will use in our script
         Save the arguments in a default json file so that we can retrieve them
@@ -346,7 +346,7 @@ class LeapGui:
             LeapRecord.start_recording()
             # p.terminate()
             gui.end_record()
-            print("Record Ende")
+            print("End of recording\n\n")
             return True
 
         if env.config.command == 'Anybody':

@@ -55,34 +55,41 @@ class LeapData:
         """
         Check whether frame and hand and fingers are valid, produce error when left hand is shown
         """
+        status_no_hand = 1
+        status_no_finger = 2
+        status_left_hand = 3
+        status_valid = 4
+
         if frame.hands.is_empty:
-            print("No hand found.")
+            if self.status != status_no_hand:
+                print("-- No hand found. --")
+                self.status = status_no_hand
             return False
 
         # Get the first hand
         hand = frame.hands[0]
 
         if hand.is_left:
-            # sys.stdout.write("\rPlease use your right hand")
-            print("Please use your right hand.")
-            # sys.stdout.flush()
+            if self.status != status_left_hand:
+                print("-- Please use your right hand. --")
+                self.status = status_left_hand
             return False
 
         if not hand.is_right and not hand.is_valid:
             return False
 
-        # sys.stdout.write("\rValid right hand found, recording data. Current frame: {}"
-        #                  .format(self.actual_frame))
-
         # Check if the hand has any fingers
         fingers = hand.fingers
         if fingers.is_empty:
-            print("No valid fingers found.")
+            if self.status != status_no_finger:
+                print("-- No valid fingers found. --")
+                self.status = status_no_finger
             return False
 
-        frame_number = 0 if not self.first_frame else frame.id - self.first_frame.id
-        print("Valid right hand found, recording data. Current frame: {}".format(frame_number))
-        # sys.stdout.flush()
+        # frame_number = 0 if not self.first_frame else frame.id - self.first_frame.id
+        if self.status != status_valid:
+            print("-- Valid right hand found, recording data. --")
+            self.status = status_valid
         return True
 
     def add_frame(self, frame):
