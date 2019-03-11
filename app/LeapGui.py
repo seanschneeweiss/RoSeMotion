@@ -357,6 +357,12 @@ class LeapGui:
             return True
 
         if env.config.command == 'Converter':
+            if env.config.any_file:
+                from AnyWriter import AnyWriter
+                from resources.pymo.pymo.parsers import BVHParser as Pymo_BVHParser
+                any_writer = AnyWriter(template_directory='config/anybody_templates/',
+                                       output_directory=env.config.file_dir + '/')
+                any_writer.write(Pymo_BVHParser().parse(env.config.bvh_file))
             return True
 
 
