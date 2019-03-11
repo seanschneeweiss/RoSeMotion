@@ -38,6 +38,10 @@ class AnyWriter:
         pass
 
     def write(self, data):
+        self.write_fingers(data)
+        self.write_timeseries(data)
+
+    def write_fingers(self, data):
         finger_values = {}
 
         for finger_name, joint_mapping in self.mapping.items():
@@ -46,18 +50,6 @@ class AnyWriter:
                 finger_values[finger_name][joint_name] = np.asarray(
                     data.values[joint_mapping['joint_leap']
                                 + self._joint2channel(finger_name, joint_name)].values)
-
-                entries = len(finger_values[finger_name][joint_name])  # TODO: move this out of for loop
-
-        # threshold: workaround for printing more than 1000 values
-        np.set_printoptions(formatter={'float': '{: 0.4f}'.format}, threshold=np.inf)
-
-        # TODO: add TIMESERIES to the dictionary in the __init__ method
-        template_dict = {'TIMESERIES': self._joint2array(self._calctimeseries(data, entries))}
-        template_string = open(self._template_directory + 'TimeSeries.template', 'r').read().format(**template_dict)
-        f = open(self._output_directory + 'TimeSeries.any', 'w')
-        f.write(template_string)
-        f.close()
 
         np.set_printoptions(formatter={'float': '{: 0.2f}'.format})
 
@@ -72,10 +64,23 @@ class AnyWriter:
                 template_dict[joint_name] = self._joint2array(joint_values)
 
             template_filename = joint_mapping['template']
-            template_string = open(self._template_directory + template_filename, 'r').read().format(**template_dict)
-            f = open(self._output_directory + finger_name + '.any', 'w')
+            with open(self._template_directory + template_filename, 'r') as f:
+                template_string = f.read().format(**template_dict)
+            with open(self._output_directory + finger_name + '.any', 'w') as f:
+                f.write(template_string)
+                print('"{} written"'.format(f.name))
+
+    def write_timeseries(self, data):
+        # threshold: workaround for printing more than 1000 values
+        np.set_printoptions(formatter={'float': '{: 0.4f}'.format}, threshold=np.inf)
+
+        # TODO: add TIMESERIES to the dictionary in the __init__ method
+        entries = data.values.shape[0]
+        template_dict = {'TIMESERIES': self._joint2array(self._calctimeseries(data, entries))}
+        template_string = open(self._template_directory + 'TimeSeries.template', 'r').read().format(**template_dict)
+
+        with open(self._output_directory + 'TimeSeries.any', 'w') as f:
             f.write(template_string)
-            f.close()
             print('"{} written"'.format(f.name))
 
     @staticmethod
@@ -124,8 +129,9 @@ class AnyWriter:
         # return np.fromiter(itertools.count(start, step), dtype, num)
         return np.linspace(0, 1, num=num)
 
-    def _calctimeseries(self, data, entries):
-        timeseries = self._range(0.0, data.framerate, entries)
+    @staticmethod
+    def _calctimeseries(data, entries):
+        timeseries = AnyWriter._range(0.0, data.framerate, entries)
         return timeseries
 
     @staticmethod
