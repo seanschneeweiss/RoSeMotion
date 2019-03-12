@@ -1,16 +1,13 @@
-import os
 import json
-from threading import Thread
+import os
 
-from resources.Gooey.gooey.python_bindings import gooey_decorator, gooey_parser
-from resources.Gooey.gooey.gui import processor
-from resources.Gooey.gooey.gui.containers import application as containers_application
-from resources.Gooey.gooey.gui import application
-
-from config.Configuration import env
 import LeapRecord
 from AnyPy import AnyPy
-
+from config.Configuration import env
+from resources.Gooey.gooey.gui import application
+from resources.Gooey.gooey.gui import processor
+from resources.Gooey.gooey.gui.containers import application as containers_application
+from resources.Gooey.gooey.python_bindings import gooey_decorator, gooey_parser
 
 # strings for the actions in the Gooey side-menu
 ACTION_RECORD = 'Record'
@@ -194,7 +191,11 @@ class LeapGui:
                 'columns': 1
             }
         )
-        anybody_file_group = anybody_group.add_mutually_exclusive_group(required=True)
+        anybody_file_group = anybody_group.add_mutually_exclusive_group(
+            required=True,
+            gooey_options={
+                'initial_selection': 0
+            })
 
         anybody_file_group.add_argument('-any_interpol_files',
                                         metavar='Use existing vector files',
@@ -236,20 +237,20 @@ class LeapGui:
         )
 
         operation_group.add_argument('-load',
-                                   metavar='Load Anybody model',
-                                   action='store_true')
+                                     metavar='Load Anybody model',
+                                     action='store_true')
 
         operation_group.add_argument('-initial_conditions',
-                                   metavar='Calc initial conditions',
-                                   action='store_true')
+                                     metavar='Calc initial conditions',
+                                     action='store_true')
 
         operation_group.add_argument('-kinematic',
-                                   metavar='Calc kinematic analysis',
-                                   action='store_true')
+                                     metavar='Calc kinematic analysis',
+                                     action='store_true')
 
         operation_group.add_argument('-inverse_dynamics',
-                                   metavar='Calc inverse dynamics',
-                                   action='store_true')
+                                     metavar='Calc inverse dynamics',
+                                     action='store_true')
 
         result_group = anybody_parser.add_argument_group(
             "Plots",
@@ -260,13 +261,33 @@ class LeapGui:
         )
 
         result_group.add_argument('-results',
-                                   metavar='Open plots for selected joints',
-                                   action='store_true')
+                                  metavar='Open plots for selected joints',
+                                  action='store_true')
 
         result_group.add_argument('-result_type',
-                                   metavar='Select the joint to make a plot for',
-                                   widget='Listbox',
-                                   choices=['CMC1Flexion', 'CMC1Abduction', 'MCP1Flexion', 'MCP1Abduction'])
+                                  metavar='Select the joint values to make a plot for:',
+                                  widget='Listbox',
+                                  nargs='+',
+                                  default=stored_args.get(ACTION_ANYBODY, 'result_type', None),
+                                  choices=[
+                                      "Finger1.Jnt.CMCFlexion.Pos",
+                                      "Finger1.Jnt.CMCAbduction.Pos",
+                                      "Finger1.Jnt.MCPFlexion.Pos",
+                                      "Finger1.Jnt.MCPAbduction.Pos",
+                                      "Finger1.Jnt.DIP.Pos",
+                                      "Finger2.Jnt.MCP.Pos",
+                                      "Finger2.Jnt.PIP.Pos",
+                                      "Finger2.Jnt.DIP.Pos",
+                                      "Finger3.Jnt.MCP.Pos",
+                                      "Finger3.Jnt.PIP.Pos",
+                                      "Finger3.Jnt.DIP.Pos",
+                                      "Finger4.Jnt.MCP.Pos",
+                                      "Finger4.Jnt.PIP.Pos",
+                                      "Finger4.Jnt.DIP.Pos",
+                                      "Finger5.Jnt.MCP.Pos",
+                                      "Finger5.Jnt.PIP.Pos",
+                                      "Finger5.Jnt.DIP.Pos"
+                                  ])
 
         # === converter === #
         converter_parser = subs.add_parser(ACTION_CONVERTER, help='Convert a BVH-File in .any-Files or C3d-File')
