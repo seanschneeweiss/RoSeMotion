@@ -13,3 +13,5 @@ sys.path.insert(0, os.path.abspath(os.path.join(src_dir, arch_dir)))
 # pymo
 arch_dir = 'pymo/pymo'
 sys.path.insert(0, os.path.abspath(os.path.join(src_dir, arch_dir)))
+arch_dir = 'pymo'
+sys.path.insert(0, os.path.abspath(os.path.join(src_dir, arch_dir)))
