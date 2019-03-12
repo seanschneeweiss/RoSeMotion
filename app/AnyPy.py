@@ -19,7 +19,6 @@ class AnyPy:
     KINEMATICS = 'kinematics'
     INVERSE_DYNAMICS = 'inverse_dynamics'
     SAVE_HDF5 = 'hdf5'
-    # SAVE_CSV = 'csv'
     LOG_FILE = 'AnyPy.log'
 
     INTERPOL_DIR = '/Model/InterpolVec'
@@ -82,6 +81,9 @@ class AnyPy:
             shutil.copy(file, self.any_path + AnyPy.INTERPOL_DIR)
 
     def run(self):
+        if not self.macrolist:
+            raise Exception("No operation for AnyBody was selected -> will terminate now")
+
         print('Starting Anybody with the operations: {}'.format(self.operations))
         print('Starting Anybody with the macros: {}'.format(AnyMacro(self.macrolist)))
         print('Executing "{}" in "{}"'.format(self.any_path, self.any_model))
