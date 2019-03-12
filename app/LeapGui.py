@@ -8,10 +8,9 @@ from resources.Gooey.gooey.gui.containers import application as containers_appli
 from resources.Gooey.gooey.gui import application
 
 from config.Configuration import env
-from LogWatcher import log_watcher
 import LeapRecord
 from AnyPy import AnyPy
-from GuiControl import GuiControl
+
 
 # strings for the actions in the Gooey side-menu
 ACTION_RECORD = 'Record'
@@ -334,6 +333,7 @@ class LeapGui:
         # Record, Anybody, Converter
         if env.config.command == 'Record':
             # p = subprocess.Popen('"C:\\Program Files\\Leap Motion\\Core Services\\Visualizer.exe"')
+            from GuiControl import GuiControl
             gui = GuiControl()
             gui.set_windows_record()
 
@@ -350,6 +350,7 @@ class LeapGui:
             return True
 
         if env.config.command == 'Anybody':
+            from LogWatcher import log_watcher
             anypy = AnyPy(env.config.any_main_file, env.config.any_files_dir)
             log_watcher.start(os.path.join(anypy.any_path, AnyPy.LOG_FILE))
             anypy.run()
