@@ -35,7 +35,12 @@ class AnyPy:
             print("Using interpolation files from {}".format(os.path.normpath(self.any_path + AnyPy.INTERPOL_DIR)))
             return
         if env.args('any_bvh_file'):
-            print("convert bvh 2 anybody")
+            print("Convert bvh file to anybody interpolation files")
+            from AnyWriter import AnyWriter
+            from resources.pymo.pymo.parsers import BVHParser as Pymo_BVHParser
+            any_writer = AnyWriter(template_directory='config/anybody_templates/',
+                                   output_directory=os.path.normpath(self.any_path + AnyPy.INTERPOL_DIR) + '/')
+            any_writer.write(Pymo_BVHParser().parse(env.config.any_bvh_file))
             return
         if env.args('any_files_dir'):
             self.copy_files()
