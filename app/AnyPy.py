@@ -27,7 +27,7 @@ class AnyPy:
     def __init__(self, main_filepath, template_directory):
         self.any_path, self.any_model = os.path.split(main_filepath)
         self.template_directory = template_directory
-        self.operations = [AnyPy.LOAD]
+        self.operations = []
         self.macrolist = []
 
         self.initialize_operations()

@@ -187,8 +187,8 @@ class LeapGui:
         # === anybody === #
         anybody_parser = subs.add_parser(ACTION_ANYBODY, help='Anybody Simulation')
         anybody_group = anybody_parser.add_argument_group(
-            "Anybody",
-            "Run Anybody analysis",
+            "Source files",
+            "Make a selection for the source files used for the Anybody analysis",
             gooey_options={
                 'show_border': True,
                 'columns': 1
@@ -226,29 +226,46 @@ class LeapGui:
                                    widget='FileChooser',
                                    help='Choose the main anybody file for the calculation')
 
-        anybody_group.add_argument('-load',
+        operation_group = anybody_parser.add_argument_group(
+            "Operations",
+            "Select which operations should be executed by Anybody",
+            gooey_options={
+                'show_border': True,
+                'columns': 1
+            }
+        )
+
+        operation_group.add_argument('-load',
                                    metavar='Load Anybody model',
                                    action='store_true')
 
-        anybody_group.add_argument('-initial_conditions',
+        operation_group.add_argument('-initial_conditions',
                                    metavar='Calc initial conditions',
                                    action='store_true')
 
-        anybody_group.add_argument('-kinematic',
+        operation_group.add_argument('-kinematic',
                                    metavar='Calc kinematic analysis',
                                    action='store_true')
 
-        anybody_group.add_argument('-inverse_dynamics',
+        operation_group.add_argument('-inverse_dynamics',
                                    metavar='Calc inverse dynamics',
                                    action='store_true')
 
-        anybody_group.add_argument('-results',
-                                   metavar='Print result files',
+        result_group = anybody_parser.add_argument_group(
+            "Plots",
+            gooey_options={
+                'show_border': True,
+                'columns': 1
+            }
+        )
+
+        result_group.add_argument('-results',
+                                   metavar='Open plots for selected joints',
                                    action='store_true')
 
-        anybody_group.add_argument('-result_type',
+        result_group.add_argument('-result_type',
                                    metavar='Select the joint to make a plot for',
-                                   widget='Dropdown',
+                                   widget='Listbox',
                                    choices=['CMC1Flexion', 'CMC1Abduction', 'MCP1Flexion', 'MCP1Abduction'])
 
         # === converter === #
