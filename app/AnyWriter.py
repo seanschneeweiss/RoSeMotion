@@ -10,31 +10,31 @@ class AnyWriter:
             'Finger1': {'joint_leap': 'RightHandThumb',
                         'joint_any': ['CMCABDUCTION', 'CMCFLEXION', 'MCPFLEXION', 'MCPABDUCTION', 'DIPFLEXION'],
                         'template': 'Thumb.template',
-                        'function': []},
+                        'function': ['negative']},
             'Finger2': {'joint_leap': 'RightHandIndex',
                         'joint_any': ['MCPFLEXION', 'MCPABDUCTION', 'PIPFLEXION', 'DIPFLEXION'],
                         'template': 'Finger.template',
-                        'function': []},
+                        'function': ['negative']},
             'Finger3': {'joint_leap': 'RightHandMiddle',
                         'joint_any': ['MCPFLEXION', 'MCPABDUCTION', 'PIPFLEXION', 'DIPFLEXION'],
                         'template': 'Finger.template',
-                        'function': []},
+                        'function': ['negative']},
             'Finger4': {'joint_leap': 'RightHandRing',
                         'joint_any': ['MCPFLEXION', 'MCPABDUCTION', 'PIPFLEXION', 'DIPFLEXION'],
                         'template': 'Finger.template',
-                        'function': []},
+                        'function': ['negative']},
             'Finger5': {'joint_leap': 'RightHandPinky',
                         'joint_any': ['MCPFLEXION', 'MCPABDUCTION', 'PIPFLEXION', 'DIPFLEXION'],
                         'template': 'Finger.template',
-                        'function': []},
+                        'function': ['negative']},
             'Wrist': {'joint_leap': 'RightHand',
                       'joint_any': ['WRISTFLEXION', 'WRISTABDUCTION'],
                       'template': 'Wrist.template',
-                      'function': []},
+                      'function': ['negative']},
             'Elbow': {'joint_leap': 'RightElbow',
                       'joint_any': ['ELBOWPRONATION'],
                       'template': 'Elbow.template',
-                      'function': []}}
+                      'function': ['correct_pronation']}}
         pass
 
     def write(self, data):
@@ -51,7 +51,7 @@ class AnyWriter:
                     data.values[joint_mapping['joint_leap']
                                 + self._joint2channel(finger_name, joint_name)].values)
 
-        np.set_printoptions(formatter={'float': '{: 0.2f}'.format})
+        np.set_printoptions(formatter={'float': '{: 0.2f}'.format}, threshold=np.inf)
 
         #  finger_values = {'Finger2': {'MCPABDUCTION': [0, 1, 2], 'MCPFLEXION': [0, 1, 2]}, 'Finger3': ...}
         for finger_name, joint_mapping in self.mapping.items():
@@ -90,11 +90,11 @@ class AnyWriter:
         if joint_name == 'CMCABDUCTION':
             # CMCABDUCTION is named CMCDEVIATION in Anybody unfortunately
             # Thumb only
-            return '2_Xrotation'
+            return '2_Yrotation'
 
         if joint_name == 'CMCFLEXION':
             # Thumb only
-            return '2_Yrotation'
+            return '2_Xrotation'
 
         if joint_name == 'MCPFLEXION':
             return '3_Xrotation' if thumb else '2_Xrotation'
@@ -145,6 +145,6 @@ class AnyWriter:
                 joint_values = np.negative(joint_values)
 
             if op == 'correct_pronation':
-                joint_values = 90.0 + joint_values
+                joint_values = 95.0 + joint_values
 
         return joint_values

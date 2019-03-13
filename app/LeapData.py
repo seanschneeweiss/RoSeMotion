@@ -29,6 +29,9 @@ class LeapData:
         self.first_frame = None
         self.anybody_first_frame = AnybodyFirstFrame()
         self.basis_first_frame = BasisFirstFrame()
+        # anybody_reference = True -> Use Anybody basis from config/*.json (see AnybodyFirstFrame)
+        # anybody_reference = False -> Use Leap Motion First Frame for basis
+        self.anybody_reference = True
         self.status = 0
         self._frame_rate = frame_rate
 
@@ -122,18 +125,19 @@ class LeapData:
             else:
                 x_pos, y_pos, z_pos = LeapData._get_finger_offset(joint_name, hand)
 
-            x_rot, y_rot, z_rot = self._calculate_euler_angles(hand, joint_name,
-                                                               hand_firstframe=True,
-                                                               anybody_basis=True)
+            x_rot, y_rot, z_rot = self._calculate_euler_angles(hand, joint_name)
 
             x_rot *= Leap.RAD_TO_DEG
             y_rot *= Leap.RAD_TO_DEG
             z_rot *= Leap.RAD_TO_DEG
 
+            if joint_name == 'RightHandMiddle3':
+                print(x_rot, y_rot, z_rot)
+
             if firstframe:
-                # x_pos, y_pos, z_pos = self._calculate_offset(joint_name)
+                if self.anybody_reference:
+                    x_pos, y_pos, z_pos = self._calculate_offset(joint_name)
                 joint_value['offsets'] = [x_pos, y_pos, z_pos]
-                x_rot = y_rot = z_rot = 0.0
 
                 # # dump the basis of leap motion bones
                 # if 'End' not in joint_name and 'Root' not in joint_name:
@@ -162,20 +166,19 @@ class LeapData:
 
         return channel_values
 
-    def _calculate_euler_angles(self, hand, joint_name, hand_firstframe=True, anybody_basis=True):
+    def _calculate_euler_angles(self, hand, joint_name):
         initial_hand = self.first_frame.hands[0]
 
         # special case for root and finger tip
         if joint_name == self._root_name or not self._skeleton[joint_name]['children']:
             return 0.0, 0.0, 0.0
 
-        if hand_firstframe:
+        if self.anybody_reference:
+            parent_initial_basis = self._get_basis_first_frame(self._skeleton[joint_name]['parent'])
+            initial_basis = self._get_basis_first_frame(joint_name)
+        else:
             parent_initial_basis = self._get_basis(initial_hand, self._skeleton[joint_name]['parent'])
             initial_basis = self._get_basis(initial_hand, joint_name)
-        else:
-            parent_initial_basis = self._get_basis_first_frame(self._skeleton[joint_name]['parent'],
-                                                               anybody=anybody_basis)
-            initial_basis = self._get_basis_first_frame(joint_name, anybody=anybody_basis)
 
         parent_basis = self._get_basis(hand, self._skeleton[joint_name]['parent'])
         basis = self._get_basis(hand, joint_name)
@@ -210,14 +213,12 @@ class LeapData:
         bone = fingerlist[0].bone(LeapData._get_bone_type(bone_number))
         return LeapData._basismatrix(bone.basis)
 
-    def _get_basis_first_frame(self, joint_name, anybody=False):
+    def _get_basis_first_frame(self, joint_name):
         if joint_name == self._root_name:
             return np.array([[1, 0, 0],
                              [0, 1, 0],
                              [0, 0, 1]])
-        if anybody:
-            return self.anybody_first_frame.get_basis(joint_name)
-        return self.basis_first_frame.get_basis(joint_name)
+        return self.anybody_first_frame.get_basis(joint_name)
 
     def _calculate_offset(self, joint_name):
         if joint_name == self._root_name:

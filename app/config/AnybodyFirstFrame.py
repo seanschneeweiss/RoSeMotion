@@ -6,15 +6,15 @@ import numpy as np
 ROTATION_KS = np.array([[0, 0, 1],
                         [0, 1, 0],
                         [-1, 0, 0]])
-ROTATION_FINGER = np.array([[0, 0, 1],
-                            [0, 1, 0],
-                            [-1, 0, 0]])
-ROTATION_THUMB = np.array([[0, -1, 0],
-                           [0, 0, 1],
-                           [-1, 0, 0]])
-ROTATION_HAND = np.array([[0, -1, 0],
-                          [1, 0, 0],
-                          [0, 0, 1]])
+ROTATION_FINGER = np.array([[0, -1, 0],
+                            [-1, 0, 0],
+                            [0, 0, -1]])
+ROTATION_THUMB = np.array([[0.9497,    0.1712,   -0.2624],
+                           [-0.0351,   -0.7742,   -0.6320],
+                           [-0.3113,    0.6094,   -0.7292]])
+ROTATION_HAND = np.array([[-1, 0, 0],
+                          [0, 0, 1],
+                          [0, 1, 0]])
 
 
 class AnybodyFirstFrame:
@@ -22,7 +22,7 @@ class AnybodyFirstFrame:
     def __init__(self, update_values=False):
         self.joint_values = None
         if not update_values:
-            self.load('config/anybody_joint_values.json')
+            self.load('config/anybody_joint_values_waagerecht.json')
 
     def load(self, filename):
         with open(filename) as o:
@@ -35,7 +35,7 @@ class AnybodyFirstFrame:
         if joint_name in ('RightElbow', 'RightHand'):
             return np.matmul(ROTATION_HAND, np.transpose(np.array(anybody_basis)))
         if 'RightHandThumb' in joint_name:
-            return np.matmul(ROTATION_FINGER, np.transpose(np.array(anybody_basis)))
+            return np.matmul(ROTATION_THUMB, np.transpose(np.array(anybody_basis)))
         return np.matmul(ROTATION_FINGER, np.transpose(np.array(anybody_basis)))
 
     def get_position(self, joint_name):
