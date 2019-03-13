@@ -82,7 +82,7 @@ def _rot2eul(rotmat):
         eul2 = eul1
 
     #  parity of axis permutation (even=False, odd=True)
-    if parity:
+    if not parity:
         eul1 = np.negative(eul1)
         eul2 = np.negative(eul2)
 

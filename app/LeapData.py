@@ -170,10 +170,18 @@ class LeapData:
         initial_basis = self._get_basis_first_frame(joint_name, anybody=True)
         basis = self._get_basis(hand, joint_name)
 
-        return rot2eul(
-            np.matmul(
-                np.matmul(basis, np.transpose(initial_basis)),
-                np.transpose(np.matmul(parent_basis, np.transpose(parent_initial_basis)))))
+        # calculation of local rotation matrix - important!!!
+        rot = np.matmul(
+                np.matmul(
+                    initial_basis, np.transpose(basis)
+                ),
+                np.transpose(
+                    np.matmul(
+                        parent_initial_basis, np.transpose(parent_basis)
+                    )
+                )
+        )
+        return rot2eul(rot)
 
     def _get_basis(self, hand, joint_name):
         # print("get_basis: {}".format(joint_name))
