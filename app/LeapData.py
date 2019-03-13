@@ -136,7 +136,7 @@ class LeapData:
 
             if firstframe:
                 if self.anybody_reference:
-                    x_pos, y_pos, z_pos = self._calculate_offset(joint_name)
+                    x_pos, y_pos, z_pos = self._calculate_offset(joint_name, [x_pos, y_pos, z_pos])
                 joint_value['offsets'] = [x_pos, y_pos, z_pos]
 
                 # # dump the basis of leap motion bones
@@ -220,12 +220,18 @@ class LeapData:
                              [0, 0, 1]])
         return self.anybody_first_frame.get_basis(joint_name)
 
-    def _calculate_offset(self, joint_name):
+    def _calculate_offset(self, joint_name, leap_offset):
         if joint_name == self._root_name:
             return 0, 0, 0
+
+        leap_length = np.linalg.norm(leap_offset)
+
         position = self._get_anybody_position(joint_name)
         position_parent = self._get_anybody_position(self._skeleton[joint_name]['parent'])
-        offset = position - position_parent
+        offset_anybody = position - position_parent
+        # make a unit vector
+        offset_anybody = np.divide(offset_anybody, np.linalg.norm(offset_anybody))
+        offset = offset_anybody * leap_length
         return offset[0], offset[1], offset[2]
 
     def _get_anybody_position(self, joint_name):
