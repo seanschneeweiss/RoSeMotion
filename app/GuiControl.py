@@ -18,7 +18,7 @@ class GuiControl:
         recorder_dlg = self.recorder_dlg
 
         # toggle off the help menu
-        visualizer_dlg.set_keyboard_focus().send_keystrokes("h")
+        visualizer_dlg.set_keyboard_focus().send_keystrokes("h---f")
 
         # get maximum screen size
         visualizer_dlg.maximize()
