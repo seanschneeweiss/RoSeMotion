@@ -32,6 +32,7 @@ class GuiControl:
         size = GuiControl.position_record(max_size, main=False)
         recorder_dlg.set_focus()
         recorder_dlg.move_window(x=-size['x'], y=size['y'], width=size['width'], height=size['height'], repaint=True)
+        recorder_dlg.Stop.set_focus()
 
     def end_record(self):
         self.visualizer.kill()
