@@ -45,7 +45,7 @@ class LeapData:
     def parse(self):
         self.data.skeleton = self._skeleton
         self.data.channel_names = self._motion_channels
-        self.data.values = self._motion2DataFrame()
+        self.data.values = self._motion2dataframe()
         self.data.root_name = self._root_name
         self.data.framerate = self._frame_rate
 
@@ -122,18 +122,20 @@ class LeapData:
             else:
                 x_pos, y_pos, z_pos = LeapData._get_finger_offset(joint_name, hand)
 
-            x_rot, y_rot, z_rot = self._calculate_euler_angles(hand, joint_name)
+            x_rot, y_rot, z_rot = self._calculate_euler_angles(hand, joint_name,
+                                                               hand_firstframe=True,
+                                                               anybody_basis=True)
 
             x_rot *= Leap.RAD_TO_DEG
             y_rot *= Leap.RAD_TO_DEG
             z_rot *= Leap.RAD_TO_DEG
 
             if firstframe:
-                x_pos, y_pos, z_pos = self._calculate_offset(joint_name)
+                # x_pos, y_pos, z_pos = self._calculate_offset(joint_name)
                 joint_value['offsets'] = [x_pos, y_pos, z_pos]
                 x_rot = y_rot = z_rot = 0.0
 
-                # dump the basis of leap motion bones
+                # # dump the basis of leap motion bones
                 # if 'End' not in joint_name and 'Root' not in joint_name:
                 #     export_basis[joint_name] = np.ndarray.tolist(self._get_basis(hand, joint_name))
 
@@ -151,7 +153,7 @@ class LeapData:
                 if channel == 'Zrotation':
                     channel_values.append((joint_name, channel, z_rot))
 
-        # dump the basis of leap motion bones
+        # # dump the basis of leap motion bones
         # if firstframe:
         #     import json
         #     import datetime
@@ -160,14 +162,22 @@ class LeapData:
 
         return channel_values
 
-    def _calculate_euler_angles(self, hand, joint_name):
+    def _calculate_euler_angles(self, hand, joint_name, hand_firstframe=True, anybody_basis=True):
+        initial_hand = self.first_frame.hands[0]
+
         # special case for root and finger tip
         if joint_name == self._root_name or not self._skeleton[joint_name]['children']:
             return 0.0, 0.0, 0.0
 
-        parent_initial_basis = self._get_basis_first_frame(self._skeleton[joint_name]['parent'], anybody=True)
+        if hand_firstframe:
+            parent_initial_basis = self._get_basis(initial_hand, self._skeleton[joint_name]['parent'])
+            initial_basis = self._get_basis(initial_hand, joint_name)
+        else:
+            parent_initial_basis = self._get_basis_first_frame(self._skeleton[joint_name]['parent'],
+                                                               anybody=anybody_basis)
+            initial_basis = self._get_basis_first_frame(joint_name, anybody=anybody_basis)
+
         parent_basis = self._get_basis(hand, self._skeleton[joint_name]['parent'])
-        initial_basis = self._get_basis_first_frame(joint_name, anybody=True)
         basis = self._get_basis(hand, joint_name)
 
         # calculation of local rotation matrix - important!!!
@@ -215,7 +225,6 @@ class LeapData:
         position = self._get_anybody_position(joint_name)
         position_parent = self._get_anybody_position(self._skeleton[joint_name]['parent'])
         offset = position - position_parent
-        # print('joint: {}, offset = {}]'.format(joint_name, offset))
         return offset[0], offset[1], offset[2]
 
     def _get_anybody_position(self, joint_name):
@@ -301,10 +310,6 @@ class LeapData:
 
     @staticmethod
     def _basismatrix(basis):
-        # print("basis:\n{}".format(
-        # np.array([[basis.x_basis.x, basis.y_basis.x, basis.z_basis.x],
-        #           [basis.x_basis.y, basis.y_basis.y, basis.z_basis.y],
-        #           [basis.x_basis.z, basis.y_basis.z, basis.z_basis.z]])))
         return np.array([[basis.x_basis.x, basis.y_basis.x, basis.z_basis.x],
                         [basis.x_basis.y, basis.y_basis.y, basis.z_basis.y],
                         [basis.x_basis.z, basis.y_basis.z, basis.z_basis.z]])
@@ -329,7 +334,7 @@ class LeapData:
         for joint_name, joint_dict in self._skeleton.items():
             joint_dict['channels'] = self._get_channels(joint_name, channel_setting)
 
-    def _motion2DataFrame(self):
+    def _motion2dataframe(self):
         """Returns all of the channels parsed from the LeapMotion sensor as a pandas DataFrame"""
 
         time_index = pandas.to_timedelta([f[0] for f in self._motions], unit='s')
