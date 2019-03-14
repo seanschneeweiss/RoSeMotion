@@ -370,7 +370,8 @@ class LeapGui:
 
         # Record, Anybody, Converter
         if env.config.command == 'Record':
-            # p = subprocess.Popen('"C:\\Program Files\\Leap Motion\\Core Services\\Visualizer.exe"')
+            from multiprocessing import Process
+            from BVHAnimation import bvh_animation
             from GuiControl import GuiControl
             gui = GuiControl()
             gui.set_windows_record()
@@ -382,9 +383,15 @@ class LeapGui:
                 time.sleep(1)
 
             LeapRecord.start_recording()
-            # p.terminate()
+
             gui.end_record()
-            print("End of recording\n\n")
+            print("End of recording\n")
+
+            print("Loading the animation ...")
+            print("Close the animation windows to end the program")
+            p = Process(target=bvh_animation.animate)
+            p.start()
+            p.join()
             return True
 
         if env.config.command == 'Anybody':

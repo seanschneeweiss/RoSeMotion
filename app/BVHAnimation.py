@@ -1,14 +1,15 @@
 import mpl_toolkits.mplot3d.axes3d as p3
 from matplotlib.widgets import Slider
 from resources.pymo.pymo.preprocessing import MocapParameterizer
-import numpy as np
 from matplotlib import pyplot as plt
 
 
 class BVHAnimation:
-    @staticmethod
-    def animate(bvh_data):
-        BVHAnimation.init_plot(BVHAnimation.positions(bvh_data)[0])
+    def __init__(self):
+        self.bvh_data = None
+
+    def animate(self):
+        BVHAnimation.init_plot(BVHAnimation.positions(self.bvh_data)[0])
 
     @staticmethod
     def positions(bvh_data):
@@ -99,3 +100,6 @@ class BVHAnimation:
         ax.view_init(elev=135, azim=-90)
 
         plt.show()
+
+
+bvh_animation = BVHAnimation()
