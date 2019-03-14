@@ -9,6 +9,7 @@ from resources.pymo.pymo.writers import BVHWriter as Pymo_BVHWriter
 # from resources.b3d.bvh_reader import BVH as B3D_BVHReader
 # from resources.b3d.c3d_convertor import Convertor as B3D_C3DWriter
 from AnyWriter import AnyWriter
+from BVHAnimation import BVHAnimation
 
 
 _LEAP_QUEUE = deque()
@@ -114,6 +115,11 @@ class LeapRecord(Leap.Listener):
                       output_directory=self.anybody_output_path
                       ).write(bvh_data)
             print('Anybody files written to "{}"'.format(self.anybody_output_path))
+
+        # BVHAnimation.animate(bvh_data)
+        t = Thread(target=BVHAnimation.animate, args=(bvh_data,))
+        t.start()
+        t.join()
 
 
 def start_recording():

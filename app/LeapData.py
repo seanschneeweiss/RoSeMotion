@@ -131,9 +131,6 @@ class LeapData:
             y_rot *= Leap.RAD_TO_DEG
             z_rot *= Leap.RAD_TO_DEG
 
-            if joint_name == 'RightHandMiddle3':
-                print(x_rot, y_rot, z_rot)
-
             if firstframe:
                 if self.anybody_reference:
                     x_pos, y_pos, z_pos = self._calculate_offset(joint_name, [x_pos, y_pos, z_pos])
