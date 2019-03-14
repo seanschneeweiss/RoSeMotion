@@ -1,4 +1,3 @@
-import sys
 import re
 import numpy as np
 import pandas
@@ -40,10 +39,11 @@ class LeapData:
         self._skeleton_apply_channels(self._setting.channel_setting)
         self._root_name = self._setting.root_name
 
-        for key, value in self._skeleton.items():
-            value['offsets'] = [0, 0, 0]
-            for channel in value['channels']:
-                self._motion_channels.append((key, channel))
+        # initialize offsets for each joint
+        for joint_name, joint_value in self._skeleton.items():
+            joint_value['offsets'] = [0, 0, 0]
+            for channel in joint_value['channels']:
+                self._motion_channels.append((joint_name, channel))
 
     def parse(self):
         self.data.skeleton = self._skeleton
