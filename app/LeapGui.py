@@ -1,9 +1,12 @@
 import json
+from multiprocessing import Process
 import os
 
 import LeapRecord
 from AnyPy import AnyPy
 from config.Configuration import env
+from BVHAnimation import bvh_animation
+from resources.pymo.pymo.parsers import BVHParser as Pymo_BVHParser
 from resources.Gooey.gooey.gui import application
 from resources.Gooey.gooey.gui import processor
 from resources.Gooey.gooey.gui.containers import application as containers_application
@@ -13,6 +16,7 @@ from resources.Gooey.gooey.python_bindings import gooey_decorator, gooey_parser
 ACTION_RECORD = 'Record'
 ACTION_ANYBODY = 'Anybody'
 ACTION_CONVERTER = 'Converter'
+ACTION_ANIMATION = 'Animation'
 EXECUTED_COMMAND = 'command'
 
 
@@ -325,6 +329,25 @@ class LeapGui:
                                      widget='DirChooser',
                                      help='Directory to store the converted files')
 
+        # === bvh animation === #
+        animation_parser = subs.add_parser(ACTION_ANIMATION, help='Show an animation for a BVH file')
+        animation_group = animation_parser.add_argument_group(
+            "Animation",
+            "Select a BVH file to be animated",
+            gooey_options={
+                'show_border': True,
+                'columns': 1
+            }
+        )
+
+        animation_group.add_argument('bvh_animation',
+                                     metavar='BVH file path',
+                                     action='store',
+                                     default=stored_args.get(
+                                         ACTION_ANIMATION, 'bvh_animation',
+                                         LeapGui.StoredArgs.path('../output/BVH/RightHand.bvh')),
+                                     widget='FileChooser')
+
         # start the UI and save arguments to json for next run
         stored_args.save(parser.parse_args())
 
@@ -369,9 +392,7 @@ class LeapGui:
         LeapGui.parse_args()
 
         # Record, Anybody, Converter
-        if env.config.command == 'Record':
-            from multiprocessing import Process
-            from BVHAnimation import bvh_animation
+        if env.config.command == ACTION_RECORD:
             from GuiControl import GuiControl
             gui = GuiControl()
             gui.set_windows_record()
@@ -388,13 +409,13 @@ class LeapGui:
             print("End of recording\n")
 
             print("Loading the animation ...")
-            print("Close the animation windows to end the program")
             p = Process(target=bvh_animation.animate)
             p.start()
+            # wait for bvh_animation to be closed
             p.join()
             return True
 
-        if env.config.command == 'Anybody':
+        if env.config.command == ACTION_ANYBODY:
             from LogWatcher import log_watcher
             anypy = AnyPy(env.config.any_main_file, env.config.any_files_dir)
             log_watcher.start(os.path.join(anypy.any_path, AnyPy.LOG_FILE))
@@ -402,14 +423,18 @@ class LeapGui:
             log_watcher.stop()
             return True
 
-        if env.config.command == 'Converter':
+        if env.config.command == ACTION_CONVERTER:
             if env.config.any_file:
                 from AnyWriter import AnyWriter
-                from resources.pymo.pymo.parsers import BVHParser as Pymo_BVHParser
                 any_writer = AnyWriter(template_directory='config/anybody_templates/',
                                        output_directory=env.config.file_dir + '/')
                 any_writer.write(Pymo_BVHParser().parse(env.config.bvh_file))
             return True
+
+        if env.config.command == ACTION_ANIMATION:
+            print("Loading the animation ...")
+            bvh_animation.bvh_data = Pymo_BVHParser().parse(env.config.bvh_animation)
+            bvh_animation.animate()
 
 
 if __name__ == "__main__":
