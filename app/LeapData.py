@@ -282,7 +282,7 @@ class LeapData:
     def _split_key(key):
         key_split = re.split('(\d)', key)
         key = key_split[0]
-        if key_split[-1] == '_End':
+        if key_split[-1] == '_Nub':
             return key, 5
         else:
             return key, int(key_split[1])
@@ -322,7 +322,7 @@ class LeapData:
                         [basis.x_basis.z, basis.y_basis.z, basis.z_basis.z]])
 
     def _get_channels(self, joint_name, channel_setting):
-        if '_End' in joint_name:
+        if '_Nub' in joint_name:
             return []
 
         channels_position = ['Xposition', 'Yposition', 'Zposition']

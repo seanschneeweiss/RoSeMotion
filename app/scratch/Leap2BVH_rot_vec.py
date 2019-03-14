@@ -204,7 +204,7 @@ class Leap2BVH:
     def _split_key(key):
         key_split = re.split('(\d)', key)
         key = key_split[0]
-        if key_split[-1] == '_End':
+        if key_split[-1] == '_Nub':
             return key, 5
         else:
             return key, int(key_split[1])

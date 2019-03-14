@@ -39,7 +39,7 @@ class AnybodyFirstFrame:
         return np.matmul(ROTATION_FINGER, np.transpose(np.array(anybody_basis)))
 
     def get_position(self, joint_name):
-        if '_End' in joint_name:
+        if '_Nub' in joint_name:
             anybody_position = self.joint_values[joint_name]['r']
         else:
             anybody_position = self.joint_values[joint_name]['r0']

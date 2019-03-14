@@ -1,0 +1,28 @@
+//Finger length
+LowerArmLength = DesignVar({RightHand});
+HandLength = DesignVar({HANDLENGTH});
+HandBreadth = DesignVar({HANDBREADTH});
+
+ThumbMCLength = DesignVar({RightHandThumb3});
+ThumbPPLength = DesignVar({RightHandThumb4});
+ThumbDPLength = DesignVar({RightHandThumb4_Nub});
+
+Finger2MCLength = DesignVar({RightHandIndex2});
+Finger2PPLength = DesignVar({RightHandIndex3});
+Finger2MPLength = DesignVar({RightHandIndex4});
+Finger2DPLength = DesignVar({RightHandIndex4_Nub});
+
+Finger3MCLength = DesignVar({RightHandMiddle2});
+Finger3PPLength = DesignVar({RightHandMiddle3});
+Finger3MPLength = DesignVar({RightHandMiddle4});
+Finger3DPLength = DesignVar({RightHandMiddle4_Nub});
+
+Finger4MCLength = DesignVar({RightHandRing2});
+Finger4PPLength = DesignVar({RightHandRing3});
+Finger4MPLength = DesignVar({RightHandRing4});
+Finger4DPLength = DesignVar({RightHandRing4_Nub});
+
+Finger5MCLength = DesignVar({RightHandPinky2});
+Finger5PPLength = DesignVar({RightHandPinky3});
+Finger5MPLength = DesignVar({RightHandPinky4});
+Finger5DPLength = DesignVar({RightHandPinky4_Nub});

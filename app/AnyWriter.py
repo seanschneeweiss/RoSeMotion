@@ -38,10 +38,11 @@ class AnyWriter:
         pass
 
     def write(self, data):
-        self.write_fingers(data)
+        self.write_joints(data)
         self.write_timeseries(data)
+        self.write_finger_length(data)
 
-    def write_fingers(self, data):
+    def write_joints(self, data):
         finger_values = {}
 
         for finger_name, joint_mapping in self.mapping.items():
@@ -74,12 +75,42 @@ class AnyWriter:
         # threshold: workaround for printing more than 1000 values
         np.set_printoptions(formatter={'float': '{: 0.4f}'.format}, threshold=np.inf)
 
-        # TODO: add TIMESERIES to the dictionary in the __init__ method
         entries = data.values.shape[0]
         template_dict = {'TIMESERIES': self._joint2array(self._calctimeseries(data, entries))}
         template_string = open(self._template_directory + 'TimeSeries.template', 'r').read().format(**template_dict)
 
         with open(self._output_directory + 'TimeSeries.any', 'w') as f:
+            f.write(template_string)
+            print('"{} written"'.format(f.name))
+
+    def write_finger_length(self, data):
+        template_dict = {}
+        # use offsets value from bvh to scale finger lengths in AnyBody
+        for joint_name, joint_value in data.skeleton.items():
+            finger_length = np.linalg.norm(np.array(joint_value['offsets'])) / 1000
+            template_dict[joint_name] = finger_length
+
+        # hand length, hand breadth
+        hand_length = np.linalg.norm(
+            np.array(data.skeleton['RightHandMiddle1']['offsets']) +
+            np.array(data.skeleton['RightHandMiddle2']['offsets']) +
+            np.array(data.skeleton['RightHandMiddle3']['offsets']) +
+            np.array(data.skeleton['RightHandMiddle4']['offsets']) +
+            np.array(data.skeleton['RightHandMiddle4_Nub']['offsets'])
+        ) / 1000
+        template_dict['HANDLENGTH'] = hand_length
+
+        # hand breadth from leap motion is too small
+        # template_dict['HANDBREADTH'] = np.linalg.norm(
+        #     np.array(data.skeleton['RightHandPinky1']['offsets'] + data.skeleton['RightHandPinky2']['offsets']) -
+        #     np.array(data.skeleton['RightHandIndex1']['offsets'] + data.skeleton['RightHandIndex2']['offsets'])
+        # ) / 1000
+
+        # use scaling factor (hand breadth to hand length) from UZWR standard hand
+        template_dict['HANDBREADTH'] = hand_length * (0.098 / 0.2)
+
+        template_string = open(self._template_directory + 'FingerLength.template', 'r').read().format(**template_dict)
+        with open(self._output_directory + 'FingerLength.any', 'w') as f:
             f.write(template_string)
             print('"{} written"'.format(f.name))
 

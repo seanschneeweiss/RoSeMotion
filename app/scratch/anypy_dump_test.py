@@ -8,7 +8,7 @@ import os
 
 
 cwd = os.getcwd()
-os.chdir('D:\\RobinSean\\Sean\\5. Master\\Projekt CSE\\Interpolation_Validierung\\anybody\\')
+os.chdir('D:\\RobinSean\Sean\\5. Master\\Projekt CSE\\AnybodyModelle\\regensburg-ulm-hand-model\\AnyBody\\Application\\Examples\\FreeHandMove')
 print(os.getcwd())
 # patella_tendon_lengths = [
 #     0.02 + i*0.01
@@ -33,16 +33,16 @@ app = AnyPyProcess(num_processes=1,
 # ]
 
 macrolist = [
-    Load('HAND.Main.any'),
-    SetValue('Main.Study.nStep', 5),
-    Dump('Main.HumanModel.Mannequin.Posture.Right.Finger1.CMCFlexionVec')
+    Load('FreeHand.Main.any'),
+    OperationRun('Main.Study.Kinematics'),
+    Dump('Main.Study.JointAngleOutputs.MCP2')
     # OperationRun('Main.RunMotionAndParameterOptimizationSequence')
     # OperationRun('Main.MyStudy.InverseDynamics'),
 ]
 output = app.start_macro(macrolist)
 
 
-print(output['Main.HumanModel.Mannequin.Posture.Right.Finger1.CMCFlexionVec'])
+print(output['Main.Study.JointAngleOutputs.MCP2'])
 # parameter_study_macro = AnyMacro(macro, number_of_macros= len(patella_tendon_lengths))
 
 os.chdir(cwd)
