@@ -88,19 +88,13 @@ class LeapGui:
                                metavar='Write BVH-File',
                                action='store_true')
 
-        bvh_group.add_argument('-bvh_filename',
-                               metavar=' ',
-                               action='store',
-                               default=stored_args.get(ACTION_RECORD, 'bvh_filename', 'RightHand'),
-                               help='Filename')
-
         bvh_group.add_argument('-bvh_path',
-                               metavar=' ',
+                               metavar='BVH File',
                                action='store',
                                default=stored_args.get(
-                                   ACTION_RECORD, 'bvh_path', LeapGui.StoredArgs.path('../output/BVH')),
-                               widget='DirChooser',
-                               help='Output directory for bvh file')
+                                   ACTION_RECORD, 'bvh_path', LeapGui.StoredArgs.path('../output/BVH/RightHand.bvh')),
+                               widget='FileSaver',
+                               help='Choose location, where to save the BVH File')
 
         bvh_group.add_argument('frames_per_second',
                                metavar='Frames per second',
@@ -111,7 +105,7 @@ class LeapGui:
                                        'test': '1 <= int(user_input) <= 150',
                                        'message': 'Must be between 1 and 150'
                                    }
-                               }
+                               },
                                )
 
         bvh_group.add_argument('channels',

@@ -23,7 +23,7 @@ class LeapRecord(Leap.Listener):
 
         self.bvh_write = env.config.bvh
         if self.bvh_write:
-            self.bvh_filename = env.config.bvh_path + '\\' + env.config.bvh_filename + '.bvh'
+            self.bvh_filename = env.config.bvh_path
 
         self.c3d_write = env.config.c3d
         if self.c3d_write:
