@@ -1,5 +1,6 @@
+import re
 import numpy as np
-from config.Configuration import env
+import os
 
 
 class AnyWriter:
@@ -35,7 +36,9 @@ class AnyWriter:
                       'joint_any': ['ELBOWPRONATION'],
                       'template': 'Elbow.template',
                       'function': ['correct_pronation']}}
-        pass
+
+        self.regex_find = re.compile(r'{(((\s*-?\d+\.\d+).?)+)};')
+        self.regex_replace = re.compile(r'(((\s*-?\d+\.\d+).?)+)')
 
     def write(self, data):
         self.write_joints(data)
@@ -62,7 +65,7 @@ class AnyWriter:
                 # Apply functions for correcting data, if set in mapping (see __init__ method)
                 joint_values = AnyWriter._apply_function(joint_mapping['function'],
                                                          finger_values[finger_name][joint_name])
-                template_dict[joint_name] = self._joint2array(joint_values)
+                template_dict[joint_name] = self._format2outputarray(joint_values)
 
             template_filename = joint_mapping['template']
             with open(self._template_directory + template_filename, 'r') as f:
@@ -73,15 +76,15 @@ class AnyWriter:
 
     def write_timeseries(self, data):
         # threshold: workaround for printing more than 1000 values
-        np.set_printoptions(formatter={'float': '{: 0.4f}'.format}, threshold=np.inf)
+        np.set_printoptions(formatter={'float': '{: 0.5f}'.format}, threshold=np.inf)
 
         entries = data.values.shape[0]
-        template_dict = {'TIMESERIES': self._joint2array(self._calctimeseries(data, entries))}
+        template_dict = {'TIMESERIES': self._format2outputarray(np.linspace(0, 1, num=entries))}
         template_string = open(self._template_directory + 'TimeSeries.template', 'r').read().format(**template_dict)
 
         with open(self._output_directory + 'TimeSeries.any', 'w') as f:
             f.write(template_string)
-            print('"{} written"'.format(f.name))
+            print('"{} written"'.format(os.path.normpath(f.name)))
 
     def write_finger_length(self, data):
         template_dict = {}
@@ -112,7 +115,7 @@ class AnyWriter:
         template_string = open(self._template_directory + 'FingerLength.template', 'r').read().format(**template_dict)
         with open(self._output_directory + 'FingerLength.any', 'w') as f:
             f.write(template_string)
-            print('"{} written"'.format(f.name))
+            print('"{} written"'.format(os.path.normpath(f.name)))
 
     @staticmethod
     def _joint2channel(finger_name, joint_name):
@@ -156,17 +159,7 @@ class AnyWriter:
             return '_Zrotation'
 
     @staticmethod
-    def _range(start, step, num, dtype=np.float):
-        # return np.fromiter(itertools.count(start, step), dtype, num)
-        return np.linspace(0, 1, num=num)
-
-    @staticmethod
-    def _calctimeseries(data, entries):
-        timeseries = AnyWriter._range(0.0, data.framerate, entries)
-        return timeseries
-
-    @staticmethod
-    def _joint2array(joint_values):
+    def _format2outputarray(joint_values):
         return np.array2string(joint_values.astype(float), separator=', ')[1:-1]
 
     @staticmethod
@@ -179,3 +172,42 @@ class AnyWriter:
                 joint_values = 95.0 + joint_values
 
         return joint_values
+
+    def extract_frames(self, start, end):
+        def prepare_result(x):
+            np.set_printoptions(formatter={'float': '{: 0.2f}'.format}, threshold=np.inf)
+            return np.array2string(np.fromstring(x[0], sep=',').astype(float)[start:end], separator=', ')[1:-1]
+
+        for finger_name in self.mapping:
+            selected_filepath = self._output_directory + finger_name + '.any'
+            with open(selected_filepath) as file:
+                old_file = file.read()
+                matches = list(map(prepare_result, self.regex_find.findall(old_file)))
+
+            new_file = re.sub(self.regex_replace, '{{}}}', old_file)
+
+            with open(selected_filepath, 'w') as file:
+                file.write(new_file.format(*matches))
+                if not end:
+                    end_temp = len(np.fromstring(matches[0], sep=','))
+                print("Extracted values between frame {} and {} from {}"
+                      .format(start+1, start+end_temp, os.path.normpath(file.name)))
+
+    def extract_frame_timeseries(self, start, end):
+        selected_filepath =self._output_directory + 'TimeSeries.any'
+        with open(selected_filepath) as file:
+            old_file = file.read()
+            match = self.regex_find.findall(old_file)
+
+        if not end:
+            end = len(np.fromstring(match[0][0], sep=','))
+
+        new_file = re.sub(self.regex_replace, '{{}}}', old_file)
+
+        np.set_printoptions(formatter={'float': '{: 0.5f}'.format}, threshold=np.inf)
+        print("End - Start:", end-start)
+        with open(selected_filepath, 'w') as file:
+            file.write(new_file.format(np.array2string(
+                np.linspace(0, 1, num=end-start).astype(float), separator=', ')[1:-1]))
+            print("Extracted values between frame {} and {} from {}"
+                  .format(start+1, end, os.path.normpath(file.name)))

@@ -10,6 +10,7 @@ from resources.AnyPyTools.anypytools import AnyMacro
 from resources.AnyPyTools.anypytools.macro_commands import (MacroCommand, Load, SetValue, SetValue_random,  Dump,
                                                             SaveDesign, LoadDesign, SaveValues, LoadValues,
                                                             UpdateValues, SaveData, OperationRun)
+from AnyWriter import AnyWriter
 from config.Configuration import env
 
 
@@ -32,17 +33,24 @@ class AnyPy:
         self.initialize_operations()
         if env.args('any_interpol_files'):
             print("Using interpolation files from {}".format(os.path.normpath(self.any_path + AnyPy.INTERPOL_DIR)))
-            return
+
         if env.args('any_bvh_file'):
             print("Convert bvh file to anybody interpolation files")
-            from AnyWriter import AnyWriter
+
             from resources.pymo.pymo.parsers import BVHParser as Pymo_BVHParser
             any_writer = AnyWriter(template_directory='config/anybody_templates/',
                                    output_directory=os.path.normpath(self.any_path + AnyPy.INTERPOL_DIR) + '/')
             any_writer.write(Pymo_BVHParser().parse(env.config.any_bvh_file))
-            return
+
         if env.args('any_files_dir'):
             self.copy_files()
+
+        if env.config.start_frame or env.config.end_frame:
+            start_frame = int(env.config.start_frame) - 1 if env.config.start_frame else 0
+            end_frame = int(env.config.end_frame) - 1 if 'end' not in env.config.end_frame.lower() else None
+            any_writer = AnyWriter(output_directory=os.path.normpath(self.any_path + AnyPy.INTERPOL_DIR) + '/')
+            any_writer.extract_frames(start_frame, end_frame)
+            any_writer.extract_frame_timeseries(start_frame, end_frame)
 
     def initialize_operations(self):
         """build the macrolist executed by AnyPyTools"""

@@ -26,7 +26,7 @@ class BVHAnimation:
         axframe = plt.axes([0.25, 0.1, 0.65, 0.03], facecolor=axcolor)
 
         bvh_number_frames = positions.values.shape[0]
-        sframe = Slider(axframe, 'Frame', 0, bvh_number_frames-1, valinit=0, valstep=1)
+        sframe = Slider(axframe, 'Frame', 1, bvh_number_frames, valinit=1, valstep=1)
 
         joints_to_draw = positions.skeleton.keys()
         lines = []
@@ -57,7 +57,7 @@ class BVHAnimation:
 
         def update(_):
             """Update function for the slider"""
-            frame = int(sframe.val)
+            frame = int(sframe.val) - 1
             index1 = 0
             index2 = 0
 

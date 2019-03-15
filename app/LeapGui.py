@@ -105,7 +105,7 @@ class LeapGui:
                                        'test': '1 <= int(user_input) <= 150',
                                        'message': 'Must be between 1 and 150'
                                    }
-                               },
+                               }
                                )
 
         bvh_group.add_argument('channels',
@@ -224,6 +224,31 @@ class LeapGui:
                                    default=stored_args.get(ACTION_ANYBODY, 'any_main_file', ''),
                                    widget='FileChooser',
                                    help='Choose the main anybody file for the calculation')
+
+        anybody_group.add_argument('-start_frame',
+                                   metavar='Start Frame',
+                                   help='default: 1',
+                                   action='store',
+                                   # default=stored_args.get(ACTION_ANYBODY, 'start_frame', '0'),
+                                   gooey_options={
+                                       'validator': {
+                                           'test': '1 <= int(user_input)',
+                                           'message': 'Must be greater or equal than 0'
+                                       }
+                                   },
+                                   type=int)
+
+        anybody_group.add_argument('-end_frame',
+                                   metavar='End Frame',
+                                   help='default: end',
+                                   action='store',
+                                   # default=stored_args.get(ACTION_ANYBODY, 'end_frame', 'end'),
+                                   gooey_options={
+                                       'validator': {
+                                           'test': '("end" in user_input.lower()) or (1 <= int(user_input))',
+                                           'message': 'Must be a positive value and greater than the start frame'
+                                       }
+                                   })
 
         operation_group = anybody_parser.add_argument_group(
             "Operations",
