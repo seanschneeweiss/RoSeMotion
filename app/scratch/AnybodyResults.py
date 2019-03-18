@@ -88,6 +88,9 @@ class AnybodyResults:
         self.fig, self.ax = plt.subplots()
         plt.subplots_adjust(left=0.2)
         plt.grid()
+        plt.title('comparison of angles')
+        plt.xlabel('frame')
+        plt.ylabel('angle in degree')
         custom_legend = [Line2D([0], [0], linestyle='None', color=COLORS[0], marker='$1$', lw=2, label='Thumb'),
                          Line2D([0], [0], linestyle='None', color=COLORS[1], marker='$2$', lw=2, label='Index'),
                          Line2D([0], [0], linestyle='None', color=COLORS[2], marker='$3$', lw=2, label='Middle'),
