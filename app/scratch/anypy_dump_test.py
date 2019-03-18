@@ -35,14 +35,15 @@ app = AnyPyProcess(num_processes=1,
 macrolist = [
     Load('FreeHand.Main.any'),
     OperationRun('Main.Study.Kinematics'),
-    Dump('Main.Study.Output.JointAngleOutputs.MCP2')
+    Dump('Main.Study.Output.JointAngleOutputs'),
+    Dump('Main.Study.nStep')
     # OperationRun('Main.RunMotionAndParameterOptimizationSequence')
     # OperationRun('Main.MyStudy.InverseDynamics'),
 ]
 output = app.start_macro(macrolist)
 
 
-print(output['Main.Study.Output.JointAngleOutputs.MCP2'])
+print(output['Main.Study.Output.JointAngleOutputs.CMC1'])
 # parameter_study_macro = AnyMacro(macro, number_of_macros= len(patella_tendon_lengths))
 
 os.chdir(cwd)
