@@ -1,4 +1,5 @@
 import os
+import datetime
 import glob
 import shutil
 import h5py
@@ -12,6 +13,8 @@ from resources.AnyPyTools.anypytools.macro_commands import (MacroCommand, Load, 
                                                             UpdateValues, SaveData, OperationRun)
 from AnyWriter import AnyWriter
 from config.Configuration import env
+from resources.pymo.pymo.parsers import BVHParser as Pymo_BVHParser
+from AnybodyResults import AnybodyResults
 
 
 class AnyPy:
@@ -20,7 +23,10 @@ class AnyPy:
     KINEMATICS = 'kinematics'
     INVERSE_DYNAMICS = 'inverse_dynamics'
     SAVE_HDF5 = 'hdf5'
-    LOG_FILE = 'AnyPy.log'
+    DUMP_JOINT_ANGLES = 'dump_angles'
+    DUMP_STEPS = 'dump_steps'
+    DUMP_LEAP_VECTORS = 'dump_leap_vectors'
+    LOG_FILE = 'AnyPy{}.log'.format(datetime.datetime.today().strftime('%Y%m%d_%H%M%S'))
 
     INTERPOL_DIR = '/Model/InterpolVec'
 
@@ -29,6 +35,7 @@ class AnyPy:
         self.template_directory = template_directory
         self.operations = []
         self.macrolist = []
+        self.output = None
 
         self.initialize_operations()
         if env.args('any_interpol_files'):
@@ -37,7 +44,6 @@ class AnyPy:
         if env.args('any_bvh_file'):
             print("Convert bvh file to anybody interpolation files")
 
-            from resources.pymo.pymo.parsers import BVHParser as Pymo_BVHParser
             any_writer = AnyWriter(template_directory='config/anybody_templates/',
                                    output_directory=os.path.normpath(self.any_path + AnyPy.INTERPOL_DIR) + '/')
             any_writer.write(Pymo_BVHParser().parse(env.config.any_bvh_file))
@@ -45,6 +51,7 @@ class AnyPy:
         if env.args('any_files_dir'):
             self.copy_files()
 
+        # remove frames from start and end (cut)
         if env.config.start_frame or env.config.end_frame:
             start_frame = int(env.config.start_frame) - 1 if env.config.start_frame else 0
             end_frame = int(env.config.end_frame) - 1 if 'end' not in env.config.end_frame.lower() else None
@@ -58,7 +65,10 @@ class AnyPy:
                          AnyPy.INITIAL_CONDITIONS: OperationRun("Main.Study.InitialConditions"),
                          AnyPy.KINEMATICS: OperationRun("Main.Study.Kinematics"),
                          AnyPy.INVERSE_DYNAMICS: OperationRun("Main.Study.InverseDynamics"),
-                         AnyPy.SAVE_HDF5: SaveData('Main.Study', 'output.anydata.h5')}
+                         AnyPy.SAVE_HDF5: SaveData('Main.Study', 'output.anydata.h5'),
+                         AnyPy.DUMP_JOINT_ANGLES: Dump('Main.Study.Output.JointAngleOutputs'),
+                         AnyPy.DUMP_STEPS: Dump('Main.Study.nStep'),
+                         AnyPy.DUMP_LEAP_VECTORS: Dump('Main.HumanModel.Mannequin.Posture.Right')}
 
         if env.config.load:
             self.add_operation(AnyPy.LOAD)
@@ -69,8 +79,14 @@ class AnyPy:
         if env.config.inverse_dynamics:
             self.add_operation(AnyPy.INVERSE_DYNAMICS)
         if env.config.results:
-            # TODO: dump instead of h5
+            # save study output to hdf5, to view and replay analysis later
             self.add_operation(AnyPy.SAVE_HDF5)
+            # dump interpolated joint angles
+            self.add_operation(AnyPy.DUMP_JOINT_ANGLES)
+            # dump nStep
+            self.add_operation(AnyPy.DUMP_STEPS)
+            # dump Mannequin vectors including the joint angles from the bvh file
+            self.add_operation(AnyPy.DUMP_LEAP_VECTORS)
 
         for operation in self.operations:
             self.macrolist.append(operation_cmd[operation])
@@ -104,34 +120,42 @@ class AnyPy:
         app = AnyPyProcess(return_task_info=True,
                            anybodycon_path="C:/Program Files/AnyBody Technology/AnyBody.7.1/AnyBodyCon.exe")
 
-        app.start_macro(macrolist=self.macrolist,
-                        logfile=AnyPy.LOG_FILE)
-
-        if env.config.results:
-            AnyPy.plot()
+        self.output = app.start_macro(macrolist=self.macrolist,
+                                      logfile=AnyPy.LOG_FILE)
 
         # change back to original folder
         os.chdir(cwd)
 
-    @staticmethod
-    def plot():
-        # Plot
-        h5file = h5py.File('output.anydata.h5')
-        cmc1_flexion_data = np.array(h5file['/Output/JointAngleOutputs/{}'.format(env.config.result_type)])
-        h5file.close()
-        number_frames = np.size(cmc1_flexion_data)
-        frames = np.arange(0, number_frames)
+        # open the plot for the joint angles
+        if env.config.results:
+            self.plot_results()
 
-        # use LaTeX fonts in the plot
-        # plt.rc('text', usetex=True)
-        plt.rc('font', family='serif')
+    def plot_results(self):
+        print('Loading the plot ...')
+        if env.config.result_bvh_file:
+            pass
+        AnybodyResults(self.output).plot()
 
-        plt.plot(frames, np.multiply(cmc1_flexion_data, 180 / np.pi))
-        plt.xlim(0, number_frames)
-        plt.ylim(-90, 90)
-        plt.xlabel('frames')
-        plt.ylabel('angle in degree')
-        plt.title(env.config.result_type)
-        plt.legend(['bvh', 'any'], loc=2)
-        plt.grid(True)
-        plt.show()
+    # @staticmethod
+    # def plot():
+    #     """scratch, not in use currently"""
+    #     # Plot
+    #     h5file = h5py.File('output.anydata.h5')
+    #     cmc1_flexion_data = np.array(h5file['/Output/JointAngleOutputs/{}'.format(env.config.result_type)])
+    #     h5file.close()
+    #     number_frames = np.size(cmc1_flexion_data)
+    #     frames = np.arange(0, number_frames)
+    #
+    #     # use LaTeX fonts in the plot
+    #     # plt.rc('text', usetex=True)
+    #     plt.rc('font', family='serif')
+    #
+    #     plt.plot(frames, np.multiply(cmc1_flexion_data, 180 / np.pi))
+    #     plt.xlim(0, number_frames)
+    #     plt.ylim(-90, 90)
+    #     plt.xlabel('frames')
+    #     plt.ylabel('angle in degree')
+    #     plt.title(env.config.result_type)
+    #     plt.legend(['bvh', 'any'], loc=2)
+    #     plt.grid(True)
+    #     plt.show()

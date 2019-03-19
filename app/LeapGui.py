@@ -287,30 +287,40 @@ class LeapGui:
                                   metavar='Open plots for selected joints',
                                   action='store_true')
 
-        result_group.add_argument('-result_type',
-                                  metavar='Select the joint values to make a plot for:',
-                                  widget='Listbox',
-                                  nargs='+',
-                                  default=stored_args.get(ACTION_ANYBODY, 'result_type', None),
-                                  choices=[
-                                      "Finger1.Jnt.CMCFlexion.Pos",
-                                      "Finger1.Jnt.CMCAbduction.Pos",
-                                      "Finger1.Jnt.MCPFlexion.Pos",
-                                      "Finger1.Jnt.MCPAbduction.Pos",
-                                      "Finger1.Jnt.DIP.Pos",
-                                      "Finger2.Jnt.MCP.Pos",
-                                      "Finger2.Jnt.PIP.Pos",
-                                      "Finger2.Jnt.DIP.Pos",
-                                      "Finger3.Jnt.MCP.Pos",
-                                      "Finger3.Jnt.PIP.Pos",
-                                      "Finger3.Jnt.DIP.Pos",
-                                      "Finger4.Jnt.MCP.Pos",
-                                      "Finger4.Jnt.PIP.Pos",
-                                      "Finger4.Jnt.DIP.Pos",
-                                      "Finger5.Jnt.MCP.Pos",
-                                      "Finger5.Jnt.PIP.Pos",
-                                      "Finger5.Jnt.DIP.Pos"
-                                  ])
+        result_group.add_argument('-result_bvh_file',
+                                  metavar='Source of the *.bvh file',
+                                  action='store',
+                                  default=stored_args.get(
+                                      ACTION_ANYBODY, 'result_bvh_file',
+                                      LeapGui.StoredArgs.path('../output/BVH/RightHand.bvh')),
+                                  widget='FileChooser',
+                                  help='(optional) Choose a bvh file to be compared to the joint'
+                                       ' angles from the AnyBody analysis')
+
+        # result_group.add_argument('-result_type',
+        #                           metavar='Select the joint values to make a plot for:',
+        #                           widget='Listbox',
+        #                           nargs='+',
+        #                           default=stored_args.get(ACTION_ANYBODY, 'result_type', None),
+        #                           choices=[
+        #                               "Finger1.Jnt.CMCFlexion.Pos",
+        #                               "Finger1.Jnt.CMCAbduction.Pos",
+        #                               "Finger1.Jnt.MCPFlexion.Pos",
+        #                               "Finger1.Jnt.MCPAbduction.Pos",
+        #                               "Finger1.Jnt.DIP.Pos",
+        #                               "Finger2.Jnt.MCP.Pos",
+        #                               "Finger2.Jnt.PIP.Pos",
+        #                               "Finger2.Jnt.DIP.Pos",
+        #                               "Finger3.Jnt.MCP.Pos",
+        #                               "Finger3.Jnt.PIP.Pos",
+        #                               "Finger3.Jnt.DIP.Pos",
+        #                               "Finger4.Jnt.MCP.Pos",
+        #                               "Finger4.Jnt.PIP.Pos",
+        #                               "Finger4.Jnt.DIP.Pos",
+        #                               "Finger5.Jnt.MCP.Pos",
+        #                               "Finger5.Jnt.PIP.Pos",
+        #                               "Finger5.Jnt.DIP.Pos"
+        #                           ])
 
         # === converter === #
         converter_parser = subs.add_parser(ACTION_CONVERTER, help='Convert a BVH-File in .any-Files or C3d-File')
@@ -437,7 +447,7 @@ class LeapGui:
         if env.config.command == ACTION_ANYBODY:
             from LogWatcher import log_watcher
             anypy = AnyPy(env.config.any_main_file, env.config.any_files_dir)
-            log_watcher.start(os.path.join(anypy.any_path, AnyPy.LOG_FILE))
+            log_watcher.start(os.path.join(anypy.any_path, anypy.LOG_FILE))
             anypy.run()
             log_watcher.stop()
             return True
