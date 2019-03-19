@@ -276,51 +276,21 @@ class LeapGui:
                                      action='store_true')
 
         result_group = anybody_parser.add_argument_group(
-            "Plots",
+            "Results",
             gooey_options={
                 'show_border': True,
                 'columns': 1
             }
         )
 
-        result_group.add_argument('-results',
-                                  metavar='Open plots for selected joints',
+        result_group.add_argument('-plot',
+                                  metavar='Open the plot after the analysis',
                                   action='store_true')
 
-        result_group.add_argument('-result_bvh_file',
-                                  metavar='Source of the *.bvh file',
-                                  action='store',
-                                  default=stored_args.get(
-                                      ACTION_ANYBODY, 'result_bvh_file',
-                                      LeapGui.StoredArgs.path('../output/BVH/RightHand.bvh')),
-                                  widget='FileChooser',
-                                  help='(optional) Choose a bvh file to be compared to the joint'
-                                       ' angles from the AnyBody analysis')
-
-        # result_group.add_argument('-result_type',
-        #                           metavar='Select the joint values to make a plot for:',
-        #                           widget='Listbox',
-        #                           nargs='+',
-        #                           default=stored_args.get(ACTION_ANYBODY, 'result_type', None),
-        #                           choices=[
-        #                               "Finger1.Jnt.CMCFlexion.Pos",
-        #                               "Finger1.Jnt.CMCAbduction.Pos",
-        #                               "Finger1.Jnt.MCPFlexion.Pos",
-        #                               "Finger1.Jnt.MCPAbduction.Pos",
-        #                               "Finger1.Jnt.DIP.Pos",
-        #                               "Finger2.Jnt.MCP.Pos",
-        #                               "Finger2.Jnt.PIP.Pos",
-        #                               "Finger2.Jnt.DIP.Pos",
-        #                               "Finger3.Jnt.MCP.Pos",
-        #                               "Finger3.Jnt.PIP.Pos",
-        #                               "Finger3.Jnt.DIP.Pos",
-        #                               "Finger4.Jnt.MCP.Pos",
-        #                               "Finger4.Jnt.PIP.Pos",
-        #                               "Finger4.Jnt.DIP.Pos",
-        #                               "Finger5.Jnt.MCP.Pos",
-        #                               "Finger5.Jnt.PIP.Pos",
-        #                               "Finger5.Jnt.DIP.Pos"
-        #                           ])
+        result_group.add_argument('-save_output_file',
+                                  metavar='Save study output',
+                                  help='Save .anybody.h5 file to save the analysis results',
+                                  action='store_true')
 
         # === converter === #
         converter_parser = subs.add_parser(ACTION_CONVERTER, help='Convert a BVH-File in .any-Files or C3d-File')

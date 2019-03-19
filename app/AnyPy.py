@@ -74,15 +74,17 @@ class AnyPy:
             self.add_operation(AnyPy.KINEMATICS)
         if env.config.inverse_dynamics:
             self.add_operation(AnyPy.INVERSE_DYNAMICS)
-        if env.config.results:
-            # save study output to hdf5, to view and replay analysis later
-            self.add_operation(AnyPy.SAVE_HDF5)
+        if env.config.plot:
             # dump interpolated joint angles
             self.add_operation(AnyPy.DUMP_JOINT_ANGLES)
             # dump nStep
             self.add_operation(AnyPy.DUMP_STEPS)
             # dump Mannequin vectors including the joint angles from the bvh file
             self.add_operation(AnyPy.DUMP_LEAP_VECTORS)
+
+        if env.config.save_output_file:
+            # save study output to hdf5, to view and replay analysis later
+            self.add_operation(AnyPy.SAVE_HDF5)
 
         for operation in self.operations:
             self.macrolist.append(operation_cmd[operation])
