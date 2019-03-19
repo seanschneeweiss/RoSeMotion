@@ -1,11 +1,6 @@
-import os
 import re
 import numpy as np
 import copy
-from resources.AnyPyTools.anypytools import AnyPyProcess
-from resources.AnyPyTools.anypytools.macro_commands import (MacroCommand, Load, SetValue, SetValue_random, Dump,
-                                                            SaveDesign, LoadDesign, SaveValues, LoadValues,
-                                                            UpdateValues, SaveData, OperationRun)
 import matplotlib.pyplot as plt
 from matplotlib.widgets import CheckButtons
 from matplotlib.lines import Line2D

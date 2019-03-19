@@ -2,9 +2,6 @@ import os
 import datetime
 import glob
 import shutil
-import h5py
-import numpy as np
-import matplotlib.pyplot as plt
 
 from resources.AnyPyTools.anypytools import AnyPyProcess
 from resources.AnyPyTools.anypytools import AnyMacro
@@ -13,7 +10,6 @@ from resources.AnyPyTools.anypytools.macro_commands import (MacroCommand, Load, 
                                                             UpdateValues, SaveData, OperationRun)
 from AnyWriter import AnyWriter
 from config.Configuration import env
-from resources.pymo.pymo.parsers import BVHParser as Pymo_BVHParser
 from AnybodyResults import AnybodyResults
 
 
@@ -43,7 +39,7 @@ class AnyPy:
 
         if env.args('any_bvh_file'):
             print("Convert bvh file to anybody interpolation files")
-
+            from resources.pymo.pymo.parsers import BVHParser as Pymo_BVHParser
             any_writer = AnyWriter(template_directory='config/anybody_templates/',
                                    output_directory=os.path.normpath(self.any_path + AnyPy.INTERPOL_DIR) + '/')
             any_writer.write(Pymo_BVHParser().parse(env.config.any_bvh_file))
@@ -127,35 +123,6 @@ class AnyPy:
         os.chdir(cwd)
 
         # open the plot for the joint angles
-        if env.config.results:
-            self.plot_results()
-
-    def plot_results(self):
-        print('Loading the plot ...')
-        if env.config.result_bvh_file:
-            pass
-        AnybodyResults(self.output).plot()
-
-    # @staticmethod
-    # def plot():
-    #     """scratch, not in use currently"""
-    #     # Plot
-    #     h5file = h5py.File('output.anydata.h5')
-    #     cmc1_flexion_data = np.array(h5file['/Output/JointAngleOutputs/{}'.format(env.config.result_type)])
-    #     h5file.close()
-    #     number_frames = np.size(cmc1_flexion_data)
-    #     frames = np.arange(0, number_frames)
-    #
-    #     # use LaTeX fonts in the plot
-    #     # plt.rc('text', usetex=True)
-    #     plt.rc('font', family='serif')
-    #
-    #     plt.plot(frames, np.multiply(cmc1_flexion_data, 180 / np.pi))
-    #     plt.xlim(0, number_frames)
-    #     plt.ylim(-90, 90)
-    #     plt.xlabel('frames')
-    #     plt.ylabel('angle in degree')
-    #     plt.title(env.config.result_type)
-    #     plt.legend(['bvh', 'any'], loc=2)
-    #     plt.grid(True)
-    #     plt.show()
+        if env.config.plot:
+            print('Loading the plot ...')
+            AnybodyResults(self.output).plot()
