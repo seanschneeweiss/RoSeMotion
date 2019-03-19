@@ -1,3 +1,4 @@
+import os
 import time
 from threading import Thread
 
@@ -9,15 +10,17 @@ class LogWatcher:
         self.filename = None
 
     def follow(self, thefile):
-        thefile.seek(0,2) # Go to the end of the file
+        thefile.seek(0, 2)  # Go to the end of the file
         while self.active:
             line = thefile.readline()
             if not line:
-                time.sleep(0.1) # Sleep briefly
+                time.sleep(0.1)  # Sleep briefly
                 continue
             yield line
 
     def run(self):
+        while not os.path.exists(self.filename):
+            time.sleep(1)
         logfile = open(self.filename)
         print(logfile.read())
         loglines = self.follow(logfile)
