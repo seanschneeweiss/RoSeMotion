@@ -2,9 +2,11 @@ import os
 import datetime
 import glob
 import shutil
+import subprocess
 
 from resources.AnyPyTools.anypytools import AnyPyProcess
 from resources.AnyPyTools.anypytools import AnyMacro
+from resources.AnyPyTools.anypytools import abcutils
 from resources.AnyPyTools.anypytools.macro_commands import (MacroCommand, Load, SetValue, SetValue_random,  Dump,
                                                             SaveDesign, LoadDesign, SaveValues, LoadValues,
                                                             UpdateValues, SaveData, OperationRun)
@@ -18,22 +20,24 @@ class AnyPy:
     INITIAL_CONDITIONS = 'initial_conditions'
     KINEMATICS = 'kinematics'
     INVERSE_DYNAMICS = 'inverse_dynamics'
-    SAVE_HDF5 = 'hdf5'
+    SAVE_H5 = 'save_h5'
+    LOAD_H5 = 'load_h5'
     DUMP_JOINT_ANGLES = 'dump_angles'
     DUMP_STEPS = 'dump_steps'
     DUMP_LEAP_VECTORS = 'dump_leap_vectors'
+    REPLAY = 'replay'
     LOG_FILE = 'AnyPy{}.log'.format(datetime.datetime.today().strftime('%Y%m%d_%H%M%S'))
 
     INTERPOL_DIR = '/Model/InterpolVec'
 
     def __init__(self, main_filepath, template_directory):
         self.any_path, self.any_model = os.path.split(main_filepath)
+        self.main_filepath = main_filepath
         self.template_directory = template_directory
         self.operations = []
         self.macrolist = []
         self.output = None
 
-        self.initialize_operations()
         if env.args('any_interpol_files'):
             print("Using interpolation files from {}".format(os.path.normpath(self.any_path + AnyPy.INTERPOL_DIR)))
 
@@ -55,13 +59,21 @@ class AnyPy:
             any_writer.extract_frames(start_frame, end_frame)
             any_writer.extract_frame_timeseries(start_frame, end_frame)
 
+        self.output_path = ''
+        if env.args('output_file_path'):
+            self.output_path = os.path.normpath(
+                os.path.join(os.path.split(env.config.output_file_path)[0],
+                             os.path.split(env.config.output_file_path)[1].replace(".anydata.h5", "") + '.anydata.h5'))
+
+        self.initialize_operations()
+
     def initialize_operations(self):
         """build the macrolist executed by AnyPyTools"""
-        operation_cmd = {AnyPy.LOAD: Load(self.any_model),
+        operation_cmd = {AnyPy.LOAD: Load(self.main_filepath),
                          AnyPy.INITIAL_CONDITIONS: OperationRun("Main.Study.InitialConditions"),
                          AnyPy.KINEMATICS: OperationRun("Main.Study.Kinematics"),
                          AnyPy.INVERSE_DYNAMICS: OperationRun("Main.Study.InverseDynamics"),
-                         AnyPy.SAVE_HDF5: SaveData('Main.Study', 'output.anydata.h5'),
+                         AnyPy.SAVE_H5: SaveData('Main.Study', self.output_path),
                          AnyPy.DUMP_JOINT_ANGLES: Dump('Main.Study.Output.JointAngleOutputs'),
                          AnyPy.DUMP_STEPS: Dump('Main.Study.nStep'),
                          AnyPy.DUMP_LEAP_VECTORS: Dump('Main.HumanModel.Mannequin.Posture.Right')}
@@ -82,12 +94,46 @@ class AnyPy:
             # dump Mannequin vectors including the joint angles from the bvh file
             self.add_operation(AnyPy.DUMP_LEAP_VECTORS)
 
-        if env.config.save_output_file:
+        if self.output_path:
             # save study output to hdf5, to view and replay analysis later
-            self.add_operation(AnyPy.SAVE_HDF5)
+            self.add_operation(AnyPy.SAVE_H5)
 
         for operation in self.operations:
             self.macrolist.append(operation_cmd[operation])
+
+    def post_operations(self):
+        macro_output_path = 'classoperation Main.Study.Output "Load data" --file="{}"'.format(self.output_path)
+
+        """build the macrolist executed by AnyPyTools"""
+        operation_cmd = {AnyPy.LOAD: Load(self.main_filepath),
+                         AnyPy.LOAD_H5: MacroCommand(macro_output_path),
+                         AnyPy.REPLAY: OperationRun("Main.ReplayKinematics")}
+
+        self.macrolist = []
+        for operation in operation_cmd:
+            self.macrolist.append(str(operation_cmd[operation]))
+
+        print('Starting Anybody with the macros: {}'.format(self.macrolist))
+        print('Executing "{}" in "{}"'.format(self.any_path, self.any_model))
+
+        # save current working directory and change to Anybody project folder
+        cwd = os.getcwd()
+        os.chdir(self.any_path)
+
+        # write macro file to be opened by AnyBody GUI
+        macro_replay_path = os.path.join(self.any_path, 'replay.anymcr')
+        with open(macro_replay_path, 'wb') as macro_file:
+            print('macrofilename', macro_file.name)
+            macro_file.write("\n".join(self.macrolist).encode("UTF-8"))
+            macro_file.flush()
+            anybodycmd = [os.path.realpath('C:/Program Files/AnyBody Technology/AnyBody.7.1/AnyBody.exe'),
+                          "-m", macro_file.name]
+
+        # execute AnyBody GUI with the command from anybodycmd
+        subprocess.Popen(anybodycmd)
+
+        # change back to original folder
+        os.chdir(cwd)
 
     def add_operation(self, operation):
         """add operation to a list if not already in the list (unique)"""
@@ -106,7 +152,7 @@ class AnyPy:
         if not self.macrolist:
             raise Exception("No operation for AnyBody was selected -> will terminate now")
 
-        print('Starting Anybody with the operations: {}'.format(self.operations))
+        # print('Starting Anybody with the operations: {}'.format(self.operations))
         print('Starting Anybody with the macros: {}'.format(AnyMacro(self.macrolist)))
         print('Executing "{}" in "{}"'.format(self.any_path, self.any_model))
 
@@ -124,7 +170,7 @@ class AnyPy:
         # change back to original folder
         os.chdir(cwd)
 
-        # open the plot for the joint angles
-        if env.config.plot:
-            print('Loading the plot ...')
-            AnybodyResults(self.output).plot()
+    def plot(self):
+        """open the plot for the joint angles"""
+        print('Loading the plot ...')
+        AnybodyResults(self.output).plot()

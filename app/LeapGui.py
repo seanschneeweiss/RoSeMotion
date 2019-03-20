@@ -287,9 +287,17 @@ class LeapGui:
                                   metavar='Open the plot after the analysis',
                                   action='store_true')
 
-        result_group.add_argument('-save_output_file',
-                                  metavar='Save study output',
-                                  help='Save .anybody.h5 file to save the analysis results',
+        result_group.add_argument('-output_file_path',
+                                  metavar='Save .anydata.h5 file',
+                                  action='store',
+                                  default=stored_args.get(
+                                      ACTION_ANYBODY, 'output_file_path',
+                                      LeapGui.StoredArgs.path('../output/Anybody/FreeHand.anydata.h5')),
+                                  widget='FileSaver',
+                                  help='Save .anydata.h5 file to save the analysis results')
+
+        result_group.add_argument('-replay_output',
+                                  metavar='Open AnyBody and load the results',
                                   action='store_true')
 
         # === converter === #
@@ -420,6 +428,10 @@ class LeapGui:
             log_watcher.start(os.path.join(anypy.any_path, anypy.LOG_FILE))
             anypy.run()
             log_watcher.stop()
+            if env.config.replay_output:
+                anypy.post_operations()
+            if env.config.plot:
+                anypy.plot()
             return True
 
         if env.config.command == ACTION_CONVERTER:

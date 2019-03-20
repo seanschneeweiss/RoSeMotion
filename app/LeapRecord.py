@@ -1,4 +1,5 @@
 import sys
+import os
 from collections import deque
 from threading import Thread
 
@@ -23,7 +24,9 @@ class LeapRecord(Leap.Listener):
 
         self.bvh_write = env.config.bvh
         if self.bvh_write:
-            self.bvh_filename = env.config.bvh_path
+            self.bvh_filename = os.path.normpath(
+                os.path.join(os.path.split(env.config.bvh_path)[0],
+                             os.path.split(env.config.bvh_path)[1].replace(".bvh", "") + '.bvh'))
 
         self.c3d_write = env.config.c3d
         if self.c3d_write:
