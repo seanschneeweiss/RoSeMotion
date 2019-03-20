@@ -131,6 +131,9 @@ class LeapData:
             y_rot *= Leap.RAD_TO_DEG
             z_rot *= Leap.RAD_TO_DEG
 
+            # if joint_name == 'RightHand':
+            #     print(x_rot, y_rot, z_rot)
+
             if firstframe:
                 if self.anybody_reference:
                     x_pos, y_pos, z_pos = self._calculate_offset(joint_name, [x_pos, y_pos, z_pos])
@@ -179,6 +182,9 @@ class LeapData:
 
         parent_basis = self._get_basis(hand, self._skeleton[joint_name]['parent'])
         basis = self._get_basis(hand, joint_name)
+
+        # if joint_name == 'RightHand':
+        #     print(basis)
 
         # calculation of local rotation matrix - important!!!
         rot = np.matmul(

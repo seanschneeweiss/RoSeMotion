@@ -6,16 +6,22 @@ import numpy as np
 ROTATION_KS = np.array([[0, 0, 1],
                         [0, 1, 0],
                         [-1, 0, 0]])
+
 ROTATION_FINGER = np.array([[0, -1, 0],
                             [-1, 0, 0],
                             [0, 0, -1]])
+
 ROTATION_THUMB = np.array([[0.9497,    0.1712,   -0.2624],
                            [-0.0351,   -0.7742,   -0.6320],
                            [-0.3113,    0.6094,   -0.7292]])
-ROTATION_HAND = np.array([[-1, 0, 0],
-                          [0, 0, 1],
-                          [0, 1, 0]])
 
+ROTATION_HAND = np.array([[-1, -0.2, -0.0],
+                          [0.2, -0.5, 0.9],
+                          [-0.2, 0.88, 0.5]])
+
+ROTATION_ELBOW = np.array([[-1, 0, 0],
+                          [0, -0.3, 1],
+                          [0, 1, 0.3]])
 
 class AnybodyFirstFrame:
 
@@ -32,7 +38,9 @@ class AnybodyFirstFrame:
         anybody_basis = self.joint_values[joint_name]['Axes0']
         # print("joint: {}, basis: \n{}".format(joint_name, np.matmul(ROTATION_BASIS,
         # np.matmul(ROTATION_KS, np.array(anybody_basis)))))
-        if joint_name in ('RightElbow', 'RightHand'):
+        if joint_name in ('RightElbow'):
+            return np.matmul(ROTATION_ELBOW, np.transpose(np.array(anybody_basis)))
+        if joint_name in ('RightHand'):
             return np.matmul(ROTATION_HAND, np.transpose(np.array(anybody_basis)))
         if 'RightHandThumb' in joint_name:
             return np.matmul(ROTATION_THUMB, np.transpose(np.array(anybody_basis)))
