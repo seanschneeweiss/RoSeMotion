@@ -17,7 +17,7 @@ class LeapData:
     Calculates translations (offsets) and rotation data for the joints
     """
 
-    def __init__(self, channel_setting='rotation', frame_rate=0.033333):
+    def __init__(self, channel_setting='rotation', frame_rate=0.033333, anybody_basis=True):
         self._skeleton = {}
         self._setting = Skeleton(channel_setting)
         self._motion_channels = []
@@ -30,7 +30,7 @@ class LeapData:
         self.basis_first_frame = BasisFirstFrame()
         # anybody_reference = True -> Use Anybody basis from config/*.json (see AnybodyFirstFrame)
         # anybody_reference = False -> Use Leap Motion First Frame for basis
-        self.anybody_reference = True
+        self.anybody_basis = anybody_basis
         self.status = 0
         self._frame_rate = frame_rate
 
@@ -135,7 +135,7 @@ class LeapData:
             #     print(x_rot, y_rot, z_rot)
 
             if firstframe:
-                if self.anybody_reference:
+                if self.anybody_basis:
                     x_pos, y_pos, z_pos = self._calculate_offset(joint_name, [x_pos, y_pos, z_pos])
                 joint_value['offsets'] = [x_pos, y_pos, z_pos]
 
@@ -173,10 +173,12 @@ class LeapData:
         if joint_name == self._root_name or not self._skeleton[joint_name]['children']:
             return 0.0, 0.0, 0.0
 
-        if self.anybody_reference:
+        if self.anybody_basis:
+            # compare basis to anybody basis
             parent_initial_basis = self._get_basis_first_frame(self._skeleton[joint_name]['parent'])
             initial_basis = self._get_basis_first_frame(joint_name)
         else:
+            # compare basis to first frame from Leap Motion
             parent_initial_basis = self._get_basis(initial_hand, self._skeleton[joint_name]['parent'])
             initial_basis = self._get_basis(initial_hand, joint_name)
 
@@ -200,7 +202,6 @@ class LeapData:
         return rot2eul(rot)
 
     def _get_basis(self, hand, joint_name):
-        # print("get_basis: {}".format(joint_name))
         if joint_name == self._root_name:
             return np.array([[1, 0, 0],
                              [0, 1, 0],

@@ -20,7 +20,10 @@ class LeapRecord(Leap.Listener):
         super(LeapRecord, self).__init__()
         # Initialize Leap2DataFrame parser
         self.fps = int(env.config.frames_per_second)
-        self.leap2bvh = LeapData(channel_setting=env.config.channels, frame_rate=1 / self.fps)
+        basis_setting = True if env.args('anybody_basis') else False
+        self.leap2bvh = LeapData(channel_setting=env.config.channels,
+                                 frame_rate=1 / self.fps,
+                                 anybody_basis=basis_setting)
 
         self.bvh_write = env.config.bvh
         if self.bvh_write:

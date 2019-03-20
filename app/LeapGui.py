@@ -69,21 +69,57 @@ class LeapGui:
         # load default values from json (saved from last run)
         stored_args = LeapGui.StoredArgs().load()
 
-        parser = LeapGui.GooeyParser(description='Record Leap Motion data and export to bvh/c3d/any')
+        parser = LeapGui.GooeyParser(description='Record Leap Motion data and export to BVH or AnyBody')
         env.add_parser(parser)
         subs = parser.add_subparsers(help='Tools', dest='command')
 
         # === record === #
         record_parser = subs.add_parser(ACTION_RECORD, help='Leap Recording')
 
-        # bvh Group
-        bvh_group = record_parser.add_argument_group(
-            "BVH",
+        # settings Group
+        settings_group = record_parser.add_argument_group(
+            "Settings",
             gooey_options={
                 'show_border': True,
                 'columns': 1
             }
         )
+
+        basis_group = settings_group.add_mutually_exclusive_group(
+            required=True,
+            gooey_options={
+                'initial_selection': 0
+            })
+
+        settings_group.add_argument('frames_per_second',
+                                    metavar='Frames per second',
+                                    action='store',
+                                    default=stored_args.get(ACTION_RECORD, 'frames_per_second', '30'),
+                                    gooey_options={
+                                        'validator': {
+                                            'test': '1 <= int(user_input) <= 150',
+                                            'message': 'Must be between 1 and 150'
+                                        }
+                                    }
+                                    )
+
+        basis_group.add_argument('-anybody_basis',
+                                 metavar='Calculate joint angles to AnyBody basis',
+                                 action='store_true')
+
+        basis_group.add_argument('-firstframe_basis',
+                                 metavar='Calculate joint angles to initial recorded basis (first frame)',
+                                 action='store_true')
+
+        # bvh Group
+        bvh_group = record_parser.add_argument_group(
+            "BVH Export",
+            gooey_options={
+                'show_border': True,
+                'columns': 1
+            }
+        )
+
         bvh_group.add_argument('-bvh',
                                metavar='Write BVH-File',
                                action='store_true')
@@ -96,24 +132,12 @@ class LeapGui:
                                widget='FileSaver',
                                help='Choose location, where to save the BVH File')
 
-        bvh_group.add_argument('frames_per_second',
-                               metavar='Frames per second',
-                               action='store',
-                               default=stored_args.get(ACTION_RECORD, 'frames_per_second', '30'),
-                               gooey_options={
-                                   'validator': {
-                                       'test': '1 <= int(user_input) <= 150',
-                                       'message': 'Must be between 1 and 150'
-                                   }
-                               }
-                               )
-
         bvh_group.add_argument('channels',
                                metavar='BVH Channels',
                                action='store',
                                default=stored_args.get(ACTION_RECORD, 'channels', 'rotation'),
                                widget='Dropdown',
-                               help='Rotation: (X,Y,Z) rotation only\n'
+                               help='Rotation: (X,Y,Z) rotation only (default)\n'
                                     'Position: (X,Y,Z) rotation and position for all channels',
                                choices=['rotation', 'position'],
                                gooey_options={
@@ -132,17 +156,17 @@ class LeapGui:
             }
         )
         interpol_group.add_argument('-anybody',
-                                    metavar='Write Interpolation-Files',
+                                    metavar='Write interpolation files for AnyBody',
                                     action='store_true')
 
         interpol_group.add_argument('-anybody_template_path',
-                                    metavar='Anybody templates',
+                                    metavar='AnyBody templates',
                                     action='store',
                                     default=stored_args.get(
                                         ACTION_RECORD, 'anybody_template_path',
                                         LeapGui.StoredArgs.path('config/anybody_templates')),
                                     widget='DirChooser',
-                                    help='Source directory that contains *.template files for Anybody')
+                                    help='Source directory that contains *.template files for AnyBody')
 
         interpol_group.add_argument('-anybody_output_path',
                                     metavar=' ',
@@ -301,10 +325,10 @@ class LeapGui:
                                   action='store_true')
 
         # === converter === #
-        converter_parser = subs.add_parser(ACTION_CONVERTER, help='Convert a BVH-File in .any-Files or C3d-File')
+        converter_parser = subs.add_parser(ACTION_CONVERTER, help='Convert a BVH-File in .any-Files')
         converter_group = converter_parser.add_argument_group(
             "Converter",
-            "Convert a BVH-File in .any-Files or C3d-File",
+            "Convert a BVH-File in .any-Files",
             gooey_options={
                 'show_border': True,
                 'columns': 1
