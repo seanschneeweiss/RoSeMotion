@@ -153,31 +153,31 @@ class LeapGui:
                                     widget='DirChooser',
                                     help='Output directory for interpolation files')
 
-        # c3d Group
-        c3d_group = record_parser.add_argument_group(
-            "C3D",
-            gooey_options={
-                'show_border': True,
-                'columns': 2
-            }
-        )
-        c3d_group.add_argument('-c3d',
-                               metavar='Write C3D-File',
-                               action='store_true')
-
-        c3d_group.add_argument('-c3d_filename',
-                               metavar=' ',
-                               action='store',
-                               default=stored_args.get(ACTION_RECORD, 'c3d_filename', 'RightHand'),
-                               help='Filename')
-
-        c3d_group.add_argument('-c3d_path',
-                               metavar=' ',
-                               action='store',
-                               default=stored_args.get(
-                                   ACTION_RECORD, 'c3d_path', LeapGui.StoredArgs.path('../output/C3D')),
-                               widget='DirChooser',
-                               help='Output directory for c3d file')
+        # # c3d Group
+        # c3d_group = record_parser.add_argument_group(
+        #     "C3D",
+        #     gooey_options={
+        #         'show_border': True,
+        #         'columns': 2
+        #     }
+        # )
+        # c3d_group.add_argument('-c3d',
+        #                        metavar='Write C3D-File',
+        #                        action='store_true')
+        #
+        # c3d_group.add_argument('-c3d_filename',
+        #                        metavar=' ',
+        #                        action='store',
+        #                        default=stored_args.get(ACTION_RECORD, 'c3d_filename', 'RightHand'),
+        #                        help='Filename')
+        #
+        # c3d_group.add_argument('-c3d_path',
+        #                        metavar=' ',
+        #                        action='store',
+        #                        default=stored_args.get(
+        #                            ACTION_RECORD, 'c3d_path', LeapGui.StoredArgs.path('../output/C3D')),
+        #                        widget='DirChooser',
+        #                        help='Output directory for c3d file')
 
         # === anybody === #
         anybody_parser = subs.add_parser(ACTION_ANYBODY, help='Anybody Simulation')
@@ -324,9 +324,9 @@ class LeapGui:
                                      metavar='Convert to .any files',
                                      action='store_true')
 
-        converter_group.add_argument('-c3d',
-                                     metavar='Convert to .c3d files',
-                                     action='store_true')
+        # converter_group.add_argument('-c3d',
+        #                              metavar='Convert to .c3d files',
+        #                              action='store_true')
 
         converter_group.add_argument('file_dir',
                                      metavar='Store files',

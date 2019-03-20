@@ -28,9 +28,9 @@ class LeapRecord(Leap.Listener):
                 os.path.join(os.path.split(env.config.bvh_path)[0],
                              os.path.split(env.config.bvh_path)[1].replace(".bvh", "") + '.bvh'))
 
-        self.c3d_write = env.config.c3d
-        if self.c3d_write:
-            self.c3d_filename = env.config.c3d_path + '\\' + env.config.c3d_filename + '.c3d'
+        # self.c3d_write = env.config.c3d
+        # if self.c3d_write:
+        #     self.c3d_filename = env.config.c3d_path + '\\' + env.config.c3d_filename + '.c3d'
 
         self.anybody_write = env.config.anybody
         if self.anybody_write:
