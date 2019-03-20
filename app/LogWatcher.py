@@ -8,6 +8,7 @@ class LogWatcher:
         self.active = True
         self.t = None
         self.filename = None
+        self.file_error = False
 
     def follow(self, thefile):
         thefile.seek(0, 2)  # Go to the end of the file
@@ -21,6 +22,9 @@ class LogWatcher:
     def run(self):
         while not os.path.exists(self.filename):
             time.sleep(1)
+            if not self.active:
+                self.file_error = True
+                return
         logfile = open(self.filename)
         print(logfile.read())
         loglines = self.follow(logfile)
@@ -35,8 +39,9 @@ class LogWatcher:
     def stop(self):
         self.active = False
         self.t.join()
-        # delete log file
-        os.remove(self.filename)
+        if not self.file_error:
+            # delete log file
+            os.remove(self.filename)
 
 
 log_watcher = LogWatcher()

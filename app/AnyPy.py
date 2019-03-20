@@ -149,7 +149,8 @@ class AnyPy:
 
     def run(self):
         if not self.macrolist:
-            raise Exception("No operation for AnyBody was selected -> will terminate now")
+            print("No operation for AnyBody was selected -> will terminate now")
+            return
 
         # print('Starting Anybody with the operations: {}'.format(self.operations))
         print('Starting Anybody with the macros:\n{}'.format(AnyMacro(self.macrolist)))
