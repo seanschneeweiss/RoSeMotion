@@ -35,6 +35,8 @@ class LogWatcher:
     def stop(self):
         self.active = False
         self.t.join()
+        # delete log file
+        os.remove(self.filename)
 
 
 log_watcher = LogWatcher()

@@ -107,13 +107,13 @@ class AnyPy:
         """build the macrolist executed by AnyPyTools"""
         operation_cmd = {AnyPy.LOAD: Load(self.main_filepath),
                          AnyPy.LOAD_H5: MacroCommand(macro_output_path),
-                         AnyPy.REPLAY: OperationRun("Main.ReplayKinematics")}
+                         AnyPy.REPLAY: OperationRun("Main.Study.ReplayKinematics")}
 
         self.macrolist = []
         for operation in operation_cmd:
             self.macrolist.append(str(operation_cmd[operation]))
 
-        print('Starting Anybody with the macros: {}'.format(self.macrolist))
+        print('Starting Anybody with the macros:\n{}'.format(self.macrolist))
         print('Executing "{}" in "{}"'.format(self.any_path, self.any_model))
 
         # save current working directory and change to Anybody project folder
@@ -123,7 +123,6 @@ class AnyPy:
         # write macro file to be opened by AnyBody GUI
         macro_replay_path = os.path.join(self.any_path, 'replay.anymcr')
         with open(macro_replay_path, 'wb') as macro_file:
-            print('macrofilename', macro_file.name)
             macro_file.write("\n".join(self.macrolist).encode("UTF-8"))
             macro_file.flush()
             anybodycmd = [os.path.realpath('C:/Program Files/AnyBody Technology/AnyBody.7.1/AnyBody.exe'),
@@ -153,7 +152,7 @@ class AnyPy:
             raise Exception("No operation for AnyBody was selected -> will terminate now")
 
         # print('Starting Anybody with the operations: {}'.format(self.operations))
-        print('Starting Anybody with the macros: {}'.format(AnyMacro(self.macrolist)))
+        print('Starting Anybody with the macros:\n{}'.format(AnyMacro(self.macrolist)))
         print('Executing "{}" in "{}"'.format(self.any_path, self.any_model))
 
         # save current working directory and change to Anybody project folder
