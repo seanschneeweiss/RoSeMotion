@@ -103,6 +103,11 @@ class LeapGui:
                                     }
                                     )
 
+        settings_group.add_argument('-show_animation',
+                                    metavar='Animate',
+                                    help='Show motion animation after recording',
+                                    action='store_true')
+
         basis_group.add_argument('-anybody_basis',
                                  metavar='Calculate joint angles to AnyBody basis',
                                  action='store_true')
@@ -439,11 +444,12 @@ class LeapGui:
             gui.end_record()
             print("End of recording\n")
 
-            print("Loading the animation ...")
-            p = Process(target=bvh_animation.animate)
-            p.start()
-            # wait for bvh_animation to be closed
-            p.join()
+            if env.config.show_animation:
+                print("Loading the animation ...")
+                p = Process(target=bvh_animation.animate)
+                p.start()
+                # wait for bvh_animation to be closed
+                p.join()
             return True
 
         if env.config.command == ACTION_ANYBODY:
