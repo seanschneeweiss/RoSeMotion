@@ -341,7 +341,7 @@ class LeapGui:
         )
 
         converter_group.add_argument('bvh_file',
-                                     metavar='Source (.bvh)',
+                                     metavar='Source: *.bvh',
                                      action='store',
                                      default=stored_args.get(
                                          ACTION_CONVERTER, 'bvh_file',
@@ -349,16 +349,16 @@ class LeapGui:
                                      widget='FileChooser',
                                      help='Source bvh-file to convert')
 
-        converter_group.add_argument('-any_file',
-                                     metavar='Convert to .any files',
-                                     action='store_true')
+        # converter_group.add_argument('-any_file',
+        #                              metavar='Convert to .any files',
+        #                              action='store_true')
 
         # converter_group.add_argument('-c3d',
         #                              metavar='Convert to .c3d files',
         #                              action='store_true')
 
         converter_group.add_argument('file_dir',
-                                     metavar='Store files',
+                                     metavar='Target: store files',
                                      action='store',
                                      default=stored_args.get(
                                          ACTION_CONVERTER, 'file_dir', LeapGui.StoredArgs.path('../output')),
@@ -456,8 +456,11 @@ class LeapGui:
             from LogWatcher import log_watcher
             anypy = AnyPy(env.config.any_main_file, env.config.any_files_dir)
             log_watcher.start(os.path.join(anypy.any_path, anypy.LOG_FILE))
-            anypy.run()
+            run_status = anypy.run()
             log_watcher.stop()
+            if not run_status:
+                # AnyBody operations were not successful
+                return False
             if env.config.replay_output:
                 anypy.post_operations()
             if env.config.plot:
@@ -465,11 +468,10 @@ class LeapGui:
             return True
 
         if env.config.command == ACTION_CONVERTER:
-            if env.config.any_file:
-                from AnyWriter import AnyWriter
-                any_writer = AnyWriter(template_directory='config/anybody_templates/',
-                                       output_directory=env.config.file_dir + '/')
-                any_writer.write(Pymo_BVHParser().parse(env.config.bvh_file))
+            from AnyWriter import AnyWriter
+            any_writer = AnyWriter(template_directory='config/anybody_templates/',
+                                   output_directory=env.config.file_dir + '/')
+            any_writer.write(Pymo_BVHParser().parse(env.config.bvh_file))
             return True
 
         if env.config.command == ACTION_ANIMATION:

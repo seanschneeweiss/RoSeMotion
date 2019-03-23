@@ -87,6 +87,9 @@ class AnyPy:
         if env.config.inverse_dynamics:
             self.add_operation(AnyPy.INVERSE_DYNAMICS)
         if env.config.plot:
+            # requirement for plot is run of kinematic analysis
+            self.add_operation(AnyPy.LOAD)
+            self.add_operation(AnyPy.KINEMATICS)
             # dump interpolated joint angles
             self.add_operation(AnyPy.DUMP_JOINT_ANGLES)
             # dump nStep
@@ -150,7 +153,7 @@ class AnyPy:
     def run(self):
         if not self.macrolist:
             print("No operation for AnyBody was selected -> will terminate now")
-            return
+            return False
 
         # print('Starting Anybody with the operations: {}'.format(self.operations))
         print('Starting Anybody with the macros:\n{}'.format(AnyMacro(self.macrolist)))
@@ -169,6 +172,7 @@ class AnyPy:
 
         # change back to original folder
         os.chdir(cwd)
+        return True
 
     def plot(self):
         """open the plot for the joint angles"""

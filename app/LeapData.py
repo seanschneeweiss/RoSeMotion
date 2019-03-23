@@ -1,6 +1,7 @@
 import re
 import numpy as np
 import pandas
+import sys
 
 from config.Skeleton import Skeleton
 from config.AnybodyFirstFrame import AnybodyFirstFrame
@@ -48,6 +49,8 @@ class LeapData:
     def parse(self):
         self.data.skeleton = self._skeleton
         self.data.channel_names = self._motion_channels
+        if not self.first_frame:
+            sys.exit("No data was recorded - will terminate now!")
         self.data.values = self._motion2dataframe()
         self.data.root_name = self._root_name
         self.data.framerate = self._frame_rate
