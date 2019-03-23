@@ -30,9 +30,12 @@ class GooeyModification:
         self.clientRunner.stop()
 
     def stop_leap(self):
-        """Send Keyboard Interrupt to stop Leap Motion recording and parse bvh / interpolation / c3d"""
-        self._process.stdin.write(b"\n")
-        self._process.stdin.close()
+        if not self._process.stdin.closed:
+            """Send Keyboard Interrupt to stop Leap Motion recording and parse bvh / interpolation"""
+            self._process.stdin.write(b"\n")
+            self._process.stdin.close()
+            return
+        self.stop()
 
     # overwrite classes and methods of the stop button
     containers_application.GooeyApplication.onStopExecution = on_stop
