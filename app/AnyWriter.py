@@ -42,8 +42,8 @@ class AnyWriter:
                       'template': 'Elbow.template',
                       'function': ['correct_pronation']}}
 
-        self.regex_find = re.compile(r'{(((\s*-?\d+\.\d+).?)+)};')
-        self.regex_replace = re.compile(r'(((\s*-?\d+\.\d+).?)+)')
+        self.regex_find = re.compile(r'{(((\s*-?\d+\.\d+),?)+)};')
+        self.regex_replace = re.compile(r'(((\s*-?\d+\.\d+),?)+)')
 
     def write(self, data):
         self.write_joints(data)
@@ -235,14 +235,17 @@ class AnyWriter:
                 old_file = file.read()
                 matches = list(map(prepare_result, self.regex_find.findall(old_file)))
 
-            new_file = re.sub(self.regex_replace, '{{}}}', old_file)
+            new_file = re.sub(self.regex_replace, '{{}}', old_file)
+			# replace single brackets with two, so that they don't get replaced by str.format
+            new_file = re.sub(r'{\w', r'{\g<0>', new_file)
+            new_file = re.sub(r'\w}', r'\g<0>}', new_file)
 
             with open(selected_filepath, 'w') as file:
                 file.write(new_file.format(*matches))
                 if not end:
-                    end_temp = len(np.fromstring(matches[0], sep=','))
+                    end = len(np.fromstring(matches[0], sep=','))
                 print("Extracted values between frame {} and {} from {}"
-                      .format(start+1, start+end_temp, os.path.normpath(file.name)))
+                      .format(start+1, start+end, os.path.normpath(file.name)))
 
     def extract_frame_timeseries(self, start, end):
         selected_filepath =self._output_directory + 'TimeSeries.any'
@@ -253,10 +256,9 @@ class AnyWriter:
         if not end:
             end = len(np.fromstring(match[0][0], sep=','))
 
-        new_file = re.sub(self.regex_replace, '{{}}}', old_file)
+        new_file = re.sub(self.regex_replace, '{{}}', old_file)
 
         np.set_printoptions(formatter={'float': '{: 0.5f}'.format}, threshold=np.inf)
-        print("End - Start:", end-start)
         with open(selected_filepath, 'w') as file:
             file.write(new_file.format(np.array2string(
                 np.linspace(0, 1, num=end-start).astype(float), separator=', ')[1:-1]))
