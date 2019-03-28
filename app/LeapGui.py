@@ -228,7 +228,7 @@ class LeapGui:
             })
 
         anybody_file_group.add_argument('-any_interpol_files',
-                                        metavar='Use existing vector files',
+                                        metavar='Use existing vector files (in /Model/InterpolVec)',
                                         help='Use interpolation vector files from Anybody project default directory',
                                         action='store_true')
 
