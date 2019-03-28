@@ -61,6 +61,7 @@ class LeapGui:
            sidebar_title='Actions',
            # return_to_config=True,
            language='leap-english',
+           image_dir='config/icons',
            tabbed_groups=True,
            default_size=(1000, 700))
     def parse_args():
