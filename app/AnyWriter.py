@@ -1,6 +1,7 @@
-import re
-import numpy as np
 import os
+import re
+
+import numpy as np
 
 
 class AnyWriter:
@@ -236,7 +237,7 @@ class AnyWriter:
                 matches = list(map(prepare_result, self.regex_find.findall(old_file)))
 
             new_file = re.sub(self.regex_replace, '{{}}', old_file)
-			# replace single brackets with two, so that they don't get replaced by str.format
+            # replace single brackets with two, so that they don't get replaced by str.format
             new_file = re.sub(r'{\w', r'{\g<0>', new_file)
             new_file = re.sub(r'\w}', r'\g<0>}', new_file)
 
