@@ -1,3 +1,4 @@
+import re
 import os
 import datetime
 import glob
@@ -6,7 +7,6 @@ import subprocess
 
 from resources.AnyPyTools.anypytools import AnyPyProcess
 from resources.AnyPyTools.anypytools import AnyMacro
-from resources.AnyPyTools.anypytools import abcutils
 from resources.AnyPyTools.anypytools.macro_commands import (MacroCommand, Load, SetValue, SetValue_random,  Dump,
                                                             SaveDesign, LoadDesign, SaveValues, LoadValues,
                                                             UpdateValues, SaveData, OperationRun)
@@ -20,6 +20,7 @@ class AnyPy:
     INITIAL_CONDITIONS = 'initial_conditions'
     KINEMATICS = 'kinematics'
     INVERSE_DYNAMICS = 'inverse_dynamics'
+    # SET_ORDER = 'set_order'
     SAVE_H5 = 'save_h5'
     LOAD_H5 = 'load_h5'
     DUMP_JOINT_ANGLES = 'dump_angles'
@@ -39,7 +40,7 @@ class AnyPy:
         self.output = None
 
         if env.args('any_interpol_files'):
-            print("Using interpolation files from {}".format(os.path.normpath(self.any_path + AnyPy.INTERPOL_DIR)))
+            print('Using interpolation files from "{}"'.format(os.path.normpath(self.any_path + AnyPy.INTERPOL_DIR)))
 
         if env.args('any_bvh_file'):
             print("Convert bvh file to anybody interpolation files")
@@ -70,9 +71,11 @@ class AnyPy:
     def initialize_operations(self):
         """build the macrolist executed by AnyPyTools"""
         operation_cmd = {AnyPy.LOAD: Load(self.main_filepath),
-                         AnyPy.INITIAL_CONDITIONS: OperationRun("Main.Study.InitialConditions"),
-                         AnyPy.KINEMATICS: OperationRun("Main.Study.Kinematics"),
-                         AnyPy.INVERSE_DYNAMICS: OperationRun("Main.Study.InverseDynamics"),
+                         AnyPy.INITIAL_CONDITIONS: OperationRun('Main.Study.InitialConditions'),
+                         AnyPy.KINEMATICS: OperationRun('Main.Study.Kinematics'),
+                         AnyPy.INVERSE_DYNAMICS: OperationRun('Main.Study.InverseDynamics'),
+                         # AnyPy.SET_ORDER: SetValue('Main.HumanModel.Mannequin.InterpolationFunctions.intorder',
+                         #                           env.config.order),
                          AnyPy.SAVE_H5: SaveData('Main.Study', self.output_path),
                          AnyPy.DUMP_JOINT_ANGLES: Dump('Main.Study.Output.JointAngleOutputs'),
                          AnyPy.DUMP_STEPS: Dump('Main.Study.nStep'),
@@ -86,6 +89,10 @@ class AnyPy:
             self.add_operation(AnyPy.KINEMATICS)
         if env.config.inverse_dynamics:
             self.add_operation(AnyPy.INVERSE_DYNAMICS)
+        if env.config.nstep:
+            self.set_step()
+        # if env.config.order:
+        #     self.add_operation(AnyPy.SET_ORDER)
         if env.config.plot:
             # requirement for plot is run of kinematic analysis
             self.add_operation(AnyPy.LOAD)
@@ -178,3 +185,14 @@ class AnyPy:
         """open the plot for the joint angles"""
         print('Loading the plot ...')
         AnybodyResults(self.output).plot()
+
+    def set_step(self):
+        """replace the nstep value with the new selected value"""
+        regex_step = re.compile(r'nStep\s*=.*\d+.*;')
+        step_setting = 'nStep = {};'.format(env.config.nstep)
+        with open(self.main_filepath) as file:
+            old_file = file.read()
+        new_file = re.sub(regex_step, step_setting, old_file)
+        with open(self.main_filepath, 'w') as file:
+            file.write(new_file)
+        print('"{}" written to "{}"'.format(step_setting, self.main_filepath))

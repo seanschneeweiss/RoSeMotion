@@ -138,8 +138,6 @@ def start_recording():
     # Have the listener receive events from the controller
     controller.add_listener(listener)
 
-    #
-
     # Keep this process running until Enter is pressed
     print("Listener added")
     try:

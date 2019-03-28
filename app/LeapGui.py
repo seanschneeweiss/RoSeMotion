@@ -228,7 +228,7 @@ class LeapGui:
             })
 
         anybody_file_group.add_argument('-any_interpol_files',
-                                        metavar='Use existing vector files (in /Model/InterpolVec)',
+                                        metavar='Use existing vector files (in {})'.format(AnyPy.INTERPOL_DIR),
                                         help='Use interpolation vector files from Anybody project default directory',
                                         action='store_true')
 
@@ -261,11 +261,11 @@ class LeapGui:
                                    metavar='Start Frame',
                                    help='default: 1',
                                    action='store',
-                                   # default=stored_args.get(ACTION_ANYBODY, 'start_frame', '0'),
+                                   # default=stored_args.get(ACTION_ANYBODY, 'start_frame', '1'),
                                    gooey_options={
                                        'validator': {
                                            'test': '1 <= int(user_input)',
-                                           'message': 'Must be greater or equal than 0'
+                                           'message': 'Must be greater or equal than 1'
                                        }
                                    },
                                    type=int)
@@ -306,6 +306,34 @@ class LeapGui:
         operation_group.add_argument('-inverse_dynamics',
                                      metavar='Calc inverse dynamics',
                                      action='store_true')
+
+        operation_group.add_argument('-nstep',
+                                     metavar='Time steps',
+                                     help='Number of equally spaced time steps\n'
+                                          '(leave empty for not changing the setting)',
+                                     action='store',
+                                     # default=stored_args.get(ACTION_ANYBODY, 'nstep', '50'),
+                                     gooey_options={
+                                         'validator': {
+                                             'test': '1 <= int(user_input)',
+                                             'message': 'Must be greater or equal than 1'
+                                         }
+                                     },
+                                     type=int)
+
+        # operation_group.add_argument('-order',
+        #                              metavar='Order of B-spline interpolation',
+        #                              help='Interpolates between the data points with a B-spline using this order'
+        #                                   '\n(leave empty for using the default value)',
+        #                              action='store',
+        #                              # default=stored_args.get(ACTION_ANYBODY, 'order', '4'),
+        #                              gooey_options={
+        #                                  'validator': {
+        #                                      'test': '1 <= int(user_input)',
+        #                                      'message': 'Must be greater or equal than 1'
+        #                                  }
+        #                              },
+        #                              type=int)
 
         result_group = anybody_parser.add_argument_group(
             "Results",
