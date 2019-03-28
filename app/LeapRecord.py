@@ -12,7 +12,7 @@ from resources.pymo.pymo.writers import BVHWriter as Pymo_BVHWriter
 from AnyWriter import AnyWriter
 from BVHAnimation import bvh_animation
 
-# from resources.virb import Virb
+from resources.virb import Virb
 
 _LEAP_QUEUE = deque()
 
@@ -46,11 +46,11 @@ class LeapRecord(Leap.Listener):
         self.t = None
         self.last_time = 0
 
-        # self.garmin = Virb(host=('192.168.137.34', 80))
+        self.garmin = Virb(host=('192.168.43.80', 80))
 
     def on_init(self, controller):
         self.t = Thread(target=self.process_frame, args=(self,))
-        # self.garmin.start_recording()
+        self.garmin.start_recording()
         self.t.start()
         print("Initialized")
 
@@ -65,7 +65,7 @@ class LeapRecord(Leap.Listener):
     def on_exit(self, controller):
         print("=====================")
         print("Exited")
-        # self.garmin.stop_recording()
+        self.garmin.stop_recording()
 
     def on_frame(self, controller):
         # Get the most recent frame

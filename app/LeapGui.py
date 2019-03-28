@@ -437,7 +437,7 @@ class LeapGui:
             gui.set_windows_record()
 
             import time
-            countdown = 5
+            countdown = 10
             for ii in range(countdown):
                 print("Record starting in {} seconds ...".format(countdown-ii))
                 time.sleep(1)

@@ -19,6 +19,8 @@ class GuiControl:
 
         # toggle off the help menu
         visualizer_dlg.set_keyboard_focus().send_keystrokes("h---f")
+        # visualizer_dlg.set_keyboard_focus().send_keystrokes("hfjyyy")
+        # visualizer_dlg.set_keyboard_focus().send_keystrokes("hfjyyyvvva---")
 
         # get maximum screen size
         visualizer_dlg.maximize()
