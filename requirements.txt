@@ -1,8 +1,12 @@
-h5py
+# for Leap Motion recording
 matplotlib
 numpy
 pandas
+# for PyMO (bvh animation)
+scikit-learn
+# for GUI
 pywin32
 pywinauto
-scipy
 wxPython
+# for AnyPyTools
+scipy

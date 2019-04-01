@@ -1,4 +1,32 @@
-# LeapMotion recording, export to BVH, C3D and Anybody
+# ROSE Motion
+LeapMotion recording, export to BVH and Anybody
+
+## Structure / Actions
+* **Record**
+Plug in the Leap Motion Controller and make a recording of the right hand
+    * **Settings**
+        * Setting "Frames per second" defines the minimum time delta between to recorded frames
+        * Checking "Animate" will open the bvh animation after recording, a slider can be used to iterate through the frames
+        * Setting the basis -> look at chapter ...
+    * BVH Export
+        * Setting "Write BVH-File" will export the recorded motion to a BVH file defined in the next setting
+        * Choose the filepath and name in "BVH File"
+        * Setting "BVH Channels" will export either the channels XRotation, YRotation, ZRotation or also XPosition, YPosition, ZPosition
+    * Interpolation Vector
+        * Setting "Write interpolation files for AnyBody" will export the files
+            * Elbow.any (pronation angle)
+            * Finger[1-5].any (angles for all finger joints)
+            * FingerLength.any (scaling of the finger lengths based on Leap Motion recording)
+            * TimeSeries.any (equally spaced time points between 0 and 1)
+            * Wrist.any (abduction and flexion angles for wrist)
+* AnyBody
+    * Source files
+    * Operations
+    * Results
+* Converter
+* Animation
+
+## 
 
 ## Setup
 **Windows**
@@ -13,10 +41,14 @@
 * Run in a command prompt:
 ```
   python -m pip install --upgrade pip
-  pip install numpy
-  pip install pandas
-  pip install wxpython
-  pip install scipy
+  pip install -U matplotlib
+  pip install -U numpy
+  pip install -U pandas
+  pip install -U scikit-learn
+  pip install -U pywin32
+  pip install -U pywinauto
+  pip install -U wxpython
+  pip install -U scipy
 ```
 Alternative:
 ```
@@ -32,6 +64,7 @@ Following python packages are required:
  * _pywin32_ (224) (only for window size automation)
  * _pywinauto_ (0.6.6) (only for window size automation)
  * _Scipy_ (1.2.1) (only for AnyPyTools)
+ * _Scikit-learn_ (0.20.3) (only for BVH animation)
  * _wxPython_ (4.0.4)
 
 ## Credits
