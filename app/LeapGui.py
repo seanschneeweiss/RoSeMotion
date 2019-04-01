@@ -14,7 +14,7 @@ from resources.Gooey.gooey.python_bindings import gooey_decorator, gooey_parser
 
 # strings for the actions in the Gooey side-menu
 ACTION_RECORD = 'Record'
-ACTION_ANYBODY = 'Anybody'
+ACTION_ANYBODY = 'AnyBody'
 ACTION_CONVERTER = 'Converter'
 ACTION_ANIMATION = 'Animation'
 EXECUTED_COMMAND = 'command'
@@ -216,7 +216,7 @@ class LeapGui:
         anybody_parser = subs.add_parser(ACTION_ANYBODY, help='Anybody Simulation')
         anybody_group = anybody_parser.add_argument_group(
             "Source files",
-            "Make a selection for the source files used for the Anybody analysis",
+            "Make a selection for the source files used for the AnyBody analysis",
             gooey_options={
                 'show_border': True,
                 'columns': 1
@@ -230,7 +230,7 @@ class LeapGui:
 
         anybody_file_group.add_argument('-any_interpol_files',
                                         metavar='Use existing vector files (in {})'.format(AnyPy.INTERPOL_DIR),
-                                        help='Use interpolation vector files from Anybody project default directory',
+                                        help='Use interpolation vector files from AnyBody project default directory',
                                         action='store_true')
 
         anybody_file_group.add_argument('-any_bvh_file',
@@ -249,14 +249,14 @@ class LeapGui:
                                             ACTION_ANYBODY, 'any_files_dir',
                                             LeapGui.StoredArgs.path('../output/Anybody')),
                                         widget='DirChooser',
-                                        help='Source directory that contains interpolation *.any files for Anybody')
+                                        help='Source directory that contains interpolation *.any files for AnyBody')
 
         anybody_group.add_argument('any_main_file',
                                    metavar='Source of HAND.Main.any',
                                    action='store',
                                    default=stored_args.get(ACTION_ANYBODY, 'any_main_file', ''),
                                    widget='FileChooser',
-                                   help='Choose the main anybody file for the calculation')
+                                   help='Choose the main AnyBody file for the calculation')
 
         anybody_group.add_argument('-start_frame',
                                    metavar='Start Frame',
@@ -285,7 +285,7 @@ class LeapGui:
 
         operation_group = anybody_parser.add_argument_group(
             "Operations",
-            "Select which operations should be executed by Anybody",
+            "Select which operations should be executed by AnyBody",
             gooey_options={
                 'show_border': True,
                 'columns': 1
@@ -293,7 +293,7 @@ class LeapGui:
         )
 
         operation_group.add_argument('-load',
-                                     metavar='Load Anybody model',
+                                     metavar='Load AnyBody model',
                                      action='store_true')
 
         operation_group.add_argument('-initial_conditions',
