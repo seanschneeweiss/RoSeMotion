@@ -1,5 +1,6 @@
 # ROSE Motion
 LeapMotion recording, export to BVH and Anybody
+![ROSE Motion](https://snag.gy/T6kpqO.jpg)
 
 ## Structure / Actions
 * **Record**
@@ -8,11 +9,11 @@ Plug in the Leap Motion Controller and make a recording of the right hand
         * Setting "Frames per second" defines the minimum time delta between to recorded frames
         * Checking "Animate" will open the bvh animation after recording, a slider can be used to iterate through the frames
         * Setting the basis
-    * BVH Export
+    * **BVH Export**
         * Setting "Write BVH-File" will export the recorded motion to a BVH file defined in the next setting
         * Choose the filepath and name in "BVH File"
         * Setting "BVH Channels" will export either the channels XRotation, YRotation, ZRotation or also XPosition, YPosition, ZPosition
-    * Interpolation Vector
+    * **Interpolation Vector**
         * Setting "Write interpolation files for AnyBody" will export the files
             * Elbow.any (pronation angle)
             * Finger[1-5].any (angles for all finger joints)
@@ -21,24 +22,24 @@ Plug in the Leap Motion Controller and make a recording of the right hand
             * Wrist.any (abduction and flexion angles for wrist)
         * Choose the template directory, the AnyBody interpolation files are written based on those files
         * Choose the output directory, here the above mentioned files will be saved to
-* AnyBody
-    * Source files
+* **AnyBody**
+    * **Source files**
         * Choose "exisiting vector files" if interpolation files are already in the project folder <AnyBodyFolder>/Model/InterpolVec
         * Choose ".bvh file" to convert it to the interpolation files based on the templates in config/anybody_templates/ and copy into the AnyBody project folder <AnyBodyFolder>/Model/InterpolVec
         * Choose "Source (.any)" to copy all .any files into the AnyBody project folder <AnyBodyFolder>/Model/InterpolVec
         * Setting "HAND.Main.any" defines the main model file of the AnyBody project, which should be loaded for the analysis
         * Setting "Start Frame" will define the first frame to start with (cut off the frames before that). Leaving this option empty will set the first frame to 1
         * Setting "End Frame" will define the last frame to end with (cut off the frames after that). Leaving this option empty will set the last frame to end
-    * Operations
+    * **Operations**
         * Select the operations which should be executed in AnyBody
         * Setting "Time steps" will rewrite alls lines which match ``nStep = xx;`` in the main model file. (e.g. ``nStep = 50;``)
-    * Results
+    * **Results**
         * Selecting "plot after the analysis" will open an interactive plot for the results from the AnyBody analysis (joint angles)
         * Setting ".anydata.h5 file" will save the results from the AnyBody anaylsis to the specified file
         * Selecting "Open AnyBody" will open the AnyBody GUI after the analysis and will load the .anydata.h5 to make a replay available
-* Converter
+* **Converter**
     * Convert a given bvh file to the interpolation files used for AnyBody based on the templates in config/anybody_templates
-* Animation
+* **Animation**
     * Open a bvh file to animate it, a slider can be used to iterate through the frames
 
 ### Basis setting
