@@ -88,8 +88,8 @@ Following python packages are required:
  * _wxPython_ (4.0.4)
 
 ## Credits
-https://github.com/chriskiehl/Gooey
-https://github.com/YPZhou/b3d/
-https://github.com/AnyBody-Research-Group/AnyPyTools
-https://github.com/leapmotion/LeapCxx
-https://github.com/omimo/PyMO
+* https://github.com/chriskiehl/Gooey
+* https://github.com/YPZhou/b3d/
+* https://github.com/AnyBody-Research-Group/AnyPyTools
+* https://github.com/leapmotion/LeapCxx
+* https://github.com/omimo/PyMO
