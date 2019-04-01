@@ -178,7 +178,7 @@ class LeapGui:
                                     help='Source directory that contains *.template files for AnyBody')
 
         interpol_group.add_argument('-anybody_output_path',
-                                    metavar=' ',
+                                    metavar='Output directory',
                                     action='store',
                                     default=stored_args.get(
                                         ACTION_RECORD, 'anybody_output_path',

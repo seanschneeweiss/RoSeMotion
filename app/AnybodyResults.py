@@ -11,7 +11,7 @@ LINE_STYLES = ['--', '-.', '--', ':']
 COLORS = [i for i in get_cmap('tab20').colors]
 
 LEAPMOTION = 'Leap Motion'
-INTERPOLATION = 'Anybody'
+INTERPOLATION = 'AnyBody'
 FLEXION = 'Flexion'
 ABDUCTION = 'Abduction'
 DEVIATION = 'Deviation'
