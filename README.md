@@ -26,7 +26,7 @@ Plug in the Leap Motion Controller and make a recording of the right hand
             * Wrist.any (abduction and flexion angles for wrist)
         * Choose the template directory, the AnyBody interpolation files are written based on those files
         * Choose the output directory, here the above mentioned files will be saved to
-* **AnyBody**
+* **AnyBody** ([repository](https://github.com/seanschneeweiss/RoSeMotion-AnyBody))
     * **Source files**
         * Choose "exisiting vector files" if interpolation files are already in the project folder <AnyBodyFolder>/Model/InterpolVec
         * Choose ".bvh file" to convert it to the interpolation files based on the templates in config/anybody_templates/ and copy into the AnyBody project folder <AnyBodyFolder>/Model/InterpolVec
