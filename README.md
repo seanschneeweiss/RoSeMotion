@@ -1,5 +1,7 @@
 # ROSE Motion
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4344201.svg)](https://doi.org/10.5281/zenodo.4344201)
+
 LeapMotion recording, export to BVH and Anybody
 ![ROSE Motion](https://snag.gy/T6kpqO.jpg)
 
