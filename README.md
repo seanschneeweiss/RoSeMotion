@@ -1,8 +1,10 @@
 # ROSE Motion
+
 LeapMotion recording, export to BVH and Anybody
 ![ROSE Motion](https://snag.gy/T6kpqO.jpg)
 
 ## Structure / Actions
+
 * **Record**
 Plug in the Leap Motion Controller and make a recording of the right hand
     * **Settings**
@@ -43,15 +45,15 @@ Plug in the Leap Motion Controller and make a recording of the right hand
     * Open a bvh file to animate it, a slider can be used to iterate through the frames
 
 ### Basis setting
-* AnyBody initial basis
-* Leap Motion first frame basis
 
-tbd.
+* AnyBody initial basis -> select for correct movement within AnyBody
+* Leap Motion first frame basis -> select for exporting to BVH and use in other applications
 
 ## Setup
+
 **Windows**
 
-* Install python (3.7.2) i.e. from
+* Install python (3.9.1) i.e. from
 
   https://www.python.org/downloads/
 * Add python to system path during setup or follow the following instructions:
