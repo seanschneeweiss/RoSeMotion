@@ -7,10 +7,10 @@ from AnyPy import AnyPy
 from config.Configuration import env
 from BVHAnimation import bvh_animation
 from resources.pymo.pymo.parsers import BVHParser as Pymo_BVHParser
-from resources.Gooey.gooey.gui import application
-from resources.Gooey.gooey.gui import processor
-from resources.Gooey.gooey.gui.containers import application as containers_application
-from resources.Gooey.gooey.python_bindings import gooey_decorator, gooey_parser
+from gooey.gui import application
+from gooey.gui import processor
+from gooey.gui.containers import application as containers_application
+from gooey.python_bindings import gooey_decorator, gooey_parser
 
 # strings for the actions in the Gooey side-menu
 ACTION_RECORD = 'Record'
@@ -60,8 +60,7 @@ class LeapGui:
     @Gooey(program_name="Leap Motion Recorder (c) Robin, Sean",
            sidebar_title='Actions',
            # return_to_config=True,
-           language='leap-english',
-           image_dir='config/icons',
+           image_dir='config/gooey',
            tabbed_groups=True,
            default_size=(1000, 700))
     def parse_args():
