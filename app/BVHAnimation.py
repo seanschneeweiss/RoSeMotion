@@ -1,7 +1,8 @@
-import mpl_toolkits.mplot3d.axes3d as p3
-from matplotlib.widgets import Slider
-from resources.pymo.pymo.preprocessing import MocapParameterizer
 from matplotlib import pyplot as plt
+from matplotlib.widgets import Slider
+import numpy as np
+
+from resources.pymo.pymo.preprocessing import MocapParameterizer
 
 
 class BVHAnimation:
@@ -41,9 +42,9 @@ class BVHAnimation:
             # ^ In mocaps, Y is the up-right axis
 
             points.append(ax.plot([parent_x],
-                                       [parent_y],
-                                       [parent_z],
-                                       linestyle="", c='b', marker='o'))
+                                  [parent_y],
+                                  [parent_z],
+                                  linestyle="", c='b', marker='o'))
 
             children_to_draw = [c for c in positions.skeleton[joint]['children'] if c in joints_to_draw]
 
@@ -53,7 +54,8 @@ class BVHAnimation:
                 child_z = df['%s_Zposition' % c][0]
                 # ^ In mocaps, Y is the up-right axis
 
-                lines.append(ax.plot([parent_x, child_x], [parent_y, child_y], [parent_z, child_z], 'k-', lw=2, c='black'))
+                lines.append(
+                    ax.plot([parent_x, child_x], [parent_y, child_y], [parent_z, child_z], 'k-', lw=2, c='black'))
 
         def update(_):
             """Update function for the slider"""
@@ -67,7 +69,7 @@ class BVHAnimation:
                 up_parent_z = df['%s_Zposition' % up_joint][frame]
                 # ^ In mocaps, Y is the up-right axis
 
-                points[index1][0].set_data([up_parent_x], [up_parent_y])
+                points[index1][0].set_data(np.array([up_parent_x]), np.array([up_parent_y]))
                 points[index1][0].set_3d_properties([up_parent_z])
                 index1 += 1
 
@@ -79,7 +81,7 @@ class BVHAnimation:
                     up_child_z = df['%s_Zposition' % c][frame]
                     # ^ In mocaps, Y is the up-right axis
 
-                    lines[index2][0].set_data([[up_parent_x, up_child_x], [up_parent_y, up_child_y]])
+                    lines[index2][0].set_data(np.array([[up_parent_x, up_child_x], [up_parent_y, up_child_y]]))
                     lines[index2][0].set_3d_properties([up_parent_z, up_child_z])
                     index2 += 1
 
