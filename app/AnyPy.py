@@ -1,18 +1,18 @@
-import re
-import os
 import datetime
 import glob
+import os
+import re
 import shutil
 import subprocess
 
-from resources.AnyPyTools.anypytools import AnyPyProcess
-from resources.AnyPyTools.anypytools import AnyMacro
-from resources.AnyPyTools.anypytools.macro_commands import (MacroCommand, Load, SetValue, SetValue_random,  Dump,
-                                                            SaveDesign, LoadDesign, SaveValues, LoadValues,
-                                                            UpdateValues, SaveData, OperationRun)
+from anypytools import AnyMacro
+from anypytools import AnyPyProcess
+from anypytools.macro_commands import (MacroCommand, Load, Dump,
+                                       SaveData, OperationRun)
+
 from AnyWriter import AnyWriter
-from config.Configuration import env
 from AnybodyResults import AnybodyResults
+from config.Configuration import env
 
 
 class AnyPy:
@@ -169,10 +169,7 @@ class AnyPy:
         # save current working directory and change to Anybody project folder
         cwd = os.getcwd()
         os.chdir(self.any_path)
-        # app = AnyPyProcess(return_task_info=True,
-        #                   anybodycon_path=tools.get_anybodycon_path())
-        app = AnyPyProcess(return_task_info=True,
-                           anybodycon_path="C:/Program Files/AnyBody Technology/AnyBody.7.1/AnyBodyCon.exe")
+        app = AnyPyProcess()
 
         self.output = app.start_macro(macrolist=self.macrolist,
                                       logfile=AnyPy.LOG_FILE)
