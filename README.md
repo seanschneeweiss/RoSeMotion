@@ -55,43 +55,35 @@ Plug in the Leap Motion Controller and make a recording of the right hand
 
 **Windows**
 
-* Install python (3.8.6) i.e. from
+* Install python (3.8.8) i.e. from
 
   https://www.python.org/downloads/
 * Add python to system path during setup or follow the following instructions:
 
   https://github.com/BurntSushi/nfldb/wiki/Python-&-pip-Windows-installation
 
-* Run in a command prompt:
+* Install dependencies, by running the following in a command prompt:
 ```
 pip install -r requirements.txt
 ```
-* Alternative:
+You might have to use `pip3` instead, depending on your setup.
+
+* Start RoSeMotion
 ```
-python -m pip install --upgrade pip
-pip install -U Gooey
-pip install -U matplotlib
-pip install -U numpy
-pip install -U pandas
-pip install -U pywin32
-pip install -U pywinauto
-pip install -U scikit-learn
-pip install -U scipy
-pip install -U wxpython
+python app/main.py
 ```
 
 ---
-Following python packages are required:
+Following python packages and versions were tested:
  * _Gooey_ (1.0.8)
- * _h5py_ (2.9.0) (only for AnyPyTools)
- * _Matplotlib_ (3.3.3) (only for AnyPyTools)
- * _Numpy_ (1.19.4)
+ * _AnyPyTools_ (1.4.6)
+ * _Matplotlib_ (3.3.3) (only for AnyBody results)
+ * _Numpy_ (1.19.5)
  * _Pandas_ (1.1.5)
- * _pywin32_ (224) (only for window size automation)
+ * _pywin32_ (300) (only for window size automation)
  * _pywinauto_ (0.6.6) (only for window size automation)
- * _Scipy_ (1.2.1) (only for AnyPyTools)
- * _Scikit-learn_ (0.20.3) (only for BVH animation)
- * _wxPython_ (4.0.4)
+ * _Scikit-learn_ (0.23.2) (only for BVH animation)
+ * _wxPython_ (4.1.0)
 
 ## Credits
 * https://github.com/chriskiehl/Gooey
