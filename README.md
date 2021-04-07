@@ -1,6 +1,6 @@
 # ROSE Motion
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4344201.svg)](https://doi.org/10.5281/zenodo.4344201)
+Zenodo Code Archive: [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4344201.svg)](https://doi.org/10.5281/zenodo.4344201) MDPI Sensors Article: [![DOI](https://zenodo.org/badge/DOI/10.3390/s21041199.svg)](https://doi.org/10.3390/s21041199)
 
 LeapMotion recording, export to BVH and Anybody
 ![ROSE Motion](https://snag.gy/T6kpqO.jpg)
