@@ -55,7 +55,7 @@ Plug in the Leap Motion Controller and make a recording of the right hand
 
 **Windows**
 
-* Install python (3.8.8) i.e. from
+* Install python (3.9.13) i.e. from
 
   https://www.python.org/downloads/
 * Add python to system path during setup or follow the following instructions:
@@ -75,15 +75,15 @@ python app/main.py
 
 ---
 Following python packages and versions were tested:
- * _Gooey_ (1.0.8)
- * _AnyPyTools_ (1.4.6)
+ * _Gooey_ (1.0.8.1)
+ * _AnyPyTools_ (1.7.8)
  * _Matplotlib_ (3.3.3) (only for AnyBody results)
  * _Numpy_ (1.19.5)
  * _Pandas_ (1.1.5)
- * _pywin32_ (300) (only for window size automation)
- * _pywinauto_ (0.6.6) (only for window size automation)
+ * _pywin32_ (301) (only for window size automation)
+ * _pywinauto_ (0.6.8) (only for window size automation)
  * _Scikit-learn_ (0.23.2) (only for BVH animation)
- * _wxPython_ (4.1.0)
+ * _wxPython_ ([4.1.2a1.dev5330+3e6be81d](https://wxpython.org/Phoenix/snapshot-builds/wxPython-4.1.2a1.dev5330+3e6be81d-cp39-cp39-win_amd64.whl))
 
 ## Credits
 * https://github.com/chriskiehl/Gooey

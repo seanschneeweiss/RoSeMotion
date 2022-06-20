@@ -1,13 +1,13 @@
 # for Leap Motion recording
 matplotlib==3.3.3
-numpy==1.19.5
+numpy>=1.19.5
 pandas==1.1.5
 # for simulation
-AnyPyTools==1.4.6
+AnyPyTools==1.7.8
 # for PyMO (bvh animation)
 scikit-learn==0.23.2
 # for GUI
-Gooey==1.0.8
+Gooey==1.0.8.1
 pywin32==301
 pywinauto==0.6.8
-wxPython==4.1.0
+wxPython>=4.1.0

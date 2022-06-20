@@ -8,7 +8,7 @@ from config.AnybodyFirstFrame import AnybodyFirstFrame
 from config.BasisFirstFrame import BasisFirstFrame
 from resources.pymo.pymo.data import MocapData
 from RotationUtil import rot2eul, get_order
-from resources.LeapSDK.v41_python38 import Leap
+from resources.LeapSDK.v53_python39 import Leap
 
 
 class LeapData:
