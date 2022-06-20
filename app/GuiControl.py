@@ -10,7 +10,7 @@ class GuiControl:
         self.recorder_dlg = None
 
     def set_windows_record(self):
-        self.visualizer = Application().start(r"C:\Program Files\Leap Motion\Core Services\Visualizer.exe")
+        self.visualizer = Application().start(r"C:\Program Files\Ultraleap\TrackingVisualizer\TrackingVisualizer.exe")
         self.visualizer_dlg = self.visualizer.window()
         self.recorder = Application().connect(class_name="wxWindowNR")
         self.recorder_dlg = self.recorder.window()

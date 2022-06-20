@@ -1,7 +1,7 @@
 import numpy as np
 import math
 
-from resources.LeapSDK.v41_python38 import Leap
+from resources.LeapSDK.v53_python39 import Leap
 
 
 def get_order():

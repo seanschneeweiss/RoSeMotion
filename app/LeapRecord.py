@@ -4,7 +4,7 @@ from collections import deque
 from threading import Thread
 
 from config.Configuration import env
-from resources.LeapSDK.v41_python38 import Leap
+from resources.LeapSDK.v53_python39 import Leap
 from LeapData import LeapData
 from resources.pymo.pymo.writers import BVHWriter as Pymo_BVHWriter
 # from resources.b3d.bvh_reader import BVH as B3D_BVHReader

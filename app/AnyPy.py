@@ -171,8 +171,7 @@ class AnyPy:
         os.chdir(self.any_path)
         app = AnyPyProcess()
 
-        self.output = app.start_macro(macrolist=self.macrolist,
-                                      logfile=AnyPy.LOG_FILE)
+        self.output = app.start_macro(macrolist=self.macrolist)
 
         # change back to original folder
         os.chdir(cwd)
