@@ -1,3 +1,5 @@
+[![No Maintenance Intended](http://unmaintained.tech/badge.svg)](http://unmaintained.tech/)
+
 # ROSE Motion
 
 Zenodo Code Archive: [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4344201.svg)](https://doi.org/10.5281/zenodo.4344201) MDPI Sensors Article: [![DOI](https://zenodo.org/badge/DOI/10.3390/s21041199.svg)](https://doi.org/10.3390/s21041199)
